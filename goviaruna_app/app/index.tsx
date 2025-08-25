@@ -1,9 +1,8 @@
 import React from 'react';
-import { View, StyleSheet, ImageBackground, TouchableOpacity, Dimensions } from 'react-native';
+import { View, StyleSheet, ImageBackground, TouchableOpacity, Dimensions, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { StatusBar } from 'expo-status-bar';
-import { LinearGradient } from 'expo-linear-gradient';
 import { ThemedText } from '@/components/ThemedText';
 
 const { width, height } = Dimensions.get('window');
@@ -17,6 +16,16 @@ export default function WelcomeScreen() {
     return ready ? t(key) : fallback;
   };
 
+  // Get the actual text that will be displayed
+  const titleText = getText('welcome.title', 'ගොවි අරුණ');
+  const subtitleText = getText('welcome.subtitle', 'ශ්‍රී ලංකාවේ වී කෘමීන් හඳුනා ගන්න');
+
+  // Debug: Log the texts and fonts
+  console.log('Title text:', titleText);
+  console.log('Title font should be: AbhayaLibre-Regular');
+  console.log('Subtitle text:', subtitleText);
+  console.log('Subtitle font should be: AbhayaLibre-SemiBold');
+
   const handleGetStarted = () => {
     router.push('/onboarding');
   };
@@ -25,55 +34,41 @@ export default function WelcomeScreen() {
     <View style={styles.container}>
       <StatusBar style="light" />
       
-      {/* Background with gradient overlay */}
-      <LinearGradient
-        colors={['#2D5016', '#4A7C23', '#2D5016']}
+      {/* Background image */}
+      <ImageBackground
+        source={require('@/assets/images/Welcome screen.png')}
         style={styles.background}
+        resizeMode="cover"
       >
-        {/* Main content */}
-        <View style={styles.content}>
-          {/* Insect illustration area */}
-          <View style={styles.illustrationContainer}>
-            {/* This would be replaced with the actual mantis/insect illustration */}
-            <View style={styles.insectPlaceholder}>
-              {/* Placeholder for the mantis illustration */}
-              <View style={styles.mantisBody} />
-              <View style={styles.mantisHead} />
-              <View style={styles.mantisArm1} />
-              <View style={styles.mantisArm2} />
-            </View>
-            
-            {/* Rice plant elements */}
-            <View style={styles.ricePlants}>
-              <View style={styles.ricePlant1} />
-              <View style={styles.ricePlant2} />
+        {/* Overlay for better text readability */}
+        <View style={styles.overlay}>
+          {/* Main content */}
+          <View style={styles.content}>
+            {/* Text content */}
+            <View style={styles.textContainer}>
+              <Text style={styles.titleWithFont}>
+                {titleText}
+              </Text>
+              <Text style={styles.subtitleWithFont}>
+                {subtitleText}
+              </Text>
             </View>
           </View>
 
-          {/* Text content */}
-          <View style={styles.textContainer}>
-            <ThemedText style={styles.title} type="title">
-              {getText('welcome.title', 'ගොවි අරුණ')}
-            </ThemedText>
-            <ThemedText style={styles.subtitle} type="subtitle">
-              {getText('welcome.subtitle', 'ශ්‍රී ලංකාවේ වී කෙතෙන් හදනා ගන්නා')}
-            </ThemedText>
+          {/* Bottom button */}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity 
+              style={styles.getStartedButton}
+              onPress={handleGetStarted}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.buttonText}>
+                {getText('welcome.button', 'ඉදිරියට යන්න')}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
-
-        {/* Bottom button */}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity 
-            style={styles.getStartedButton}
-            onPress={handleGetStarted}
-            activeOpacity={0.8}
-          >
-            <ThemedText style={styles.buttonText} type="defaultSemiBold">
-              {getText('welcome.button', 'ඉදිරියට යන්න')}
-            </ThemedText>
-          </TouchableOpacity>
-        </View>
-      </LinearGradient>
+      </ImageBackground>
     </View>
   );
 }
@@ -84,114 +79,80 @@ const styles = StyleSheet.create({
   },
   background: {
     flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)', // Darker overlay for better text readability
     justifyContent: 'space-between',
   },
   content: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-  },
-  illustrationContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    position: 'relative',
-  },
-  insectPlaceholder: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  // Simplified mantis illustration using basic shapes
-  mantisBody: {
-    width: 60,
-    height: 120,
-    backgroundColor: '#7CB342',
-    borderRadius: 30,
-    position: 'relative',
-  },
-  mantisHead: {
-    width: 40,
-    height: 40,
-    backgroundColor: '#8BC34A',
-    borderRadius: 20,
-    position: 'absolute',
-    top: -20,
-  },
-  mantisArm1: {
-    width: 80,
-    height: 8,
-    backgroundColor: '#7CB342',
-    borderRadius: 4,
-    position: 'absolute',
-    top: 20,
-    left: -40,
-    transform: [{ rotate: '45deg' }],
-  },
-  mantisArm2: {
-    width: 80,
-    height: 8,
-    backgroundColor: '#7CB342',
-    borderRadius: 4,
-    position: 'absolute',
-    top: 20,
-    right: -40,
-    transform: [{ rotate: '-45deg' }],
-  },
-  ricePlants: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  ricePlant1: {
-    width: 60,
-    height: 100,
-    backgroundColor: '#4CAF50',
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    opacity: 0.7,
-  },
-  ricePlant2: {
-    width: 50,
-    height: 80,
-    backgroundColor: '#66BB6A',
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-    opacity: 0.6,
+    justifyContent: 'flex-end',
+    paddingHorizontal: 30,
+    paddingBottom: 25, // Reduced padding to bring text lower
   },
   textContainer: {
     alignItems: 'center',
-    marginBottom: 60,
+    marginBottom: 20, // Reduced margin to bring text closer to button
+    paddingHorizontal: 20,
   },
   title: {
-    fontSize: 42,
+    fontSize: 48,
     fontWeight: 'bold',
     color: '#FFFFFF',
     textAlign: 'center',
-    marginBottom: 12,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    marginBottom: 16,
+    textShadowColor: 'rgba(0, 0, 0, 0.7)',
     textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 4,
+    textShadowRadius: 6,
+    letterSpacing: 2,
+  },
+  titleWithFont: {
+    fontSize: 42,
+    fontFamily: 'AbhayaLibre-Bold',
+    fontWeight: 'normal',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    marginBottom: 12,
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 8,
+    letterSpacing: 1,
   },
   subtitle: {
-    fontSize: 18,
-    color: '#E8F5E8',
+    fontSize: 20,
+    color: '#FFFFFF',
     textAlign: 'center',
-    lineHeight: 24,
-    opacity: 0.9,
+    lineHeight: 28,
+    textShadowColor: 'rgba(0, 0, 0, 0.7)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 4,
+    paddingHorizontal: 20,
+  },
+  subtitleWithFont: {
+    fontSize: 18,
+    fontFamily: 'AbhayaLibre-Regular',
+    fontWeight: 'normal',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    lineHeight: 26,
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 6,
+    paddingHorizontal: 15,
+    opacity: 0.95,
   },
   buttonContainer: {
-    paddingHorizontal: 40,
-    paddingBottom: 60,
+    paddingHorizontal: 30,
+    paddingBottom: 50,
   },
   getStartedButton: {
     backgroundColor: '#FFFFFF',
     paddingVertical: 16,
-    paddingHorizontal: 40,
+    paddingHorizontal: 60,
     borderRadius: 25,
     alignItems: 'center',
     shadowColor: '#000',
@@ -205,7 +166,9 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'AbhayaLibre-SemiBold',
+    fontWeight: 'normal',
     color: '#2D5016',
+    letterSpacing: 0.5,
   },
 });

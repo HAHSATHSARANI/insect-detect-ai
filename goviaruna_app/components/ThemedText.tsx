@@ -2,11 +2,13 @@ import { StyleSheet, Text, type TextProps } from 'react-native';
 
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { getFontStyle } from '@/utils/fontUtils';
+import { Fonts, TextStyles } from '@/constants/Fonts';
 
 export type ThemedTextProps = TextProps & {
   lightColor?: string;
   darkColor?: string;
   type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link';
+  forceAbhaya?: boolean;
 };
 
 export function ThemedText({
@@ -14,6 +16,7 @@ export function ThemedText({
   lightColor,
   darkColor,
   type = 'default',
+  forceAbhaya = false,
   children,
   ...rest
 }: ThemedTextProps) {
@@ -40,18 +43,21 @@ export function ThemedText({
       fontWeight = 'normal';
   }
   
-  const sinhalaFontStyle = getFontStyle(textContent, fontWeight);
+  // Use global font styles or Sinhala-specific fonts
+  const fontStyle = forceAbhaya || getFontStyle(textContent, fontWeight, forceAbhaya).fontFamily
+    ? getFontStyle(textContent, fontWeight, forceAbhaya)
+    : Fonts.styles.regular; // Default to AbhayaLibre-Regular
 
   return (
     <Text
       style={[
         { color },
+        fontStyle, // Apply AbhayaLibre font by default
         type === 'default' ? styles.default : undefined,
         type === 'title' ? styles.title : undefined,
         type === 'defaultSemiBold' ? styles.defaultSemiBold : undefined,
         type === 'subtitle' ? styles.subtitle : undefined,
         type === 'link' ? styles.link : undefined,
-        sinhalaFontStyle,
         style,
       ]}
       {...rest}
