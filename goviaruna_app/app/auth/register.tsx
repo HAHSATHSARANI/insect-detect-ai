@@ -30,8 +30,8 @@ export default function RegisterScreen() {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const handleRegister = () => {
-    // TODO: Implement actual registration logic
-    router.push('/auth/verify');
+    // Navigate to login screen after registration as requested
+    router.push('/auth/login');
   };
 
   const handleLogin = () => {
