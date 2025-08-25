@@ -16,9 +16,9 @@ const INSECT_DETAILS = {
   family: 'Lamiacese',
   description: 'දුඹුරු පැළ කීඩෑවා (BPH) යනු සුලභ පළිබෝධකයෙකි. එය වී වගාවට බරපතල හානි සිදු කරයි. මෙම කෘමියා (ගොයම් පලඟැටියා ලෙසද හැඳින්වේ) ශාකයේ යුෂ උරා බොන අතර, එය වෛරස් රෝග පැතිරවිය හැකිය. BPH ආසාදනය පාලනය නොකළහොත් සැලකිය යුතු අස්වැන්නක් අහිමි විය හැකිය.',
   images: [
-    require('@/assets/images/insect_2.png'),
-    require('@/assets/images/insect_1.png'),
-    require('@/assets/images/insect_2.png'),
+    require('@/assets/images/insect_3.jpg'),
+    require('@/assets/images/insect_3.jpg'),
+    require('@/assets/images/insect_3.jpg'),
   ],
   tabs: ['තොරතුරු', 'හානිය', 'පාලනය'],
   lifeCycleTitle: 'ජීවන චක්‍රය',

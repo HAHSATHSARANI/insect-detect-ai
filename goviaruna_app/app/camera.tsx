@@ -47,7 +47,8 @@ export default function CameraScreen() {
     if (cameraRef.current) {
       const photo = await cameraRef.current.takePictureAsync();
       console.log(photo);
-      // TODO: Navigate to a preview screen with the photo
+      // Navigate to the details screen after taking a picture
+      router.push('/insect-details');
     }
   };
 
