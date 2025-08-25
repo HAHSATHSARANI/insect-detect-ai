@@ -1,0 +1,43 @@
+{
+  "welcome": {
+    "title": "ගොවි අරුණ",
+    "subtitle": "ශ්‍රී ලංකාවේ වී කෙතෙන් හදනා ගන්නා",
+    "button": "ඉදිරියට යන්න"
+  },
+  "onboarding": {
+    "skip": "මගහරින්න",
+    "next": "ඊළඟ",
+    "getStarted": "ආරම්භ කරන්න"
+  },
+  "auth": {
+    "login": "පිවිසෙන්න",
+    "register": "ලියාපදිංචි වන්න",
+    "email": "විද්‍යුත් ලිපිනය",
+    "password": "මුරපදය",
+    "confirmPassword": "මුරපදය තහවුරු කරන්න",
+    "forgotPassword": "මුරපදය අමතකද?",
+    "resetPassword": "මුරපදය නැවත සැකසීම",
+    "verifyAccount": "ගිණුම සත්‍යාපනය",
+    "verificationCode": "සත්‍යාපන කේතය",
+    "resendCode": "කේතය නැවත යවන්න",
+    "verify": "සත්‍යාපනය කරන්න"
+  },
+  "language": {
+    "selectLanguage": "භාෂාව තෝරන්න",
+    "sinhala": "සිංහල",
+    "english": "English"
+  },
+  "tabs": {
+    "home": "මුල් පිටුව",
+    "collection": "එකතුව",
+    "profile": "පැතිකඩ",
+    "search": "සොයන්න"
+  },
+  "common": {
+    "continue": "ඉදිරියට",
+    "back": "ආපසු",
+    "cancel": "අවලංගු කරන්න",
+    "save": "සුරකින්න",
+    "ok": "හරි"
+  }
+}

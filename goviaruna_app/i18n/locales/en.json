@@ -1,0 +1,43 @@
+{
+  "welcome": {
+    "title": "Govi Aruna",
+    "subtitle": "Sri Lankan Rice Field Insect Detection",
+    "button": "Get Started"
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "next": "Next",
+    "getStarted": "Get Started"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot Password?",
+    "resetPassword": "Reset Password",
+    "verifyAccount": "Verify Account",
+    "verificationCode": "Verification Code",
+    "resendCode": "Resend Code",
+    "verify": "Verify"
+  },
+  "language": {
+    "selectLanguage": "Select Language",
+    "sinhala": "සිංහල",
+    "english": "English"
+  },
+  "tabs": {
+    "home": "Home",
+    "collection": "Collection",
+    "profile": "Profile",
+    "search": "Search"
+  },
+  "common": {
+    "continue": "Continue",
+    "back": "Back",
+    "cancel": "Cancel",
+    "save": "Save",
+    "ok": "OK"
+  }
+}
