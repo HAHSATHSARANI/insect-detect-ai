@@ -1,66 +1,76 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
-import { useTranslation } from 'react-i18next';
+import { View, StyleSheet } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+const ACTIVE_COLOR = '#FFFFFF';
+const INACTIVE_COLOR = '#9E9E9E';
+const TAB_BAR_BACKGROUND = '#212121';
+const ACTIVE_BACKGROUND = '#3A8A55';
+
+const CustomTabIcon = ({ name, focused }: { name: React.ComponentProps<typeof Feather>['name'], focused: boolean }) => {
+  return (
+    <View style={[styles.iconContainer, focused && styles.activeIconContainer]}>
+      <Feather name={name} size={24} color={focused ? ACTIVE_COLOR : INACTIVE_COLOR} />
+    </View>
+  );
+};
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  const { t, ready } = useTranslation();
-
-  // Fallback labels if translation is not ready
-  const getTitle = (key: string, fallback: string) => {
-    return ready ? t(key) : fallback;
-  };
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#4A7C23',
-        tabBarInactiveTintColor: '#999',
         headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
+        tabBarShowLabel: false,
+        tabBarStyle: styles.tabBar,
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
-          title: getTitle('tabs.home', 'Home'),
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="collection"
-        options={{
-          title: getTitle('tabs.collection', 'Collection'),
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="folder.fill" color={color} />,
+          tabBarIcon: ({ focused }) => <CustomTabIcon name="home" focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="search"
         options={{
-          title: getTitle('tabs.search', 'Search'),
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="magnifyingglass" color={color} />,
+          tabBarIcon: ({ focused }) => <CustomTabIcon name="search" focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
+        name="collection"
+        options={{
+          tabBarIcon: ({ focused }) => <CustomTabIcon name="plus-square" focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: getTitle('tabs.profile', 'Profile'),
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
+          tabBarIcon: ({ focused }) => <CustomTabIcon name="user" focused={focused} />,
         }}
       />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBar: {
+    backgroundColor: TAB_BAR_BACKGROUND,
+    borderTopWidth: 0,
+    height: 90,
+    paddingBottom: 10, // Adjusted for consistent vertical alignment
+    paddingTop: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconContainer: {
+    width: 58,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  activeIconContainer: {
+    backgroundColor: ACTIVE_BACKGROUND,
+  },
+});
