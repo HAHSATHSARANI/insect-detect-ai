@@ -1,158 +1,66 @@
-import React, { useState, useRef } from 'react';
-import { View, StyleSheet, Dimensions, TouchableOpacity, FlatList, ViewToken } from 'react-native';
+import React from 'react';
+import { View, StyleSheet, Dimensions, TouchableOpacity, Text, Image } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useTranslation } from 'react-i18next';
 import { StatusBar } from 'expo-status-bar';
-import { LinearGradient } from 'expo-linear-gradient';
-import { ThemedText } from '@/components/ThemedText';
+import { Fonts } from '@/constants/Fonts';
 
 const { width, height } = Dimensions.get('window');
 
-interface OnboardingItem {
-  id: string;
-  title: string;
-  subtitle: string;
-  illustration: string;
-}
+const ONBOARDING_CONTENT = {
+  title: 'කෘමීන් දැනගන්න, විශ්වාසයෙන් වැඩෙන්න',
+  subtitle: 'පළිබෝධකයන් කලින් හඳුනාගෙන, විසඳුම් සොයා ගෙන, ඔබේ අස්වැන්න පහසුවෙන් ආරක්ෂා කරගන්න.',
+  skip: 'මඟ හරින්න',
+  next: 'ඊළඟ',
+};
 
 export default function OnboardingScreen() {
-  const { t } = useTranslation();
   const router = useRouter();
-  const flatListRef = useRef<FlatList>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  // Placeholder onboarding data - you can customize this based on your needs
-  const onboardingData: OnboardingItem[] = [
-    {
-      id: '1',
-      title: 'Detect Insects',
-      subtitle: 'Identify harmful insects in your rice field using AI technology',
-      illustration: 'detect'
-    },
-    {
-      id: '2',
-      title: 'Get Solutions',
-      subtitle: 'Receive expert recommendations for pest control and crop protection',
-      illustration: 'solutions'
-    },
-    {
-      id: '3',
-      title: 'Track Progress',
-      subtitle: 'Monitor your field health and maintain records of treatments',
-      illustration: 'track'
-    }
-  ];
 
   const handleNext = () => {
-    if (currentIndex < onboardingData.length - 1) {
-      const nextIndex = currentIndex + 1;
-      flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
-      setCurrentIndex(nextIndex);
-    } else {
-      handleGetStarted();
-    }
+    router.push('/language');
   };
 
   const handleSkip = () => {
     router.push('/language');
   };
 
-  const handleGetStarted = () => {
-    router.push('/language');
-  };
-
-  const onViewableItemsChanged = ({ viewableItems }: { viewableItems: ViewToken[] }) => {
-    if (viewableItems.length > 0) {
-      setCurrentIndex(viewableItems[0].index || 0);
-    }
-  };
-
-  const renderOnboardingItem = ({ item, index }: { item: OnboardingItem; index: number }) => (
-    <View style={styles.slide}>
-      <View style={styles.illustrationContainer}>
-        {/* Placeholder illustration */}
-        <View style={[styles.illustration, getIllustrationStyle(item.illustration)]} />
-      </View>
-      
-      <View style={styles.textContainer}>
-        <ThemedText style={styles.title} type="title">{item.title}</ThemedText>
-        <ThemedText style={styles.subtitle}>{item.subtitle}</ThemedText>
-      </View>
-    </View>
-  );
-
-  const getIllustrationStyle = (type: string) => {
-    switch (type) {
-      case 'detect':
-        return { backgroundColor: '#4CAF50' };
-      case 'solutions':
-        return { backgroundColor: '#FF9800' };
-      case 'track':
-        return { backgroundColor: '#2196F3' };
-      default:
-        return { backgroundColor: '#9E9E9E' };
-    }
-  };
-
   return (
     <View style={styles.container}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       
-      <LinearGradient
-        colors={['#2D5016', '#4A7C23']}
-        style={styles.background}
-      >
-        {/* Header with Skip button */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={handleSkip}>
-            <ThemedText style={styles.skipButton}>
-              {t('onboarding.skip')}
-            </ThemedText>
-          </TouchableOpacity>
-        </View>
+      <View style={styles.topContainer}>
+        <TouchableOpacity onPress={handleSkip} style={styles.skipButtonContainer}>
+          <Text style={styles.skipButton}>{ONBOARDING_CONTENT.skip}</Text>
+        </TouchableOpacity>
 
-        {/* Onboarding slides */}
-        <FlatList
-          ref={flatListRef}
-          data={onboardingData}
-          renderItem={renderOnboardingItem}
-          keyExtractor={(item) => item.id}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onViewableItemsChanged={onViewableItemsChanged}
-          viewabilityConfig={{ itemVisiblePercentThreshold: 50 }}
+        <Image 
+          source={require('@/assets/images/onboarding_1.png')}
+          style={styles.checkImage}
         />
+        <Image 
+          source={require('@/assets/images/onboarding_2.png')}
+          style={styles.mainImage}
+        />
+      </View>
 
-        {/* Page indicators */}
+      <View style={styles.bottomContainer}>
+        <View style={styles.textContainer}>
+          <Text style={styles.titleText}>{ONBOARDING_CONTENT.title}</Text>
+          <Text style={styles.subtitleText}>{ONBOARDING_CONTENT.subtitle}</Text>
+        </View>
+
         <View style={styles.indicatorContainer}>
-          {onboardingData.map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.indicator,
-                index === currentIndex && styles.activeIndicator
-              ]}
-            />
-          ))}
+          <View style={styles.activeIndicator} />
         </View>
 
-        {/* Bottom button */}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity 
-            style={styles.nextButton}
-            onPress={handleNext}
-            activeOpacity={0.8}
-          >
-            <ThemedText style={styles.buttonText} type="defaultSemiBold">
-              {currentIndex === onboardingData.length - 1 
-                ? t('onboarding.getStarted') 
-                : t('onboarding.next')
-              }
-            </ThemedText>
-          </TouchableOpacity>
-        </View>
-      </LinearGradient>
+        <TouchableOpacity 
+          style={styles.nextButton}
+          onPress={handleNext}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.buttonText}>{ONBOARDING_CONTENT.next}</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -160,98 +68,93 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#3A8A55', // Match the green from the screenshot
   },
-  background: {
-    flex: 1,
+  topContainer: {
+    flex: 0.55,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    paddingHorizontal: 20,
-    paddingTop: 50,
-    paddingBottom: 20,
+  skipButtonContainer: {
+    position: 'absolute',
+    top: 60,
+    right: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.15)',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 20,
+    zIndex: 1,
   },
   skipButton: {
-    fontSize: 16,
-    color: '#E8F5E8',
+    ...Fonts.styles.semiBold,
+    fontSize: 14,
+    color: '#FFFFFF',
+  },
+  mainImage: {
+    width: width * 0.62, // Made the image smaller
+    height: width * 0.62, // Made the image smaller
+    resizeMode: 'contain',
+    marginTop: 100, // Moved the image down
+  },
+  checkImage: {
+    position: 'absolute',
+    top: '25%', // Moved the image higher
+    right: '15%',
+    width: 70, // Made the image larger
+    height: 70, // Made the image larger
+    resizeMode: 'contain',
     opacity: 0.8,
   },
-  slide: {
-    width,
-    flex: 1,
+  bottomContainer: {
+    flex: 0.45,
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    paddingHorizontal: 30,
+    paddingTop: 40,
+    paddingBottom: 40,
+    justifyContent: 'space-between',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 40,
-  },
-  illustrationContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 40,
-  },
-  illustration: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    opacity: 0.8,
   },
   textContainer: {
     alignItems: 'center',
-    marginBottom: 60,
+    marginBottom: 20,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+  titleText: {
+    ...Fonts.styles.bold,
+    fontSize: 26,
+    color: '#333333',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 15,
+    lineHeight: 36,
   },
-  subtitle: {
-    fontSize: 16,
-    color: '#E8F5E8',
+  subtitleText: {
+    ...Fonts.styles.regular,
+    fontSize: 15,
+    color: '#666666',
     textAlign: 'center',
-    lineHeight: 22,
-    opacity: 0.9,
+    lineHeight: 24,
+    paddingHorizontal: 10,
   },
   indicatorContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  indicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    marginHorizontal: 4,
+    marginBottom: 20,
   },
   activeIndicator: {
-    backgroundColor: '#FFFFFF',
-    width: 24,
-  },
-  buttonContainer: {
-    paddingHorizontal: 40,
-    paddingBottom: 60,
+    width: 25,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#3A8A55',
   },
   nextButton: {
-    backgroundColor: '#FFFFFF',
-    paddingVertical: 16,
-    paddingHorizontal: 40,
+    backgroundColor: '#3A8A55',
+    width: '100%',
+    paddingVertical: 18,
     borderRadius: 25,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 8,
   },
   buttonText: {
+    ...Fonts.styles.semiBold,
     fontSize: 18,
-    fontWeight: '600',
-    color: '#2D5016',
+    color: '#FFFFFF',
   },
 });
