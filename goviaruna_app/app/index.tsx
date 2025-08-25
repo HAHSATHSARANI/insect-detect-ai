@@ -52,10 +52,10 @@ export default function WelcomeScreen() {
 
           {/* Text content */}
           <View style={styles.textContainer}>
-            <ThemedText style={styles.title}>
+            <ThemedText style={styles.title} type="title">
               {getText('welcome.title', 'ගොවි අරුණ')}
             </ThemedText>
-            <ThemedText style={styles.subtitle}>
+            <ThemedText style={styles.subtitle} type="subtitle">
               {getText('welcome.subtitle', 'ශ්‍රී ලංකාවේ වී කෙතෙන් හදනා ගන්නා')}
             </ThemedText>
           </View>
@@ -68,7 +68,7 @@ export default function WelcomeScreen() {
             onPress={handleGetStarted}
             activeOpacity={0.8}
           >
-            <ThemedText style={styles.buttonText}>
+            <ThemedText style={styles.buttonText} type="defaultSemiBold">
               {getText('welcome.button', 'ඉදිරියට යන්න')}
             </ThemedText>
           </TouchableOpacity>

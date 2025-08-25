@@ -36,7 +36,7 @@ export default function VerifyScreen() {
           <View style={styles.content}>
             {/* Header */}
             <View style={styles.header}>
-              <ThemedText style={styles.title}>
+              <ThemedText style={styles.title} type="title">
                 {t('auth.verifyAccount')}
               </ThemedText>
               <ThemedText style={styles.subtitle}>
@@ -68,7 +68,7 @@ export default function VerifyScreen() {
                 onPress={handleVerify}
                 activeOpacity={0.8}
               >
-                <ThemedText style={styles.buttonText}>
+                <ThemedText style={styles.buttonText} type="defaultSemiBold">
                   {t('auth.verify')}
                 </ThemedText>
               </TouchableOpacity>

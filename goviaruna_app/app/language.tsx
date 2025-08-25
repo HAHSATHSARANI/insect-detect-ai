@@ -28,7 +28,7 @@ export default function LanguageSelectionScreen() {
         <View style={styles.content}>
           {/* Title */}
           <View style={styles.titleContainer}>
-            <ThemedText style={styles.title}>
+            <ThemedText style={styles.title} type="title">
               {t('language.selectLanguage')}
             </ThemedText>
           </View>
@@ -42,7 +42,7 @@ export default function LanguageSelectionScreen() {
               activeOpacity={0.8}
             >
               <View style={styles.languageContent}>
-                <ThemedText style={styles.languageText}>
+                <ThemedText style={styles.languageText} type="defaultSemiBold">
                   සිංහල
                 </ThemedText>
                 <ThemedText style={styles.languageSubtext}>
@@ -58,7 +58,7 @@ export default function LanguageSelectionScreen() {
               activeOpacity={0.8}
             >
               <View style={styles.languageContent}>
-                <ThemedText style={styles.languageText}>
+                <ThemedText style={styles.languageText} type="defaultSemiBold">
                   English
                 </ThemedText>
                 <ThemedText style={styles.languageSubtext}>
@@ -71,7 +71,7 @@ export default function LanguageSelectionScreen() {
           {/* App logo/illustration */}
           <View style={styles.logoContainer}>
             <View style={styles.logoPlaceholder}>
-              <ThemedText style={styles.logoText}>
+              <ThemedText style={styles.logoText} type="title">
                 ගොවි අරුණ
               </ThemedText>
             </View>

@@ -43,7 +43,7 @@ export default function LoginScreen() {
           >
             {/* Header */}
             <View style={styles.header}>
-              <ThemedText style={styles.title}>
+              <ThemedText style={styles.title} type="title">
                 {t('auth.login')}
               </ThemedText>
             </View>
@@ -94,7 +94,7 @@ export default function LoginScreen() {
                 onPress={handleLogin}
                 activeOpacity={0.8}
               >
-                <ThemedText style={styles.buttonText}>
+                <ThemedText style={styles.buttonText} type="defaultSemiBold">
                   {t('auth.login')}
                 </ThemedText>
               </TouchableOpacity>

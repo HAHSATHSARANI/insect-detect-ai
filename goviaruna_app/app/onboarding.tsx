@@ -75,7 +75,7 @@ export default function OnboardingScreen() {
       </View>
       
       <View style={styles.textContainer}>
-        <ThemedText style={styles.title}>{item.title}</ThemedText>
+        <ThemedText style={styles.title} type="title">{item.title}</ThemedText>
         <ThemedText style={styles.subtitle}>{item.subtitle}</ThemedText>
       </View>
     </View>
@@ -144,7 +144,7 @@ export default function OnboardingScreen() {
             onPress={handleNext}
             activeOpacity={0.8}
           >
-            <ThemedText style={styles.buttonText}>
+            <ThemedText style={styles.buttonText} type="defaultSemiBold">
               {currentIndex === onboardingData.length - 1 
                 ? t('onboarding.getStarted') 
                 : t('onboarding.next')

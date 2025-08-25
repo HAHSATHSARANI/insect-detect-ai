@@ -35,7 +35,7 @@ export default function ResetPasswordScreen() {
           <View style={styles.content}>
             {/* Header */}
             <View style={styles.header}>
-              <ThemedText style={styles.title}>
+              <ThemedText style={styles.title} type="title">
                 {t('auth.resetPassword')}
               </ThemedText>
               <ThemedText style={styles.subtitle}>
@@ -65,7 +65,7 @@ export default function ResetPasswordScreen() {
                 onPress={handleResetPassword}
                 activeOpacity={0.8}
               >
-                <ThemedText style={styles.buttonText}>
+                <ThemedText style={styles.buttonText} type="defaultSemiBold">
                   Send Reset Link
                 </ThemedText>
               </TouchableOpacity>

@@ -1,6 +1,7 @@
 import { StyleSheet, Text, type TextProps } from 'react-native';
 
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { getFontStyle } from '@/utils/fontUtils';
 
 export type ThemedTextProps = TextProps & {
   lightColor?: string;
@@ -13,9 +14,33 @@ export function ThemedText({
   lightColor,
   darkColor,
   type = 'default',
+  children,
   ...rest
 }: ThemedTextProps) {
   const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
+  
+  // Get appropriate font for Sinhala text based on type
+  const textContent = typeof children === 'string' ? children : '';
+  let fontWeight: 'normal' | 'medium' | 'semibold' | 'bold' | 'extrabold' = 'normal';
+  
+  switch (type) {
+    case 'title':
+      fontWeight = 'bold';
+      break;
+    case 'subtitle':
+      fontWeight = 'semibold';
+      break;
+    case 'defaultSemiBold':
+      fontWeight = 'semibold';
+      break;
+    case 'link':
+      fontWeight = 'medium';
+      break;
+    default:
+      fontWeight = 'normal';
+  }
+  
+  const sinhalaFontStyle = getFontStyle(textContent, fontWeight);
 
   return (
     <Text
@@ -26,10 +51,13 @@ export function ThemedText({
         type === 'defaultSemiBold' ? styles.defaultSemiBold : undefined,
         type === 'subtitle' ? styles.subtitle : undefined,
         type === 'link' ? styles.link : undefined,
+        sinhalaFontStyle,
         style,
       ]}
       {...rest}
-    />
+    >
+      {children}
+    </Text>
   );
 }
 

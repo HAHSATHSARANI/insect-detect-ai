@@ -40,7 +40,7 @@ export default function RegisterScreen() {
           >
             {/* Header */}
             <View style={styles.header}>
-              <ThemedText style={styles.title}>
+              <ThemedText style={styles.title} type="title">
                 {t('auth.register')}
               </ThemedText>
             </View>
@@ -95,7 +95,7 @@ export default function RegisterScreen() {
                 onPress={handleRegister}
                 activeOpacity={0.8}
               >
-                <ThemedText style={styles.buttonText}>
+                <ThemedText style={styles.buttonText} type="defaultSemiBold">
                   {t('auth.register')}
                 </ThemedText>
               </TouchableOpacity>
