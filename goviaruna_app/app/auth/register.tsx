@@ -1,17 +1,33 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ScrollView, Text } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useTranslation } from 'react-i18next';
 import { StatusBar } from 'expo-status-bar';
-import { LinearGradient } from 'expo-linear-gradient';
-import { ThemedText } from '@/components/ThemedText';
+import { Fonts } from '@/constants/Fonts';
+import { Feather } from '@expo/vector-icons'; 
+
+const REGISTER_CONTENT = {
+  title: 'ලියාපදිංචි වන්න',
+  subtitle: 'කරුණාකර ලියාපදිංචි වීමට විස්තර ඇතුළත් කරන්න',
+  name: 'නම',
+  district: 'දිස්ත්‍රික්කය',
+  landSize: 'බිම් ප්‍රමාණය (පර්චස්)*',
+  email: 'විද්‍යුත් තැපෑල',
+  password: 'මුරපදය',
+  confirmPassword: 'මුරපදය තහවුරු කරන්න',
+  registerButton: 'ලියාපදිංචි වන්න',
+  loginPrompt: 'දැනටමත් ගිණුමක් තිබේද? ',
+  loginLink: 'ඇතුල් වන්න',
+};
 
 export default function RegisterScreen() {
-  const { t } = useTranslation();
   const router = useRouter();
+  const [name, setName] = useState('');
+  const [district, setDistrict] = useState('');
+  const [landSize, setLandSize] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const handleRegister = () => {
     // TODO: Implement actual registration logic
@@ -24,97 +40,93 @@ export default function RegisterScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar style="light" />
-      
-      <LinearGradient
-        colors={['#2D5016', '#4A7C23']}
-        style={styles.background}
+      <StatusBar style="dark" />
+      <KeyboardAvoidingView 
+        style={styles.keyboardAvoidingView}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <KeyboardAvoidingView 
-          style={styles.keyboardAvoidingView}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
         >
-          <ScrollView 
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-          >
-            {/* Header */}
-            <View style={styles.header}>
-              <ThemedText style={styles.title} type="title">
-                {t('auth.register')}
-              </ThemedText>
-            </View>
+          <View style={styles.header}>
+            <Text style={styles.title}>{REGISTER_CONTENT.title}</Text>
+            <Text style={styles.subtitle}>{REGISTER_CONTENT.subtitle}</Text>
+          </View>
 
-            {/* Form */}
-            <View style={styles.formContainer}>
-              {/* Email Input */}
-              <View style={styles.inputContainer}>
-                <TextInput
-                  style={styles.input}
-                  placeholder={t('auth.email')}
-                  placeholderTextColor="#666"
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-              </View>
-
-              {/* Password Input */}
-              <View style={styles.inputContainer}>
-                <TextInput
-                  style={styles.input}
-                  placeholder={t('auth.password')}
-                  placeholderTextColor="#666"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-              </View>
-
-              {/* Confirm Password Input */}
-              <View style={styles.inputContainer}>
-                <TextInput
-                  style={styles.input}
-                  placeholder={t('auth.confirmPassword')}
-                  placeholderTextColor="#666"
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  secureTextEntry
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-              </View>
-
-              {/* Register Button */}
-              <TouchableOpacity 
-                style={styles.registerButton}
-                onPress={handleRegister}
-                activeOpacity={0.8}
-              >
-                <ThemedText style={styles.buttonText} type="defaultSemiBold">
-                  {t('auth.register')}
-                </ThemedText>
+          <View style={styles.formContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder={REGISTER_CONTENT.name}
+              placeholderTextColor="#999"
+              value={name}
+              onChangeText={setName}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder={REGISTER_CONTENT.district}
+              placeholderTextColor="#999"
+              value={district}
+              onChangeText={setDistrict}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder={REGISTER_CONTENT.landSize}
+              placeholderTextColor="#999"
+              value={landSize}
+              onChangeText={setLandSize}
+              keyboardType="numeric"
+            />
+            <TextInput
+              style={styles.input}
+              placeholder={REGISTER_CONTENT.email}
+              placeholderTextColor="#999"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={styles.inputPassword}
+                placeholder={REGISTER_CONTENT.password}
+                placeholderTextColor="#999"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!isPasswordVisible}
+                autoCapitalize="none"
+              />
+              <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)} style={styles.eyeIcon}>
+                 <Feather name={isPasswordVisible ? "eye-off" : "eye"} size={22} color="#888" />
               </TouchableOpacity>
-
-              {/* Login Link */}
-              <View style={styles.loginContainer}>
-                <ThemedText style={styles.loginText}>
-                  Already have an account?{' '}
-                </ThemedText>
-                <TouchableOpacity onPress={handleLogin}>
-                  <ThemedText style={styles.loginLink}>
-                    {t('auth.login')}
-                  </ThemedText>
-                </TouchableOpacity>
-              </View>
             </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </LinearGradient>
+            <TextInput
+              style={styles.input}
+              placeholder={REGISTER_CONTENT.confirmPassword}
+              placeholderTextColor="#999"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry
+              autoCapitalize="none"
+            />
+
+            <TouchableOpacity 
+              style={styles.registerButton}
+              onPress={handleRegister}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.buttonText}>{REGISTER_CONTENT.registerButton}</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.loginContainer}>
+            <Text style={styles.loginText}>{REGISTER_CONTENT.loginPrompt}</Text>
+            <TouchableOpacity onPress={handleLogin}>
+              <Text style={styles.loginLink}>{REGISTER_CONTENT.loginLink}</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -122,9 +134,7 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  background: {
-    flex: 1,
+    backgroundColor: '#FFFFFF',
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -132,52 +142,67 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
-    paddingHorizontal: 40,
+    paddingHorizontal: 30,
+    paddingVertical: 40,
   },
   header: {
-    alignItems: 'center',
-    marginBottom: 60,
+    alignItems: 'flex-start',
+    marginBottom: 30,
   },
   title: {
+    ...Fonts.styles.bold,
     fontSize: 32,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    textAlign: 'center',
+    color: '#222222',
+    marginBottom: 8,
+  },
+  subtitle: {
+    ...Fonts.styles.regular,
+    fontSize: 16,
+    color: '#666666',
   },
   formContainer: {
     width: '100%',
   },
-  inputContainer: {
-    marginBottom: 20,
-  },
   input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    ...Fonts.styles.regular,
+    backgroundColor: '#F7F7F7',
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 18,
     borderRadius: 12,
     fontSize: 16,
     color: '#333',
+    marginBottom: 15,
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F7F7F7',
+    borderRadius: 12,
+    marginBottom: 15,
+  },
+  inputPassword: {
+    ...Fonts.styles.regular,
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    fontSize: 16,
+    color: '#333',
+  },
+  eyeIcon: {
+    padding: 15,
   },
   registerButton: {
-    backgroundColor: '#FFFFFF',
-    paddingVertical: 16,
+    backgroundColor: '#3A8A55',
+    paddingVertical: 18,
     borderRadius: 12,
     alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 30,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 8,
+    marginTop: 15,
+    marginBottom: 25,
   },
   buttonText: {
+    ...Fonts.styles.semiBold,
     fontSize: 18,
-    fontWeight: '600',
-    color: '#2D5016',
+    color: '#FFFFFF',
   },
   loginContainer: {
     flexDirection: 'row',
@@ -185,12 +210,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loginText: {
-    color: '#E8F5E8',
-    fontSize: 16,
+    ...Fonts.styles.regular,
+    fontSize: 15,
+    color: '#666666',
   },
   loginLink: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+    ...Fonts.styles.semiBold,
+    fontSize: 15,
+    color: '#3A8A55',
   },
 });

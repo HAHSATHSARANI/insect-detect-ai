@@ -17,11 +17,11 @@ export default function OnboardingScreen() {
   const router = useRouter();
 
   const handleNext = () => {
-    router.push('/language');
+    router.push('/auth/register');
   };
 
   const handleSkip = () => {
-    router.push('/language');
+    router.push('/auth/register');
   };
 
   return (
