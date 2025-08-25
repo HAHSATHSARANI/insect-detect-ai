@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Text, Image, TouchableOpacity } from 'react-native';
 import { Fonts } from '@/constants/Fonts';
+import { useRouter } from 'expo-router';
 
 export type InsectCardProps = {
   imageSource: any;
@@ -12,9 +13,18 @@ export type InsectCardProps = {
 
 const InsectCard: React.FC<InsectCardProps> = ({ imageSource, title, subtitle, tag, onPress }) => {
   const isHarmful = tag === 'Harmful';
+  const router = useRouter();
+
+  const handlePress = () => {
+    if (onPress) {
+      onPress();
+    } else {
+      router.push('/insect-details');
+    }
+  };
 
   return (
-    <TouchableOpacity style={styles.cardContainer} onPress={onPress} activeOpacity={0.8}>
+    <TouchableOpacity style={styles.cardContainer} onPress={handlePress} activeOpacity={0.8}>
       <Image source={imageSource} style={styles.image} />
       <View style={styles.textContainer}>
         <Text style={styles.title}>{title}</Text>

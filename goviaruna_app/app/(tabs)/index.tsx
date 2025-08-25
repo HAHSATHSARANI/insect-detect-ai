@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Fonts } from '@/constants/Fonts';
 import { Feather } from '@expo/vector-icons';
 import InsectCard from '@/components/InsectCard';
+import { useRouter } from 'expo-router';
 
 const HOME_CONTENT = {
   welcome: 'ආයුබෝවන්',
@@ -30,6 +31,7 @@ const INSECT_DATA = [
 ];
 
 export default function HomeScreen() {
+  const router = useRouter();
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
@@ -56,7 +58,7 @@ export default function HomeScreen() {
 
         {/* Action Cards */}
         <View style={styles.actionCardContainer}>
-          <TouchableOpacity style={styles.actionCard}>
+          <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/camera')}>
             <Feather name="camera" size={28} color="#3A8A55" />
             <Text style={styles.actionText}>{HOME_CONTENT.detectAction}</Text>
           </TouchableOpacity>

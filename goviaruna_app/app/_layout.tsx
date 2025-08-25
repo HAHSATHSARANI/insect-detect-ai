@@ -37,6 +37,8 @@ export default function RootLayout() {
           <Stack.Screen name="auth/reset-password" options={{ headerShown: false }} />
           <Stack.Screen name="auth/reset-password-2" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="insect-details" options={{ headerShown: false }} />
+          <Stack.Screen name="camera" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="auto" />
