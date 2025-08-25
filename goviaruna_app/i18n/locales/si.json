@@ -33,6 +33,12 @@
     "profile": "පැතිකඩ",
     "search": "සොයන්න"
   },
+  "collection": {
+    "add": "එකතුවක් එක් කරන්න",
+    "empty_title": "ඔබට එකතුවක් නැත.",
+    "empty_subtitle": "ඔබේ කෘමියා එකතු කරන්න",
+    "add_insect": "කෘමියා එකතු කරන්න"
+  },
   "common": {
     "continue": "ඉදිරියට",
     "back": "ආපසු",

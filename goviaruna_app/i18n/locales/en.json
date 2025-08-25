@@ -33,6 +33,12 @@
     "profile": "Profile",
     "search": "Search"
   },
+  "collection": {
+    "add": "Add Collection",
+    "empty_title": "You don't have a collection.",
+    "empty_subtitle": "Add your insect",
+    "add_insect": "Add Insect"
+  },
   "common": {
     "continue": "Continue",
     "back": "Back",

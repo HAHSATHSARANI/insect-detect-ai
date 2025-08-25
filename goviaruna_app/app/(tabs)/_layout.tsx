@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
     backgroundColor: TAB_BAR_BACKGROUND,
     borderTopWidth: 0,
     height: 90,
-    paddingBottom: 10, // Adjusted for consistent vertical alignment
+    paddingBottom: 10,
     paddingTop: 10,
     alignItems: 'center',
     justifyContent: 'center',
