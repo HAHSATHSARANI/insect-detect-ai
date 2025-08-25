@@ -9,8 +9,13 @@ import { ThemedText } from '@/components/ThemedText';
 const { width, height } = Dimensions.get('window');
 
 export default function WelcomeScreen() {
-  const { t } = useTranslation();
+  const { t, ready } = useTranslation();
   const router = useRouter();
+
+  // Fallback text if translation is not ready
+  const getText = (key: string, fallback: string) => {
+    return ready ? t(key) : fallback;
+  };
 
   const handleGetStarted = () => {
     router.push('/onboarding');
@@ -48,10 +53,10 @@ export default function WelcomeScreen() {
           {/* Text content */}
           <View style={styles.textContainer}>
             <ThemedText style={styles.title}>
-              {t('welcome.title')}
+              {getText('welcome.title', 'ගොවි අරුණ')}
             </ThemedText>
             <ThemedText style={styles.subtitle}>
-              {t('welcome.subtitle')}
+              {getText('welcome.subtitle', 'ශ්‍රී ලංකාවේ වී කෙතෙන් හදනා ගන්නා')}
             </ThemedText>
           </View>
         </View>
@@ -64,7 +69,7 @@ export default function WelcomeScreen() {
             activeOpacity={0.8}
           >
             <ThemedText style={styles.buttonText}>
-              {t('welcome.button')}
+              {getText('welcome.button', 'ඉදිරියට යන්න')}
             </ThemedText>
           </TouchableOpacity>
         </View>

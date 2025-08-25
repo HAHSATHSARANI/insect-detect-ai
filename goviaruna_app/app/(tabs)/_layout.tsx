@@ -11,7 +11,12 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const { t } = useTranslation();
+  const { t, ready } = useTranslation();
+
+  // Fallback labels if translation is not ready
+  const getTitle = (key: string, fallback: string) => {
+    return ready ? t(key) : fallback;
+  };
 
   return (
     <Tabs
@@ -31,28 +36,28 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: t('tabs.home'),
+          title: getTitle('tabs.home', 'Home'),
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="collection"
         options={{
-          title: t('tabs.collection'),
+          title: getTitle('tabs.collection', 'Collection'),
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="folder.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="search"
         options={{
-          title: t('tabs.search'),
+          title: getTitle('tabs.search', 'Search'),
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="magnifyingglass" color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: t('tabs.profile'),
+          title: getTitle('tabs.profile', 'Profile'),
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
         }}
       />
