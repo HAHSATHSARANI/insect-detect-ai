@@ -22,8 +22,8 @@ export default function VerifyScreen() {
   const inputRefs = useRef<(TextInput | null)[]>([]);
 
   const handleVerify = () => {
-    // TODO: Implement actual verification logic
-    router.push('/(tabs)');
+    // Navigate to language selection screen as requested
+    router.push('/language');
   };
 
   const handleResendCode = () => {

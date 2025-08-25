@@ -1,83 +1,70 @@
-import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { StatusBar } from 'expo-status-bar';
-import { LinearGradient } from 'expo-linear-gradient';
-import { ThemedText } from '@/components/ThemedText';
+import { Fonts } from '@/constants/Fonts';
 
-const { width, height } = Dimensions.get('window');
+const LANG_CONTENT = {
+  title: 'ගොවි අරුණ',
+  subtitle: 'ඔබේ භාෂාව තෝරන්න',
+  sinhala: 'සිංහල',
+  english: 'English',
+  startButton: 'ආරම්භ කරන්න',
+};
 
 export default function LanguageSelectionScreen() {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const router = useRouter();
+  const [selectedLang, setSelectedLang] = useState(i18n.language);
 
-  const handleLanguageSelect = async (language: string) => {
-    await i18n.changeLanguage(language);
-    router.push('/auth/login');
+  const handleLanguageSelect = (language: string) => {
+    setSelectedLang(language);
+  };
+  
+  const handleStart = async () => {
+    await i18n.changeLanguage(selectedLang);
+    router.push('/(tabs)'); // Navigate to the main app tabs
   };
 
   return (
     <View style={styles.container}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       
-      <LinearGradient
-        colors={['#2D5016', '#4A7C23']}
-        style={styles.background}
+      <View style={styles.header}>
+        <Text style={styles.title}>{LANG_CONTENT.title}</Text>
+        <Text style={styles.subtitle}>{LANG_CONTENT.subtitle}</Text>
+      </View>
+
+      <View style={styles.buttonGroup}>
+        <TouchableOpacity 
+          style={[styles.languageButton, selectedLang === 'si' && styles.selectedButton]}
+          onPress={() => handleLanguageSelect('si')}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.languageText, selectedLang === 'si' && styles.selectedText]}>
+            {LANG_CONTENT.sinhala}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.languageButton, selectedLang === 'en' && styles.selectedButton]}
+          onPress={() => handleLanguageSelect('en')}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.languageText, selectedLang === 'en' && styles.selectedText]}>
+            {LANG_CONTENT.english}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <TouchableOpacity 
+        style={styles.startButton}
+        onPress={handleStart}
+        activeOpacity={0.8}
       >
-        <View style={styles.content}>
-          {/* Title */}
-          <View style={styles.titleContainer}>
-            <ThemedText style={styles.title} type="title">
-              {t('language.selectLanguage')}
-            </ThemedText>
-          </View>
-
-          {/* Language options */}
-          <View style={styles.languageContainer}>
-            {/* Sinhala Option */}
-            <TouchableOpacity 
-              style={styles.languageButton}
-              onPress={() => handleLanguageSelect('si')}
-              activeOpacity={0.8}
-            >
-              <View style={styles.languageContent}>
-                <ThemedText style={styles.languageText} type="defaultSemiBold">
-                  සිංහල
-                </ThemedText>
-                <ThemedText style={styles.languageSubtext}>
-                  Sinhala
-                </ThemedText>
-              </View>
-            </TouchableOpacity>
-
-            {/* English Option */}
-            <TouchableOpacity 
-              style={styles.languageButton}
-              onPress={() => handleLanguageSelect('en')}
-              activeOpacity={0.8}
-            >
-              <View style={styles.languageContent}>
-                <ThemedText style={styles.languageText} type="defaultSemiBold">
-                  English
-                </ThemedText>
-                <ThemedText style={styles.languageSubtext}>
-                  English
-                </ThemedText>
-              </View>
-            </TouchableOpacity>
-          </View>
-
-          {/* App logo/illustration */}
-          <View style={styles.logoContainer}>
-            <View style={styles.logoPlaceholder}>
-              <ThemedText style={styles.logoText} type="title">
-                ගොවි අරුණ
-              </ThemedText>
-            </View>
-          </View>
-        </View>
-      </LinearGradient>
+        <Text style={styles.startButtonText}>{LANG_CONTENT.startButton}</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -85,68 +72,63 @@ export default function LanguageSelectionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  background: {
-    flex: 1,
-  },
-  content: {
-    flex: 1,
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 40,
+    paddingHorizontal: 30,
   },
-  titleContainer: {
-    marginBottom: 60,
+  header: {
+    alignItems: 'center',
+    marginBottom: 50,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    textAlign: 'center',
+    ...Fonts.styles.bold,
+    fontSize: 36,
+    color: '#222222',
+    marginBottom: 12,
   },
-  languageContainer: {
+  subtitle: {
+    ...Fonts.styles.regular,
+    fontSize: 18,
+    color: '#666666',
+  },
+  buttonGroup: {
     width: '100%',
-    marginBottom: 60,
+    marginBottom: 40,
   },
   languageButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    paddingVertical: 20,
-    paddingHorizontal: 30,
-    borderRadius: 15,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 8,
-  },
-  languageContent: {
+    backgroundColor: '#E8F5E9',
+    paddingVertical: 18,
+    borderRadius: 12,
     alignItems: 'center',
+    marginBottom: 20,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  selectedButton: {
+    borderColor: '#3A8A55',
+    backgroundColor: '#E8F5E9',
   },
   languageText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2D5016',
-    marginBottom: 4,
+    ...Fonts.styles.semiBold,
+    fontSize: 18,
+    color: '#333333',
   },
-  languageSubtext: {
-    fontSize: 16,
-    color: '#4A7C23',
-    opacity: 0.8,
+  selectedText: {
+    color: '#3A8A55',
   },
-  logoContainer: {
+  startButton: {
+    backgroundColor: '#3A8A55',
+    width: '100%',
+    paddingVertical: 18,
+    borderRadius: 12,
     alignItems: 'center',
+    position: 'absolute',
+    bottom: 50,
   },
-  logoPlaceholder: {
-    padding: 20,
-  },
-  logoText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: 'rgba(255, 255, 255, 0.7)',
-    textAlign: 'center',
+  startButtonText: {
+    ...Fonts.styles.semiBold,
+    fontSize: 18,
+    color: '#FFFFFF',
   },
 });
