@@ -6,19 +6,21 @@ import { Fonts } from '@/constants/Fonts';
 
 const RESET_PASSWORD_CONTENT = {
   title: 'මුරපදය යළි පිහිටුවන්න',
-  subtitle: 'ඔබගේ විද්‍යුත් තැපැල් ලිපිනය ඇතුළත් කරන්න, එවිට ඔබගේ මුරපදය නැවත සැකසීමට අපි ඔබට සත්‍යාපන කේතයක් එවන්නෙමු.',
-  inputPlaceholder: 'දුරකථන අංකය',
-  submitButton: 'ඉදිරිපත් කරන්න',
+  subtitle: 'ආරක්ෂක අවශ්‍යතා සපුරාලන නව මුරපදයක් ඇතුළත් කරන්න',
+  newPassword: 'නව මුරපදය',
+  confirmNewPassword: 'නව මුරපදයක් සකසන්න',
+  submitButton: 'මුරපදය යළි පිහිටුවන්න',
   backToLogin: 'නැවත පිවිසීමට',
 };
 
-export default function ResetPasswordScreen() {
+export default function ResetPasswordScreen2() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
   const handleResetPassword = () => {
-    // Navigate to the next step of the reset password flow
-    router.push('/auth/reset-password-2');
+    // TODO: Implement actual password update logic
+    router.push('/auth/login'); // Navigate to login on success
   };
 
   return (
@@ -40,11 +42,20 @@ export default function ResetPasswordScreen() {
           <View style={styles.formContainer}>
             <TextInput
               style={styles.input}
-              placeholder={RESET_PASSWORD_CONTENT.inputPlaceholder}
+              placeholder={RESET_PASSWORD_CONTENT.newPassword}
               placeholderTextColor="#999"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
+              value={newPassword}
+              onChangeText={setNewPassword}
+              secureTextEntry
+              autoCapitalize="none"
+            />
+            <TextInput
+              style={styles.input}
+              placeholder={RESET_PASSWORD_CONTENT.confirmNewPassword}
+              placeholderTextColor="#999"
+              value={confirmNewPassword}
+              onChangeText={setConfirmNewPassword}
+              secureTextEntry
               autoCapitalize="none"
             />
             <TouchableOpacity 
@@ -56,7 +67,7 @@ export default function ResetPasswordScreen() {
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity onPress={() => router.push('/auth/login')} style={styles.backButton}>
             <Text style={styles.backButtonText}>{RESET_PASSWORD_CONTENT.backToLogin}</Text>
           </TouchableOpacity>
         </ScrollView>
@@ -109,13 +120,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     fontSize: 16,
     color: '#333',
-    marginBottom: 25,
+    marginBottom: 20,
   },
   submitButton: {
     backgroundColor: '#3A8A55',
     paddingVertical: 18,
     borderRadius: 12,
     alignItems: 'center',
+    marginTop: 10,
   },
   buttonText: {
     ...Fonts.styles.semiBold,

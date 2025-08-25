@@ -25,8 +25,8 @@ export default function LoginScreen() {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const handleLogin = () => {
-    // TODO: Implement actual login logic
-    router.push('/(tabs)');
+    // Navigate to verify screen as requested
+    router.push('/auth/verify');
   };
   
   const handleRegister = () => {
