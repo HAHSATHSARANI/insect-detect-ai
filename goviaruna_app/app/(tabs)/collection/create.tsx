@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, TextInput, ScrollView, Text } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, TextInput, ScrollView, Text, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Fonts } from '@/constants/Fonts';
 import { Feather } from '@expo/vector-icons';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
+import { api } from '@/services/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Sinhala locale config for the calendar
 LocaleConfig.locales['si'] = {
@@ -28,10 +30,57 @@ export default function CreateCollectionScreen() {
   const [collectionName, setCollectionName] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [loading, setLoading] = useState(false);
 
-  const handleCreate = () => {
-    // TODO: Implement collection creation logic
-    router.back();
+  const handleCreate = async () => {
+    if (!collectionName) {
+      Alert.alert('දෝෂයකි', 'කරුණාකර එකතුවේ නම ඇතුලත් කරන්න');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Assuming we store user info in AsyncStorage after login. 
+      // For now, we need to fetch the userId. 
+      // TODO: Implement proper user context/storage.
+      // Using a temporary method to get userId if stored, or prompt login.
+      
+      // For demonstration, let's assume we can get the user from a previous login response 
+      // that we stored. If not, we might need to fetch /me or decode token.
+      // Let's try to get it from AsyncStorage 'user' key if we saved it.
+      
+      // NOTE: In a real app, use a Context or State Management for the User.
+      // I'll add a placeholder here. The backend requires userId.
+      
+      // TEMPORARY: Fetch user from local storage (assuming we saved it on login)
+      const userJson = await AsyncStorage.getItem('user');
+      let userId = '';
+      if (userJson) {
+        const user = JSON.parse(userJson);
+        userId = user.id;
+      } else {
+        // Fallback or error if not logged in
+        // For testing without login persistence, we might fail.
+        Alert.alert('දෝෂයකි', 'කරුණාකර නැවත ඇතුල් වන්න');
+        setLoading(false);
+        return;
+      }
+
+      await api.collections.create({
+        name: collectionName,
+        userId: userId,
+        description: selectedDate ? `Created for date: ${selectedDate}` : ''
+      });
+      
+      Alert.alert('සාර්ථකයි', 'එකතුව සාර්ථකව නිර්මාණය කරන ලදී', [
+        { text: 'OK', onPress: () => router.back() }
+      ]);
+    } catch (error: any) {
+      console.error('Create collection error:', error);
+      Alert.alert('අසාර්ථකයි', 'එකතුව නිර්මාණය කිරීම අසාර්ථක විය');
+    } finally {
+      setLoading(false);
+    }
   };
   
   const handleMonthChange = (add: boolean) => {
@@ -89,11 +138,16 @@ export default function CreateCollectionScreen() {
           <Text style={[styles.buttonText, styles.cancelButtonText]}>{CREATE_COLLECTION_CONTENT.cancelButton}</Text>
         </TouchableOpacity>
         <TouchableOpacity 
-          style={[styles.button, styles.createButton]}
+          style={[styles.button, styles.createButton, loading && { opacity: 0.7 }]}
           onPress={handleCreate}
           activeOpacity={0.8}
+          disabled={loading}
         >
-          <Text style={styles.buttonText}>{CREATE_COLLECTION_CONTENT.createButton}</Text>
+          {loading ? (
+             <ActivityIndicator color="#FFFFFF" size="small" />
+          ) : (
+             <Text style={styles.buttonText}>{CREATE_COLLECTION_CONTENT.createButton}</Text>
+          )}
         </TouchableOpacity>
       </View>
     </View>

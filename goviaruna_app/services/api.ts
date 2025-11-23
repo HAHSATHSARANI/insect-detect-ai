@@ -93,6 +93,46 @@ export const api = {
         throw error;
       }
     }
+  },
+  collections: {
+    create: async (collectionData: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/collections`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(collectionData),
+        });
+        if (!response.ok) throw new Error('Failed to create collection');
+        return await response.json();
+      } catch (error) { throw error; }
+    },
+    getUserCollections: async (userId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/collections/user/${userId}`);
+        if (!response.ok) throw new Error('Failed to fetch collections');
+        return await response.json();
+      } catch (error) { throw error; }
+    },
+    addItem: async (collectionId: string, itemData: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/collections/${collectionId}/items`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(itemData),
+        });
+        if (!response.ok) throw new Error('Failed to add item');
+        return await response.json();
+      } catch (error) { throw error; }
+    },
+    delete: async (collectionId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/collections/${collectionId}`, {
+          method: 'DELETE',
+        });
+        if (!response.ok) throw new Error('Failed to delete collection');
+        return await response.json();
+      } catch (error) { throw error; }
+    }
   }
 };
 

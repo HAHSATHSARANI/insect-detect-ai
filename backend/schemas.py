@@ -93,3 +93,41 @@ class ChatMessageCreate(BaseModel):
     username: str
     content: str
     sender: str = "user"  # Default to user for the test page
+
+
+# --------------------------
+# Collection Models
+# --------------------------
+class CollectionItemBase(BaseModel):
+    insectName: str
+    scientificName: str
+    imageUrl: Optional[str] = None
+    confidence: float = 0
+    category: str
+    dateAdded: datetime = datetime.utcnow()
+    
+    # Store enough info to display in list or navigate to details
+    insectData: Optional[dict] = None # Snapshot of the insect details at time of capture
+
+
+class CollectionItemCreate(CollectionItemBase):
+    pass
+
+
+class CollectionBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+    userId: str # The user who owns this collection
+
+
+class CollectionCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    userId: str
+
+
+class Collection(CollectionBase):
+    id: str
+    items: List[CollectionItemBase] = []
+    createdAt: datetime
+    updatedAt: datetime

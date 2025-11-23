@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import auth, auth_users, admins, insects, chats, general
+from routers import auth, auth_users, admins, insects, chats, general, collections
 
 app = FastAPI(title="Farmer Admin API")
 
@@ -23,5 +23,6 @@ app.include_router(auth.router)
 app.include_router(auth_users.router)
 app.include_router(admins.router)
 app.include_router(insects.router)
+app.include_router(collections.router)
 app.include_router(chats.router)
 app.include_router(general.router)

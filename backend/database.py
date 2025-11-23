@@ -25,5 +25,6 @@ db = client["FarmerDB"]
 admins_collection = db["admins"]
 users_collection = db["users"]
 insects_collection = db["insects"]
+collections_collection = db["collections"]
 chat_collection = db["chats"]  # Collection for all chat messages
 fs = GridFS(db)

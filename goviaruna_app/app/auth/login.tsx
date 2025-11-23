@@ -7,6 +7,8 @@ import { BackButton } from '@/components/BackButton';
 import { Feather, AntDesign } from '@expo/vector-icons';
 import { api } from '@/services/api';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const LOGIN_CONTENT = {
   title: 'ඇතුල් වන්න',
   subtitle: 'සාදරයෙන් පිළිගනිමු! කරුණාකර ඔබගේ විස්තර ඇතුළත් කරන්න.',
@@ -40,8 +42,10 @@ export default function LoginScreen() {
         password
       });
       
-      // TODO: Store token (result.token) and user info (result.user) securely
-      // For now we just navigate
+      // Store user info
+      await AsyncStorage.setItem('user', JSON.stringify(result.user));
+      await AsyncStorage.setItem('token', result.token);
+      
       console.log('Login success:', result);
       
       // Navigate to tabs
