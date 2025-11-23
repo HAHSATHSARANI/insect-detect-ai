@@ -11,9 +11,17 @@ import {
     Box,
     Tabs,
     Tab,
-    IconButton
+    IconButton,
+    Grid,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Paper
 } from '@mui/material';
-import { Add as AddIcon, Edit as EditIcon, Image as ImageIcon, Close as CloseIcon } from '@mui/icons-material';
+import { Add as AddIcon, Edit as EditIcon, Image as ImageIcon, Close as CloseIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import React from 'react';
 import axios from 'axios';
 
@@ -31,6 +39,29 @@ export const InsectModal = ({ open, onClose, onSave, isEditing, formData, setFor
 
     const handleTabChange = (event, newValue) => {
         setActiveTab(newValue);
+    };
+
+    const handleAddChemicalRow = () => {
+        setFormData(prev => ({
+            ...prev,
+            chemicalControlTable: [
+                ...(prev.chemicalControlTable || []),
+                { name: '', concentration: '', amount: '' }
+            ]
+        }));
+    };
+
+    const handleRemoveChemicalRow = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            chemicalControlTable: prev.chemicalControlTable.filter((_, i) => i !== index)
+        }));
+    };
+
+    const handleChemicalChange = (index, field, value) => {
+        const newTable = [...(formData.chemicalControlTable || [])];
+        newTable[index] = { ...newTable[index], [field]: value };
+        setFormData({ ...formData, chemicalControlTable: newTable });
     };
 
     const handleSave = async () => {
@@ -56,73 +87,92 @@ export const InsectModal = ({ open, onClose, onSave, isEditing, formData, setFor
     };
 
     return (
-        <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+        <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
             <DialogTitle sx={{ fontWeight: 700 }}>
                 {isEditing ? 'Edit Species' : 'Add New Species'}
             </DialogTitle>
             <DialogContent>
                 <Tabs value={activeTab} onChange={handleTabChange} sx={{ borderBottom: 1, borderColor: 'divider' }}>
                     <Tab label="Basic Info" />
-                    <Tab label="Effect & Damage" />
+                    <Tab label="Life Cycle & Damage" />
                     <Tab label="Control Methods" />
                 </Tabs>
 
                 <TabPanel value={activeTab} index={0}>
-                    <TextField
-                        label="Common Name"
-                        fullWidth
-                        required
-                        margin="normal"
-                        value={formData.name || ''}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    />
-                    <TextField
-                        label="Scientific Name"
-                        fullWidth
-                        required
-                        margin="normal"
-                        value={formData.scientificName || ''}
-                        onChange={(e) => setFormData({ ...formData, scientificName: e.target.value })}
-                    />
-                    <TextField
-                        label="Species"
-                        fullWidth
-                        margin="normal"
-                        value={formData.species || ''}
-                        onChange={(e) => setFormData({ ...formData, species: e.target.value })}
-                    />
-                    <TextField
-                        select
-                        label="Classification"
-                        fullWidth
-                        margin="normal"
-                        value={formData.classification || 'Harmful'}
-                        onChange={(e) => setFormData({ ...formData, classification: e.target.value })}
-                    >
-                        <MenuItem value="Harmful">Harmful</MenuItem>
-                        <MenuItem value="Beneficial">Beneficial</MenuItem>
-                    </TextField>
-                    <TextField
-                        select
-                        label="Category"
-                        fullWidth
-                        margin="normal"
-                        value={formData.category || ''}
-                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    >
-                        {['Butterfly', 'Beetle', 'Dragonfly', 'Ant', 'Bee', 'Other'].map((option) => (
-                            <MenuItem key={option} value={option}>{option}</MenuItem>
-                        ))}
-                    </TextField>
-                    <TextField
-                        label="Description"
-                        fullWidth
-                        multiline
-                        rows={3}
-                        margin="normal"
-                        value={formData.description || ''}
-                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    />
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} md={6}>
+                            <TextField
+                                label="Common Name"
+                                fullWidth
+                                required
+                                margin="normal"
+                                value={formData.name || ''}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            />
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                             <TextField
+                                label="Scientific Name (Short)"
+                                fullWidth
+                                required
+                                margin="normal"
+                                value={formData.scientificName || ''}
+                                onChange={(e) => setFormData({ ...formData, scientificName: e.target.value })}
+                            />
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                            <TextField
+                                label="Full Scientific Name"
+                                fullWidth
+                                margin="normal"
+                                value={formData.scientificNameFull || ''}
+                                onChange={(e) => setFormData({ ...formData, scientificNameFull: e.target.value })}
+                            />
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                            <TextField
+                                label="Family"
+                                fullWidth
+                                margin="normal"
+                                value={formData.family || ''}
+                                onChange={(e) => setFormData({ ...formData, family: e.target.value })}
+                            />
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                            <TextField
+                                select
+                                label="Category"
+                                fullWidth
+                                margin="normal"
+                                value={formData.category || 'Harmful'}
+                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                            >
+                                <MenuItem value="Harmful">Harmful</MenuItem>
+                                <MenuItem value="Beneficial">Beneficial</MenuItem>
+                            </TextField>
+                        </Grid>
+                         <Grid item xs={12} md={6}>
+                            <TextField
+                                label="Confidence (%)"
+                                type="number"
+                                fullWidth
+                                margin="normal"
+                                value={formData.confidence || 95}
+                                onChange={(e) => setFormData({ ...formData, confidence: parseFloat(e.target.value) })}
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                label="Description"
+                                fullWidth
+                                multiline
+                                rows={3}
+                                margin="normal"
+                                value={formData.description || ''}
+                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                            />
+                        </Grid>
+                    </Grid>
 
                     {/* Image Upload Section */}
                     <Typography variant="subtitle1" sx={{ mt: 3, mb: 1, fontWeight: 600 }}>
@@ -175,151 +225,222 @@ export const InsectModal = ({ open, onClose, onSave, isEditing, formData, setFor
                                 }}
                             />
                         </Button>
-                        <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 1 }}>
-                            Upload images (JPG, PNG, etc.)
-                        </Typography>
                     </Box>
 
                     {/* Display Existing Images */}
                     {formData.images && formData.images.length > 0 && (
-                        <Box sx={{ mt: 2 }}>
-                            <Typography variant="body2" sx={{ mb: 1, fontWeight: 600 }}>
-                                Uploaded Images ({formData.images.length})
-                            </Typography>
-                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                                {formData.images.map((imageId, index) => (
-                                    <Box
-                                        key={index}
+                        <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                            {formData.images.map((imageId, index) => (
+                                <Box
+                                    key={index}
+                                    sx={{
+                                        position: 'relative',
+                                        width: 120,
+                                        height: 120,
+                                        borderRadius: 2,
+                                        overflow: 'hidden',
+                                        border: '2px solid',
+                                        borderColor: 'divider'
+                                    }}
+                                >
+                                    <img
+                                        src={`${API_BASE}/insects/image/${imageId}`}
+                                        alt={`Preview ${index + 1}`}
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover'
+                                        }}
+                                    />
+                                    <IconButton
+                                        size="small"
                                         sx={{
-                                            position: 'relative',
-                                            width: 120,
-                                            height: 120,
-                                            borderRadius: 2,
-                                            overflow: 'hidden',
-                                            border: '2px solid',
-                                            borderColor: 'divider'
+                                            position: 'absolute',
+                                            top: 2,
+                                            right: 2,
+                                            bgcolor: 'error.main',
+                                            color: 'white',
+                                            width: 24,
+                                            height: 24,
+                                            '&:hover': {
+                                                bgcolor: 'error.dark'
+                                            }
+                                        }}
+                                        onClick={() => {
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                images: prev.images.filter((_, i) => i !== index)
+                                            }));
                                         }}
                                     >
-                                        <img
-                                            src={`${API_BASE}/insects/image/${imageId}`}
-                                            alt={`Preview ${index + 1}`}
-                                            style={{
-                                                width: '100%',
-                                                height: '100%',
-                                                objectFit: 'cover'
-                                            }}
-                                        />
-                                        <IconButton
-                                            size="small"
-                                            sx={{
-                                                position: 'absolute',
-                                                top: 2,
-                                                right: 2,
-                                                bgcolor: 'error.main',
-                                                color: 'white',
-                                                width: 24,
-                                                height: 24,
-                                                '&:hover': {
-                                                    bgcolor: 'error.dark'
-                                                }
-                                            }}
-                                            onClick={() => {
-                                                setFormData(prev => ({
-                                                    ...prev,
-                                                    images: prev.images.filter((_, i) => i !== index)
-                                                }));
-                                            }}
-                                        >
-                                            <CloseIcon sx={{ fontSize: 16 }} />
-                                        </IconButton>
-                                    </Box>
-                                ))}
-                            </Box>
+                                        <CloseIcon sx={{ fontSize: 16 }} />
+                                    </IconButton>
+                                </Box>
+                            ))}
                         </Box>
                     )}
                 </TabPanel>
 
                 <TabPanel value={activeTab} index={1}>
+                    <Typography variant="h6" gutterBottom>Life Cycle</Typography>
                     <TextField
-                        label="Damage Description"
+                        label="Life Cycle Title"
+                        fullWidth
+                        margin="normal"
+                        value={formData.lifeCycleTitle || 'ජීවන චක්‍රය'}
+                        onChange={(e) => setFormData({ ...formData, lifeCycleTitle: e.target.value })}
+                    />
+                    <TextField
+                        label="Life Cycle Content"
                         fullWidth
                         multiline
                         rows={4}
                         margin="normal"
-                        value={formData.damage || ''}
-                        onChange={(e) => setFormData({ ...formData, damage: e.target.value })}
+                        value={formData.lifeCycleContent || ''}
+                        onChange={(e) => setFormData({ ...formData, lifeCycleContent: e.target.value })}
                     />
-                    <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>Damage Images (One URL per line)</Typography>
+
+                    <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>Damage & Symptoms</Typography>
                     <TextField
+                        label="Damage Symptoms Title"
+                        fullWidth
+                        margin="normal"
+                        value={formData.damageSymptomsTitle || 'හානි ලක්ෂණ'}
+                        onChange={(e) => setFormData({ ...formData, damageSymptomsTitle: e.target.value })}
+                    />
+                    <TextField
+                        label="Damage Symptoms Content"
                         fullWidth
                         multiline
-                        rows={3}
-                        value={Array.isArray(formData.damageImages) ? formData.damageImages.join('\n') : ''}
-                        onChange={(e) => {
-                            const urls = e.target.value.split('\n').filter(url => url.trim());
-                            setFormData({ ...formData, damageImages: urls });
-                        }}
-                        placeholder="Enter damage image URLs, one per line"
+                        rows={4}
+                        margin="normal"
+                        value={formData.damageSymptomsContent || ''}
+                        onChange={(e) => setFormData({ ...formData, damageSymptomsContent: e.target.value })}
                     />
                 </TabPanel>
 
                 <TabPanel value={activeTab} index={2}>
-                    <Typography variant="subtitle1" gutterBottom>Chemical Control</Typography>
+                    <Typography variant="h6" gutterBottom>Control Methods</Typography>
                     <TextField
-                        label="Insecticide Name"
+                        label="Control Methods Title"
                         fullWidth
                         margin="normal"
-                        value={formData.insecticide?.name || ''}
-                        onChange={(e) => setFormData({
-                            ...formData,
-                            insecticide: { ...formData.insecticide, name: e.target.value }
-                        })}
+                        value={formData.controlMethodsTitle || 'පාලන ක්‍රම'}
+                        onChange={(e) => setFormData({ ...formData, controlMethodsTitle: e.target.value })}
                     />
-                    <TextField
-                        label="Concentration"
+                     <TextField
+                        label="General Control Content"
                         fullWidth
+                        multiline
+                        rows={3}
                         margin="normal"
-                        value={formData.insecticide?.concentration || ''}
-                        onChange={(e) => setFormData({
-                            ...formData,
-                            insecticide: { ...formData.insecticide, concentration: e.target.value }
-                        })}
-                    />
-                    <TextField
-                        label="Amount per Hectare"
-                        fullWidth
-                        margin="normal"
-                        value={formData.insecticide?.amountPerHectare || ''}
-                        onChange={(e) => setFormData({
-                            ...formData,
-                            insecticide: { ...formData.insecticide, amountPerHectare: e.target.value }
-                        })}
+                        value={formData.controlMethodsContent || ''}
+                        onChange={(e) => setFormData({ ...formData, controlMethodsContent: e.target.value })}
                     />
 
-                    <Typography variant="subtitle1" sx={{ mt: 3 }}>Other Control Methods</Typography>
+                    <Grid container spacing={2} sx={{ mt: 1 }}>
+                         <Grid item xs={12}>
+                            <TextField
+                                label="Resistant Rice Varieties"
+                                fullWidth
+                                multiline
+                                rows={2}
+                                margin="normal"
+                                value={formData.resistantVarieties || ''}
+                                onChange={(e) => setFormData({ ...formData, resistantVarieties: e.target.value })}
+                                helperText="Enter resistant varieties details"
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                             <TextField
+                                label="Pesticide Instructions"
+                                fullWidth
+                                multiline
+                                rows={2}
+                                margin="normal"
+                                value={formData.pesticideInstructions || ''}
+                                onChange={(e) => setFormData({ ...formData, pesticideInstructions: e.target.value })}
+                                helperText="General instructions for pesticide application"
+                            />
+                        </Grid>
+                         <Grid item xs={12}>
+                             <TextField
+                                label="Eco-Friendly Solutions"
+                                fullWidth
+                                multiline
+                                rows={2}
+                                margin="normal"
+                                value={formData.ecoFriendlySolutions || ''}
+                                onChange={(e) => setFormData({ ...formData, ecoFriendlySolutions: e.target.value })}
+                            />
+                        </Grid>
+                    </Grid>
+
+                    <Typography variant="h6" sx={{ mt: 4, mb: 2 }}>Chemical Control Table</Typography>
+                    <TableContainer component={Paper} variant="outlined">
+                        <Table size="small">
+                            <TableHead>
+                                <TableRow sx={{ bgcolor: 'action.hover' }}>
+                                    <TableCell>Chemical Name</TableCell>
+                                    <TableCell>Concentration</TableCell>
+                                    <TableCell>Amount per Hectare</TableCell>
+                                    <TableCell align="right">Action</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {(formData.chemicalControlTable || []).map((row, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell>
+                                            <TextField
+                                                variant="standard"
+                                                fullWidth
+                                                value={row.name}
+                                                onChange={(e) => handleChemicalChange(index, 'name', e.target.value)}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <TextField
+                                                variant="standard"
+                                                fullWidth
+                                                value={row.concentration}
+                                                onChange={(e) => handleChemicalChange(index, 'concentration', e.target.value)}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <TextField
+                                                variant="standard"
+                                                fullWidth
+                                                value={row.amount}
+                                                onChange={(e) => handleChemicalChange(index, 'amount', e.target.value)}
+                                            />
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            <IconButton size="small" color="error" onClick={() => handleRemoveChemicalRow(index)}>
+                                                <DeleteIcon />
+                                            </IconButton>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                                <TableRow>
+                                    <TableCell colSpan={4} align="center">
+                                        <Button startIcon={<AddIcon />} onClick={handleAddChemicalRow}>
+                                            Add Chemical
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+
                     <TextField
-                        label="Resistant Rice Varieties (One per line)"
+                        label="Additional Notes"
                         fullWidth
                         multiline
-                        rows={2}
+                        rows={3}
                         margin="normal"
-                        value={Array.isArray(formData.resistantVarieties) ? formData.resistantVarieties.join('\n') : ''}
-                        onChange={(e) => setFormData({
-                            ...formData,
-                            resistantVarieties: e.target.value.split('\n').filter(v => v.trim())
-                        })}
-                    />
-                    <TextField
-                        label="Eco-friendly Solutions (One per line)"
-                        fullWidth
-                        multiline
-                        rows={2}
-                        margin="normal"
-                        value={Array.isArray(formData.ecoFriendlySolutions) ? formData.ecoFriendlySolutions.join('\n') : ''}
-                        onChange={(e) => setFormData({
-                            ...formData,
-                            ecoFriendlySolutions: e.target.value.split('\n').filter(v => v.trim())
-                        })}
+                        sx={{ mt: 3 }}
+                        value={formData.additionalNotes || ''}
+                        onChange={(e) => setFormData({ ...formData, additionalNotes: e.target.value })}
                     />
                 </TabPanel>
             </DialogContent>

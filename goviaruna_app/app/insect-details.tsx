@@ -3,7 +3,7 @@ import { View, StyleSheet, ScrollView, Text, Image, TouchableOpacity, Dimensions
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Fonts } from '@/constants/Fonts';
-import { Feather } from '@expo/vector-icons';
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import PagerView from 'react-native-pager-view';
 import { api } from '@/services/api';
 
@@ -165,12 +165,124 @@ export default function InsectDetailsScreen() {
             </ScrollView>
           </View>
 
-          {/* Accordion Sections */}
+          {/* Accordion Sections - REPLACED WITH DETAILED CARDS */}
           <View style={styles.section}>
-            <Accordion title={details.lifeCycleTitle} content={details.lifeCycleContent} />
-            <Accordion title={details.damageSymptomsTitle} content={details.damageSymptomsContent} />
-            <Accordion title={details.controlMethodsTitle} content={details.controlMethodsContent} />
+            <Text style={styles.sectionTitle}>{details.lifeCycleTitle}</Text>
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                 <View style={[styles.iconCircle, { backgroundColor: '#059669' }]}>
+                   <MaterialCommunityIcons name="leaf-circle" size={24} color="white" />
+                 </View>
+                 <Text style={styles.cardTitle}>{details.lifeCycleTitle}</Text>
+                 <Feather name="volume-2" size={20} color="#059669" />
+              </View>
+              <Text style={styles.cardContent}>{details.lifeCycleContent}</Text>
+            </View>
           </View>
+
+           {/* Damage / Symptoms */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{details.damageSymptomsTitle}</Text>
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                 <View style={[styles.iconCircle, { backgroundColor: '#059669' }]}>
+                   <MaterialCommunityIcons name="alert-decagram" size={24} color="white" />
+                 </View>
+                 <Text style={styles.cardTitle}>හානිය</Text>
+                 <Feather name="volume-2" size={20} color="#059669" />
+              </View>
+              <Text style={styles.cardContent}>{details.damageSymptomsContent}</Text>
+            </View>
+          </View>
+
+          {/* Control Methods - Expanded */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeaderRow}>
+                <Text style={styles.sectionTitle}>{details.controlMethodsTitle}</Text>
+                <View style={styles.sectionHeaderUnderline} />
+            </View>
+            
+            <Text style={styles.introText}>{details.controlMethodsContent}</Text>
+
+            {/* Resistant Varieties */}
+            {details.resistantVarieties && (
+              <View style={styles.infoCard}>
+                <View style={[styles.iconCircle, { backgroundColor: '#059669' }]}>
+                  <MaterialCommunityIcons name="sprout" size={24} color="white" />
+                </View>
+                <View style={styles.infoCardContent}>
+                   <Text style={styles.infoCardTitle}>ප්‍රතිරෝධී වී ප්‍රභේද</Text>
+                   <Text style={styles.infoCardText}>{details.resistantVarieties}</Text>
+                </View>
+              </View>
+            )}
+
+             {/* Pesticide Instructions */}
+            {details.pesticideInstructions && (
+              <View style={styles.infoCard}>
+                <View style={[styles.iconCircle, { backgroundColor: '#059669' }]}>
+                  <MaterialCommunityIcons name="bottle-tonic-skull" size={24} color="white" />
+                </View>
+                <View style={styles.infoCardContent}>
+                   <Text style={styles.infoCardTitle}>කෘමි නාශක</Text>
+                   <Text style={styles.infoCardText}>{details.pesticideInstructions}</Text>
+                </View>
+              </View>
+            )}
+            
+             {/* Eco Friendly */}
+            {details.ecoFriendlySolutions && (
+              <View style={styles.infoCard}>
+                <View style={[styles.iconCircle, { backgroundColor: '#059669' }]}>
+                  <MaterialCommunityIcons name="ladybug" size={24} color="white" />
+                </View>
+                <View style={styles.infoCardContent}>
+                   <Text style={styles.infoCardTitle}>පරිසර හිතකාමී විසඳුම්</Text>
+                   <Text style={styles.infoCardText}>{details.ecoFriendlySolutions}</Text>
+                </View>
+              </View>
+            )}
+          </View>
+
+          {/* Chemical Control Table */}
+          {details.chemicalControlTable && (
+             <View style={styles.section}>
+                <View style={styles.sectionHeaderRow}>
+                    <Text style={styles.sectionTitle}>කෘමි නාශක</Text>
+                    <Feather name="volume-2" size={20} color="#059669" style={{marginLeft: 10}} />
+                </View>
+                
+                <View style={styles.tableContainer}>
+                    <View style={styles.tableHeader}>
+                        <Text style={[styles.tableHeaderText, { flex: 2 }]}>කෘමිනාශකයේ පොදු නාමය</Text>
+                        <Text style={[styles.tableHeaderText, { flex: 1 }]}>සාන්ද්‍රණය</Text>
+                        <Text style={[styles.tableHeaderText, { flex: 1.5 }]}>හෙක්ටයාරයකට යෙදිය යුතු ප්‍රමාණය</Text>
+                    </View>
+                    {details.chemicalControlTable.map((row: any, index: number) => (
+                         <View key={index} style={[styles.tableRow, index % 2 === 0 ? styles.tableRowEven : {}]}>
+                            <Text style={[styles.tableCell, { flex: 2, fontWeight: 'bold' }]}>{row.name}</Text>
+                            <Text style={[styles.tableCell, { flex: 1 }]}>{row.concentration || '-'}</Text>
+                            <Text style={[styles.tableCell, { flex: 1.5 }]}>{row.amount || '-'}</Text>
+                         </View>
+                    ))}
+                </View>
+             </View>
+          )}
+
+           {/* Additional Notes */}
+           {details.additionalNotes && (
+              <View style={[styles.infoCard, { marginTop: 20, backgroundColor: '#F0FDF4' }]}>
+                <View style={[styles.iconCircle, { backgroundColor: '#059669' }]}>
+                  <MaterialCommunityIcons name="information-variant" size={24} color="white" />
+                </View>
+                <View style={styles.infoCardContent}>
+                   <Text style={styles.infoCardTitle}>වෙනත් කරුණු</Text>
+                   <Feather name="volume-2" size={18} color="#059669" style={{position: 'absolute', right: 0, top: 0}} />
+                   <Text style={styles.infoCardText}>{details.additionalNotes}</Text>
+                </View>
+              </View>
+            )}
+
         </View>
       </ScrollView>
     </View>
@@ -248,5 +360,116 @@ const styles = StyleSheet.create({
   },
   beneficialText: {
     color: '#059669',
+  },
+  card: {
+    backgroundColor: '#F8F9FA',
+    borderRadius: 15,
+    padding: 15,
+    marginBottom: 15,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  cardTitle: {
+    flex: 1,
+    ...Fonts.styles.bold,
+    fontSize: 18,
+    color: '#333',
+    marginLeft: 10,
+  },
+  cardContent: {
+    ...Fonts.styles.regular,
+    fontSize: 15,
+    color: '#555',
+    lineHeight: 24,
+  },
+  iconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sectionHeaderRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 15,
+  },
+  sectionHeaderUnderline: {
+      height: 3,
+      backgroundColor: '#059669',
+      width: 40,
+      borderRadius: 2,
+      marginTop: 5,
+      marginLeft: 10
+  },
+  introText: {
+      ...Fonts.styles.regular,
+      fontSize: 15,
+      color: '#555',
+      lineHeight: 24,
+      marginBottom: 20,
+  },
+  infoCard: {
+      flexDirection: 'row',
+      backgroundColor: '#F8F9FA',
+      borderRadius: 15,
+      padding: 15,
+      marginBottom: 15,
+      alignItems: 'flex-start',
+  },
+  infoCardContent: {
+      flex: 1,
+      marginLeft: 15,
+  },
+  infoCardTitle: {
+      ...Fonts.styles.bold,
+      fontSize: 16,
+      color: '#333',
+      marginBottom: 5,
+  },
+  infoCardText: {
+      ...Fonts.styles.regular,
+      fontSize: 14,
+      color: '#666',
+      lineHeight: 22,
+  },
+  tableContainer: {
+      backgroundColor: '#FFFFFF',
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: '#E5E7EB',
+      overflow: 'hidden',
+      marginTop: 10,
+  },
+  tableHeader: {
+      flexDirection: 'row',
+      backgroundColor: '#F9FAFB',
+      paddingVertical: 12,
+      paddingHorizontal: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: '#E5E7EB',
+  },
+  tableHeaderText: {
+      ...Fonts.styles.bold,
+      fontSize: 12,
+      color: '#374151',
+  },
+  tableRow: {
+      flexDirection: 'row',
+      paddingVertical: 12,
+      paddingHorizontal: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: '#F3F4F6',
+  },
+  tableRowEven: {
+      backgroundColor: '#F9FAFB',
+  },
+  tableCell: {
+      ...Fonts.styles.regular,
+      fontSize: 12,
+      color: '#4B5563',
   },
 });

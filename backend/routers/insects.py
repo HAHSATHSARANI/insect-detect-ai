@@ -3,8 +3,12 @@ from fastapi.responses import StreamingResponse
 from typing import List
 from bson import ObjectId
 import io
-import random
-import time
+import os
+import json
+import cv2
+import numpy as np
+from PIL import Image
+from ultralytics import YOLO
 from database import insects_collection, fs
 from schemas import Insect
 from utils import insect_helper
@@ -13,6 +17,30 @@ router = APIRouter(
     prefix="/api/insects",
     tags=["Insects"]
 )
+
+# --------------------------
+# YOLO Model Setup
+# --------------------------
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "detect_model", "best.pt")
+INSECT_DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "detect_model", "insects.json")
+
+try:
+    model = YOLO(MODEL_PATH)
+    print(f"✓ YOLO model loaded from {MODEL_PATH}")
+except Exception as e:
+    print(f"⚠ Failed to load YOLO model: {e}")
+    model = None
+
+# Load insect data map
+try:
+    with open(INSECT_DATA_PATH, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+        insect_data_map = {item['key']: item for item in data['insects']}
+    print(f"✓ Insect data loaded from {INSECT_DATA_PATH}")
+except Exception as e:
+    print(f"⚠ Failed to load insect data: {e}")
+    insect_data_map = {}
+
 
 @router.get("", response_model=List[Insect])
 def get_insects():
@@ -69,48 +97,88 @@ def get_insect_image(file_id: str):
 
 
 # --------------------------
-# Classification (Mock)
+# Real Classification with YOLO
 # --------------------------
 @router.post("/classify")
 async def classify_insect(file: UploadFile = File(...)):
-    # Simulate processing time
-    time.sleep(1.5)
+    if not model:
+        raise HTTPException(status_code=500, detail="Model not loaded")
+
+    # Read image
+    contents = await file.read()
+    np_array = np.frombuffer(contents, np.uint8)
+    image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
     
-    # Mock response data
-    # In a real app, this would call an ML model
-    mock_results = [
-        {
-            "name": "දුඹුරු පැළ කීඩෑවා",
-            "scientificName": "(Brown PlantBopper)",
-            "scientificNameFull": "Nilaparvata lugens",
-            "family": "Delphacidae",
-            "description": "දුඹුරු පැළ කීඩෑවා (BPH) යනු වී වගාවට බරපතල හානි සිදු කරන කෘමියෙකි. මොවුන් ශාකයේ යුෂ උරා බොන අතර වෛරස් රෝග පැතිරවිය හැක.",
-            "category": "Harmful",
-            "confidence": 96.5,
-            "lifeCycleTitle": "ජීවන චක්‍රය",
-            "lifeCycleContent": "බිත්තර දින 7-9 කින් පිපිරේ. පැටවුන් දින 13-15 කින් වැඩෙයි.",
-            "damageSymptomsTitle": "හානි ලක්ෂණ",
-            "damageSymptomsContent": "පැළ කහ වීම සහ 'හොපර් පිළිස්සීම' ලෙස හැඳින්වෙන වියළී යාම.",
-            "controlMethodsTitle": "පාලන ක්‍රම",
-            "controlMethodsContent": "ප්‍රතිරෝධී වී ප්‍රභේද භාවිතය, ස්වභාවික සතුරන් රැකගැනීම (මකුළුවන්)."
-        },
-        {
-            "name": "ලේඩි බග් මකුණා",
-            "scientificName": "(Ladybird Beetle)",
-            "scientificNameFull": "Coccinellidae",
-            "family": "Coccinellidae",
-            "description": "ලේඩි බග් මකුණා ගොවියාට හිතකර කෘමියෙකි. මොවුන් හානිකර කෘමීන් (කුඩිත්තන් වැනි) ආහාරයට ගනී.",
-            "category": "Beneficial",
-            "confidence": 98.2,
-            "lifeCycleTitle": "ජීවන චක්‍රය",
-            "lifeCycleContent": "බිත්තර, කීටයා, පිලාවා සහ වැඩුණු සතා ලෙස අවධි හතරකි.",
-            "damageSymptomsTitle": "ප්‍රතිලාභ",
-            "damageSymptomsContent": "කුඩිත්තන්, පිටි මකුණන් වැනි හානිකර කෘමීන් පාලනය කරයි.",
-            "controlMethodsTitle": "සංරක්ෂණය",
-            "controlMethodsContent": "රසායනික කෘමිනාශක භාවිතය අවම කිරීම මගින් මොවුන් ආරක්ෂා කරගත හැක."
+    # Run inference
+    results = model.predict(source=image)
+    
+    # Get detected classes
+    detected_indices = results[0].boxes.cls.unique().cpu().numpy().astype(int)
+    detected_names = [model.names[i] for i in detected_indices]
+    
+    if not detected_names:
+        # Fallback if nothing detected or return specific response
+        # For now, returning a 'not found' like structure or the first insect in DB as fallback if strictly needed
+        # But correctly we should inform the user.
+        # Let's return a generic "Unknown" response to handle gracefully in frontend
+        return {
+            "name": "හඳුනාගත නොහැක",
+            "scientificName": "(Unknown)",
+            "description": "කරුණාකර පැහැදිලි රූපයක් ලබා දෙන්න.",
+            "category": "Unknown",
+            "confidence": 0
         }
-    ]
+
+    # Take the first detected insect (highest confidence usually first if sorted, or just pick first)
+    # In a real scenario, we might handle multiple detections. Here we pick the primary one.
+    primary_insect_key = detected_names[0]
+    insect_info = insect_data_map.get(primary_insect_key)
     
-    # Randomly select one for demo purposes
-    result = random.choice(mock_results)
+    if not insect_info:
+         return {
+            "name": primary_insect_key,
+            "scientificName": "(Unknown Data)",
+            "description": "Data not found for this insect key.",
+            "category": "Unknown",
+            "confidence": 0
+        }
+
+    # Map JSON data to our Schema format
+    # Note: The JSON file has different keys (english_name, sinhala_name, status, reduce_method)
+    # We need to adapt them to our frontend expected structure (name, description, category, etc.)
+    
+    # Construct control methods text from reduce_method list
+    control_methods_text = "\n".join([f"- {method}" for method in insect_info.get('reduce_method', [])])
+
+    # Determine category (Harmful/Beneficial)
+    # JSON uses 'Harmful' / 'Non-Harmful'. Map Non-Harmful -> Beneficial
+    category = "Beneficial" if insect_info.get('status') == 'Non-Harmful' else "Harmful"
+
+    result = {
+        "name": insect_info.get('sinhala_name', insect_info.get('english_name')),
+        "scientificName": f"({insect_info.get('english_name')})",
+        "scientificNameFull": insect_info.get('key'), # Using key as placeholder or if we had full name
+        "family": "", # Not in JSON, leave empty
+        "description": insect_info.get('description'),
+        "category": category,
+        "confidence": float(results[0].boxes.conf[0]) * 100 if len(results[0].boxes.conf) > 0 else 90.0,
+        
+        # Map detailed fields
+        "lifeCycleTitle": "ජීවන චක්‍රය",
+        "lifeCycleContent": "තොරතුරු ඇතුළත් කර නොමැත.", # Default as JSON doesn't have this specific field
+        
+        "damageSymptomsTitle": "හානි ලක්ෂණ",
+        "damageSymptomsContent": insect_info.get('description'), # Re-using description as it often contains damage info
+        
+        "controlMethodsTitle": "පාලන ක්‍රම",
+        "controlMethodsContent": control_methods_text,
+        
+        # Structured fields (can be parsed from text if needed, or left empty for general view)
+        "resistantVarieties": "",
+        "pesticideInstructions": "",
+        "ecoFriendlySolutions": "",
+        "chemicalControlTable": [],
+        "additionalNotes": ""
+    }
+    
     return result

@@ -25,15 +25,38 @@ class Admin(AdminBase):
     id: str
 
 
+# Updated Insect Model to match requirement 3
 class Insect(BaseModel):
     id: Optional[str] = None
     name: str
     scientificName: str
+    scientificNameFull: Optional[str] = None
+    family: Optional[str] = None
     description: str
     image: Optional[str] = None
     images: Optional[List[str]] = []
     category: str
     confidence: float = 95
+    
+    # New detailed fields
+    lifeCycleTitle: str = "ජීවන චක්‍රය"
+    lifeCycleContent: Optional[str] = None
+    
+    damageSymptomsTitle: str = "හානි ලක්ෂණ"
+    damageSymptomsContent: Optional[str] = None
+    
+    controlMethodsTitle: str = "පාලන ක්‍රම"
+    controlMethodsContent: Optional[str] = None
+    
+    # Pesticide / Control details
+    resistantVarieties: Optional[str] = None  # ප්‍රතිරෝධී වී ප්‍රභේද
+    pesticideInstructions: Optional[str] = None  # කෘමිනාශක
+    ecoFriendlySolutions: Optional[str] = None  # පරිසර හිතකාමී විසඳුම්
+    
+    # Chemical control specifics
+    chemicalControlTable: Optional[List[dict]] = None # e.g., [{name, concentration, amount}]
+    
+    additionalNotes: Optional[str] = None # වෙනත් කරුණු
 
 
 class AuthModel(BaseModel):

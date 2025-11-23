@@ -38,26 +38,29 @@ export const SpeciesDatabase = ({
                             setInsectFormData({
                                 name: '',
                                 scientificName: '',
-                                species: '',
-                                classification: 'Beneficial',
+                                scientificNameFull: '',
+                                family: '',
                                 description: '',
-                                images: [],   // <- initialized for GridFS IDs
-                                lifeCycle: '',
-                                characteristics: '',
-                                spread: '',
-                                effectImages: [],
-                                damage: '',
-                                controlMethods: {
-                                    targetedInsects: [],
-                                    controlInfo: '',
-                                    resistantVarieties: '',
-                                    chemicalMethod: '',
-                                    ecoFriendlySolutions: '',
-                                    insecticides: [{ name: '', concentration: '', amountPerHectare: '' }],
-                                    other: ''
-                                },
-                                category: 'Butterfly',
-                                confidence: 95
+                                images: [],
+                                category: 'Harmful',
+                                confidence: 95,
+                                
+                                lifeCycleTitle: 'ජීවන චක්‍රය',
+                                lifeCycleContent: '',
+                                
+                                damageSymptomsTitle: 'හානි ලක්ෂණ',
+                                damageSymptomsContent: '',
+                                
+                                controlMethodsTitle: 'පාලන ක්‍රම',
+                                controlMethodsContent: '',
+                                
+                                resistantVarieties: '',
+                                pesticideInstructions: '',
+                                ecoFriendlySolutions: '',
+                                
+                                chemicalControlTable: [],
+                                
+                                additionalNotes: ''
                             });
                             setShowInsectModal(true);
                         }}
