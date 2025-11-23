@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Image } from 'react-native';
 import { CameraView, useCameraPermissions, CameraType, FlashMode } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
@@ -61,6 +62,25 @@ export default function CameraScreen() {
     }
   };
 
+  const pickImage = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: false,
+        quality: 1,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        router.push({
+          pathname: '/insect-details',
+          params: { imageUri: result.assets[0].uri }
+        });
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
@@ -89,7 +109,7 @@ export default function CameraScreen() {
         <View style={styles.bottomControls}>
            <Text style={styles.instructionText}>{CAMERA_CONTENT.instruction}</Text>
            <View style={styles.bottomButtons}>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={pickImage}>
                 <Feather name="image" size={32} color="#FFFFFF" />
               </TouchableOpacity>
               <TouchableOpacity style={styles.shutterButton} onPress={takePicture}>
