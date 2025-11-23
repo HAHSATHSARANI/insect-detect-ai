@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { StatusBar } from 'expo-status-bar';
 import { Fonts } from '@/constants/Fonts';
+import { BackButton } from '@/components/BackButton';
 
 const LANG_CONTENT = {
   title: 'ගොවි අරුණ',
@@ -30,6 +31,7 @@ export default function LanguageSelectionScreen() {
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
+      <BackButton />
       
       <View style={styles.header}>
         <Text style={styles.title}>{LANG_CONTENT.title}</Text>

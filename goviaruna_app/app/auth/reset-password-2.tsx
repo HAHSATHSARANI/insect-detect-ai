@@ -3,6 +3,7 @@ import { View, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Pl
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Fonts } from '@/constants/Fonts';
+import { BackButton } from '@/components/BackButton';
 
 const RESET_PASSWORD_CONTENT = {
   title: 'මුරපදය යළි පිහිටුවන්න',
@@ -26,6 +27,7 @@ export default function ResetPasswordScreen2() {
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
+      <BackButton />
       <KeyboardAvoidingView 
         style={styles.keyboardAvoidingView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

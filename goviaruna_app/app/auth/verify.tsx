@@ -3,6 +3,7 @@ import { View, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Pl
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Fonts } from '@/constants/Fonts';
+import { BackButton } from '@/components/BackButton';
 import { AntDesign } from '@expo/vector-icons';
 
 const VERIFY_CONTENT = {
@@ -52,6 +53,7 @@ export default function VerifyScreen() {
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
+      <BackButton />
       <KeyboardAvoidingView 
         style={styles.keyboardAvoidingView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

@@ -3,6 +3,7 @@ import { View, StyleSheet, Dimensions, TouchableOpacity, Text, Image } from 'rea
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Fonts } from '@/constants/Fonts';
+import { BackButton } from '@/components/BackButton';
 
 const { width, height } = Dimensions.get('window');
 
@@ -27,6 +28,7 @@ export default function OnboardingScreen() {
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
+      <BackButton color="#FFFFFF" />
       
       <View style={styles.topContainer}>
         <TouchableOpacity onPress={handleSkip} style={styles.skipButtonContainer}>

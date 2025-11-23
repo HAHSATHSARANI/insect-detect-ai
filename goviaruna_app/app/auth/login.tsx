@@ -3,6 +3,7 @@ import { View, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Pl
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Fonts } from '@/constants/Fonts';
+import { BackButton } from '@/components/BackButton';
 import { Feather, AntDesign } from '@expo/vector-icons';
 
 const LOGIN_CONTENT = {
@@ -40,7 +41,8 @@ export default function LoginScreen() {
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
-      <KeyboardAvoidingView 
+      <BackButton />
+      <KeyboardAvoidingView  
         style={styles.keyboardAvoidingView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
