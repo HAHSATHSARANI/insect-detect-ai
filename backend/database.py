@@ -6,10 +6,10 @@ from gridfs import GridFS
 # --------------------------
 # MongoDB Connection Setup
 # --------------------------
-MONGODB_URI = os.environ.get(
-    "MONGODB_URI",
-    "mongodb+srv://sahandileepa52_db_user:VB26hdtySHLelRwZ@farmer.7y7emts.mongodb.net/?retryWrites=true&w=majority"
-)
+MONGODB_URI = os.environ.get("MONGODB_URI")
+
+if not MONGODB_URI:
+    MONGODB_URI = "mongodb+srv://sahandileepa52_db_user:VB26hdtySHLelRwZ@farmer.7y7emts.mongodb.net/?retryWrites=true&w=majority"
 
 try:
     client = MongoClient(MONGODB_URI, server_api=ServerApi('1'))
