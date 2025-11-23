@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ScrollView, Text, Image } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ScrollView, Text, Image, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Fonts } from '@/constants/Fonts';
 import { BackButton } from '@/components/BackButton';
 import { Feather, AntDesign } from '@expo/vector-icons';
+import { api } from '@/services/api';
 
 const LOGIN_CONTENT = {
   title: 'ඇතුල් වන්න',
@@ -24,10 +25,33 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = () => {
-    // Navigate to verify screen as requested
-    router.push('/auth/verify');
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('දෝෂයකි', 'කරුණාකර විද්‍යුත් තැපෑල සහ මුරපදය ඇතුළත් කරන්න');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const result = await api.auth.login({
+        email: email.toLowerCase().trim(),
+        password
+      });
+      
+      // TODO: Store token (result.token) and user info (result.user) securely
+      // For now we just navigate
+      console.log('Login success:', result);
+      
+      // Navigate to tabs
+      router.replace('/(tabs)'); 
+    } catch (error: any) {
+      console.error('Login error:', error);
+      Alert.alert('ඇතුල් වීම අසාර්ථකයි', error.message || 'කරුණාකර නැවත උත්සාහ කරන්න');
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   const handleRegister = () => {
@@ -85,11 +109,16 @@ export default function LoginScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity 
-              style={styles.loginButton}
+              style={[styles.loginButton, isLoading && styles.disabledButton]}
               onPress={handleLogin}
               activeOpacity={0.8}
+              disabled={isLoading}
             >
-              <Text style={styles.buttonText}>{LOGIN_CONTENT.loginButton}</Text>
+              {isLoading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.buttonText}>{LOGIN_CONTENT.loginButton}</Text>
+              )}
             </TouchableOpacity>
           </View>
           
@@ -194,6 +223,9 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     borderRadius: 12,
     alignItems: 'center',
+  },
+  disabledButton: {
+    opacity: 0.7,
   },
   buttonText: {
     ...Fonts.styles.semiBold,

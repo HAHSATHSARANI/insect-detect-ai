@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ScrollView, Text } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ScrollView, Text, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Fonts } from '@/constants/Fonts';
 import { BackButton } from '@/components/BackButton';
 import { Feather } from '@expo/vector-icons'; 
+import { api } from '@/services/api'; 
 
 const REGISTER_CONTENT = {
   title: 'ලියාපදිංචි වන්න',
@@ -29,10 +30,38 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleRegister = () => {
-    // Navigate to login screen after registration as requested
-    router.push('/auth/login');
+  const handleRegister = async () => {
+    if (!name || !email || !password || !confirmPassword || !landSize) {
+      Alert.alert('දෝෂයකි', 'කරුණාකර සියලුම විස්තර ඇතුළත් කරන්න');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert('දෝෂයකි', 'මුරපද නොගැලපේ');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await api.auth.signup({
+        name,
+        district: district || '',
+        landSize,
+        email: email.toLowerCase().trim(),
+        password
+      });
+
+      Alert.alert('සාර්ථකයි', 'ලියාපදිංචිය සාර්ථකයි. කරුණාකර ඇතුල් වන්න.', [
+        { text: 'OK', onPress: () => router.push('/auth/login') }
+      ]);
+    } catch (error: any) {
+      console.error('Register error:', error);
+      Alert.alert('ලියාපදිංචිය අසාර්ථකයි', error.message || 'කරුණාකර නැවත උත්සාහ කරන්න');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleLogin = () => {
@@ -113,11 +142,16 @@ export default function RegisterScreen() {
             />
 
             <TouchableOpacity 
-              style={styles.registerButton}
+              style={[styles.registerButton, isLoading && styles.disabledButton]}
               onPress={handleRegister}
               activeOpacity={0.8}
+              disabled={isLoading}
             >
-              <Text style={styles.buttonText}>{REGISTER_CONTENT.registerButton}</Text>
+              {isLoading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.buttonText}>{REGISTER_CONTENT.registerButton}</Text>
+              )}
             </TouchableOpacity>
           </View>
 
@@ -200,6 +234,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 15,
     marginBottom: 25,
+  },
+  disabledButton: {
+    opacity: 0.7,
   },
   buttonText: {
     ...Fonts.styles.semiBold,

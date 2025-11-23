@@ -42,6 +42,20 @@ class AuthModel(BaseModel):
     name: Optional[str] = None
 
 
+# Mobile App User Models
+class UserCreate(BaseModel):
+    name: str
+    email: EmailStr
+    password: str
+    district: Optional[str] = None
+    landSize: Optional[str] = None
+
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+
 # Chat Models
 class ChatMessage(BaseModel):
     id: Optional[str] = None

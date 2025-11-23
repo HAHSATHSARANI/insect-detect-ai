@@ -19,6 +19,17 @@ def admin_helper(doc) -> dict:
     }
 
 
+def user_helper(doc) -> dict:
+    return {
+        "id": str(doc["_id"]),
+        "name": doc["name"],
+        "email": doc["email"],
+        "district": doc.get("district", ""),
+        "landSize": doc.get("landSize", ""),
+        "role": "User"
+    }
+
+
 def insect_helper(doc) -> dict:
     return {
         "id": str(doc["_id"]),
