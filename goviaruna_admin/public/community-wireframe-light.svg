@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="800" viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#fafafa" />
+
+  <!-- Left sidebar (contacts) -->
+  <g id="sidebar">
+    <rect x="32" y="40" width="320" height="720" rx="12" fill="#ffffff" stroke="#e0e0e0"/>
+    <!-- Search box -->
+    <rect x="56" y="64" width="272" height="40" rx="8" fill="#f5f5f5" stroke="#e6e6e6"/>
+    <text x="72" y="90" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#9e9e9e">Search messages</text>
+
+    <!-- List items -->
+    <g id="contacts" transform="translate(0,120)">
+      <!-- item 1 -->
+      <rect x="56" y="96" width="272" height="72" rx="8" fill="#ffffff" stroke="#f0f0f0"/>
+      <circle cx="86" cy="132" r="22" fill="#cfd8dc"/>
+      <rect x="116" y="114" width="160" height="12" rx="6" fill="#e0e0e0"/>
+      <rect x="116" y="134" width="120" height="10" rx="5" fill="#f0f0f0"/>
+
+      <!-- item 2 -->
+      <rect x="56" y="176" width="272" height="72" rx="8" fill="#ffffff" stroke="#f0f0f0"/>
+      <circle cx="86" cy="212" r="22" fill="#cfd8dc"/>
+      <rect x="116" y="194" width="160" height="12" rx="6" fill="#e0e0e0"/>
+      <rect x="116" y="214" width="120" height="10" rx="5" fill="#f0f0f0"/>
+
+      <!-- item 3 -->
+      <rect x="56" y="256" width="272" height="72" rx="8" fill="#ffffff" stroke="#f0f0f0"/>
+      <circle cx="86" cy="292" r="22" fill="#cfd8dc"/>
+      <rect x="116" y="274" width="160" height="12" rx="6" fill="#e0e0e0"/>
+      <rect x="116" y="294" width="120" height="10" rx="5" fill="#f0f0f0"/>
+
+      <!-- item 4 -->
+      <rect x="56" y="336" width="272" height="72" rx="8" fill="#ffffff" stroke="#f0f0f0"/>
+      <circle cx="86" cy="372" r="22" fill="#cfd8dc"/>
+      <rect x="116" y="354" width="160" height="12" rx="6" fill="#e0e0e0"/>
+      <rect x="116" y="374" width="120" height="10" rx="5" fill="#f0f0f0"/>
+    </g>
+  </g>
+
+  <!-- Right chat panel -->
+  <g id="chatpanel">
+    <rect x="376" y="40" width="792" height="720" rx="12" fill="#ffffff" stroke="#e0e0e0"/>
+
+    <!-- Chat header -->
+    <rect x="400" y="64" width="744" height="64" rx="8" fill="#f7f7f7" stroke="#ececec"/>
+    <circle cx="436" cy="96" r="20" fill="#cfd8dc"/>
+    <rect x="468" y="86" width="260" height="12" rx="6" fill="#e0e0e0"/>
+    <rect x="468" y="104" width="180" height="10" rx="5" fill="#f0f0f0"/>
+
+    <!-- Messages area background -->
+    <rect x="400" y="140" width="744" height="540" rx="8" fill="#fbfbfb" stroke="#f0f0f0"/>
+
+    <!-- Received message bubble -->
+    <g transform="translate(420,160)">
+      <rect x="0" y="0" width="420" height="54" rx="10" fill="#ffffff" stroke="#e8e8e8"/>
+      <rect x="12" y="12" width="300" height="12" rx="6" fill="#e0e0e0"/>
+      <rect x="12" y="30" width="220" height="10" rx="5" fill="#f0f0f0"/>
+      <text x="0" y="70" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#9e9e9e">11:45 AM</text>
+    </g>
+
+    <!-- Sent message bubble (right-aligned) -->
+    <g transform="translate(548,230)">
+      <rect x="0" y="0" width="420" height="54" rx="10" fill="#e8f5e9" stroke="#dcedc8"/>
+      <rect x="12" y="12" width="300" height="12" rx="6" fill="#a5d6a7"/>
+      <rect x="12" y="30" width="220" height="10" rx="5" fill="#c8e6c9"/>
+      <text x="0" y="70" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#9e9e9e">11:46 AM</text>
+    </g>
+
+    <!-- Message input area -->
+    <rect x="400" y="700" width="744" height="60" rx="8" fill="#f7f7f7" stroke="#ececec"/>
+    <rect x="420" y="716" width="560" height="28" rx="6" fill="#ffffff" stroke="#e6e6e6"/>
+    <rect x="996" y="716" width="96" height="28" rx="6" fill="#4a4eff"/>
+    <text x="1016" y="734" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#ffffff">SEND</text>
+
+    <!-- Top boundary lines for wireframe -->
+    <line x1="376" y1="40" x2="1168" y2="40" stroke="#e0e0e0" stroke-width="1"/>
+  </g>
+
+  <!-- Footer note -->
+  <text x="40" y="780" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#bdbdbd">Wireframe (light theme) — Community messaging UI</text>
+</svg>
