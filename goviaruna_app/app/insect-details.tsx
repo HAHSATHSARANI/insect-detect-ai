@@ -1,47 +1,109 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Text, Image, TouchableOpacity, Dimensions } from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, Text, Image, TouchableOpacity, Dimensions, ActivityIndicator, Alert } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Fonts } from '@/constants/Fonts';
 import { Feather } from '@expo/vector-icons';
 import PagerView from 'react-native-pager-view';
+import { api } from '@/services/api';
 
 const { width, height } = Dimensions.get('window');
 
-const INSECT_DETAILS = {
-  name: 'දුඹුරු පැළ කීඩෑවා',
-  scientificName: '(Brown PlantBopper)',
-  commonName: 'දුඹුරු පැළ කීඩෑවා',
-  scientificNameFull: 'Nilaparvata lugens',
-  family: 'Lamiacese',
-  description: 'දුඹුරු පැළ කීඩෑවා (BPH) යනු සුලභ පළිබෝධකයෙකි. එය වී වගාවට බරපතල හානි සිදු කරයි. මෙම කෘමියා (ගොයම් පලඟැටියා ලෙසද හැඳින්වේ) ශාකයේ යුෂ උරා බොන අතර, එය වෛරස් රෝග පැතිරවිය හැකිය. BPH ආසාදනය පාලනය නොකළහොත් සැලකිය යුතු අස්වැන්නක් අහිමි විය හැකිය.',
-  images: [
-    require('@/assets/images/insect_3.jpg'),
-    require('@/assets/images/insect_3.jpg'),
-    require('@/assets/images/insect_3.jpg'),
-  ],
+// Initial fallback data
+const INITIAL_INSECT_DETAILS = {
+  name: 'විශ්ලේෂණය කරමින්...',
+  scientificName: '(Analyzing...)',
+  commonName: '',
+  scientificNameFull: '...',
+  family: '...',
+  description: 'රූපය විශ්ලේෂණය කරමින් පවතී. කරුණාකර රැඳී සිටින්න.',
+  images: [],
   tabs: ['තොරතුරු', 'හානිය', 'පාලනය'],
   lifeCycleTitle: 'ජීවන චක්‍රය',
-  lifeCycleContent: 'ගැහැණු සතා බිත්තර දමන්නේ කොළ කොපුවල හෝ පත්‍ර තලයේ මැද නාරටිය මතය. බිත්තර දැමීමෙන් පසු දින 7-9 කින් පමණ පිපිරීම සිදුවේ. පැටවුන් දින 13-15 කින් පමණ වැඩෙයි.',
+  lifeCycleContent: '...',
   damageSymptomsTitle: 'හානි ලක්ෂණ',
-  damageSymptomsContent: 'පැළෑටිය කහ වීම, වර්ධනය බාල වීම සහ “හොපර් පිළිස්සීම” ලෙස හැඳින්වෙන වියළී යාමේ රෝග ලක්ෂණ පෙන්නුම් කරයි.',
+  damageSymptomsContent: '...',
   controlMethodsTitle: 'පාලන ක්‍රම',
-  controlMethodsContent: 'ප්‍රතිරෝධී ප්‍රභේද භාවිතා කිරීම, කෘමිනාශක යෙදීම සහ ස්වභාවික සතුරන් දිරිමත් කිරීම වැනි ක්‍රම ඇතුළත් වේ.',
+  controlMethodsContent: '...',
   relatedImagesTitle: 'රූප',
 };
 
 export default function InsectDetailsScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const imageUri = params.imageUri as string;
+  
   const [activeTab, setActiveTab] = useState(0);
+  const [loading, setLoading] = useState(!!imageUri);
+  const [details, setDetails] = useState<any>(imageUri ? INITIAL_INSECT_DETAILS : {
+    name: 'දුඹුරු පැළ කීඩෑවා',
+    scientificName: '(Brown PlantBopper)',
+    commonName: 'දුඹුරු පැළ කීඩෑවා',
+    scientificNameFull: 'Nilaparvata lugens',
+    family: 'Lamiacese',
+    description: 'දුඹුරු පැළ කීඩෑවා (BPH) යනු සුලභ පළිබෝධකයෙකි. එය වී වගාවට බරපතල හානි සිදු කරයි. මෙම කෘමියා (ගොයම් පලඟැටියා ලෙසද හැඳින්වේ) ශාකයේ යුෂ උරා බොන අතර, එය වෛරස් රෝග පැතිරවිය හැකිය. BPH ආසාදනය පාලනය නොකළහොත් සැලකිය යුතු අස්වැන්නක් අහිමි විය හැකිය.',
+    images: [
+      require('@/assets/images/insect_3.jpg'),
+      require('@/assets/images/insect_3.jpg'),
+      require('@/assets/images/insect_3.jpg'),
+    ],
+    tabs: ['තොරතුරු', 'හානිය', 'පාලනය'],
+    lifeCycleTitle: 'ජීවන චක්‍රය',
+    lifeCycleContent: 'ගැහැණු සතා බිත්තර දමන්නේ කොළ කොපුවල හෝ පත්‍ර තලයේ මැද නාරටිය මතය. බිත්තර දැමීමෙන් පසු දින 7-9 කින් පමණ පිපිරීම සිදුවේ. පැටවුන් දින 13-15 කින් පමණ වැඩෙයි.',
+    damageSymptomsTitle: 'හානි ලක්ෂණ',
+    damageSymptomsContent: 'පැළෑටිය කහ වීම, වර්ධනය බාල වීම සහ “හොපර් පිළිස්සීම” ලෙස හැඳින්වෙන වියළී යාමේ රෝග ලක්ෂණ පෙන්නුම් කරයි.',
+    controlMethodsTitle: 'පාලන ක්‍රම',
+    controlMethodsContent: 'ප්‍රතිරෝධී ප්‍රභේද භාවිතා කිරීම, කෘමිනාශක යෙදීම සහ ස්වභාවික සතුරන් දිරිමත් කිරීම වැනි ක්‍රම ඇතුළත් වේ.',
+    relatedImagesTitle: 'රූප',
+  });
+
+  useEffect(() => {
+    if (imageUri) {
+      analyzeImage();
+    }
+  }, [imageUri]);
+
+  const analyzeImage = async () => {
+    try {
+      const result = await api.insects.classify(imageUri);
+      setDetails({
+        ...INITIAL_INSECT_DETAILS,
+        ...result,
+        images: [
+          // Try to use provided images if available, otherwise fallbacks
+          require('@/assets/images/insect_3.jpg'),
+          require('@/assets/images/insect_3.jpg')
+        ] 
+      });
+    } catch (error) {
+      console.error('Analysis failed:', error);
+      Alert.alert('විශ්ලේෂණය අසාර්ථකයි', 'කරුණාකර නැවත උත්සාහ කරන්න');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // If we have a captured image, put it first in the list
+  const displayImages = imageUri 
+    ? [{ uri: imageUri }, ...(details.images || [])]
+    : (details.images || []);
 
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
+      
+      {loading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#3A8A55" />
+          <Text style={styles.loadingText}>රූපය විශ්ලේෂණය කරමින්...</Text>
+        </View>
+      )}
+
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Image Carousel */}
         <View style={styles.imageContainer}>
           <PagerView style={styles.pagerView} initialPage={0}>
-            {INSECT_DETAILS.images.map((img, index) => (
+            {displayImages.map((img: any, index: number) => (
               <View key={index}>
                 <Image source={img} style={styles.image} />
               </View>
@@ -59,22 +121,34 @@ export default function InsectDetailsScreen() {
         {/* Main Content */}
         <View style={styles.contentContainer}>
           <View style={styles.titleContainer}>
-            <Text style={styles.title}>{INSECT_DETAILS.name}</Text>
-            <View style={styles.tagContainer}>
-              <Feather name="alert-triangle" size={16} color="#EF4444" />
-              <Text style={styles.tagText}>හානිකරයි</Text>
+            <Text style={styles.title}>{details.name}</Text>
+            <View style={[
+              styles.tagContainer, 
+              details.category === 'Beneficial' ? styles.beneficialTag : styles.harmfulTag
+            ]}>
+              <Feather 
+                name={details.category === 'Beneficial' ? "check-circle" : "alert-triangle"} 
+                size={16} 
+                color={details.category === 'Beneficial' ? "#059669" : "#EF4444"} 
+              />
+              <Text style={[
+                styles.tagText,
+                details.category === 'Beneficial' ? styles.beneficialText : styles.harmfulText
+              ]}>
+                {details.category === 'Beneficial' ? 'හිතකරයි' : 'හානිකරයි'}
+              </Text>
             </View>
           </View>
-          <Text style={styles.scientificName}>{INSECT_DETAILS.scientificName}</Text>
+          <Text style={styles.scientificName}>{details.scientificName}</Text>
           
-          <Text style={styles.detailText}><Text style={styles.detailLabel}>විද්‍යාත්මක නම :</Text> {INSECT_DETAILS.scientificNameFull}</Text>
-          <Text style={styles.detailText}><Text style={styles.detailLabel}>කුලය :</Text> {INSECT_DETAILS.family}</Text>
+          <Text style={styles.detailText}><Text style={styles.detailLabel}>විද්‍යාත්මක නම :</Text> {details.scientificNameFull}</Text>
+          <Text style={styles.detailText}><Text style={styles.detailLabel}>කුලය :</Text> {details.family}</Text>
           
-          <Text style={styles.description}>{INSECT_DETAILS.description}</Text>
+          <Text style={styles.description}>{details.description}</Text>
 
           {/* Tabs */}
           <View style={styles.tabContainer}>
-            {INSECT_DETAILS.tabs.map((tab, index) => (
+            {details.tabs.map((tab: string, index: number) => (
               <TouchableOpacity key={index} onPress={() => setActiveTab(index)} style={[styles.tab, activeTab === index && styles.activeTab]}>
                 <Text style={[styles.tabText, activeTab === index && styles.activeTabText]}>{tab}</Text>
               </TouchableOpacity>
@@ -83,9 +157,9 @@ export default function InsectDetailsScreen() {
 
           {/* Related Images */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{INSECT_DETAILS.relatedImagesTitle}</Text>
+            <Text style={styles.sectionTitle}>{details.relatedImagesTitle}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {INSECT_DETAILS.images.map((img, index) => (
+              {(details.images || []).map((img: any, index: number) => (
                 <Image key={index} source={img} style={styles.relatedImage} />
               ))}
             </ScrollView>
@@ -93,9 +167,9 @@ export default function InsectDetailsScreen() {
 
           {/* Accordion Sections */}
           <View style={styles.section}>
-            <Accordion title={INSECT_DETAILS.lifeCycleTitle} content={INSECT_DETAILS.lifeCycleContent} />
-            <Accordion title={INSECT_DETAILS.damageSymptomsTitle} content={INSECT_DETAILS.damageSymptomsContent} />
-            <Accordion title={INSECT_DETAILS.controlMethodsTitle} content={INSECT_DETAILS.controlMethodsContent} />
+            <Accordion title={details.lifeCycleTitle} content={details.lifeCycleContent} />
+            <Accordion title={details.damageSymptomsTitle} content={details.damageSymptomsContent} />
+            <Accordion title={details.controlMethodsTitle} content={details.controlMethodsContent} />
           </View>
         </View>
       </ScrollView>
@@ -150,4 +224,29 @@ const styles = StyleSheet.create({
   accordionIcon: { backgroundColor: '#E8F5E9', padding: 12, borderRadius: 25, marginRight: 15 },
   accordionTitle: { flex: 1, ...Fonts.styles.bold, fontSize: 18, color: '#333' },
   accordionContent: { ...Fonts.styles.regular, fontSize: 15, color: '#555', lineHeight: 24, marginTop: 15 },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    zIndex: 1000,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    ...Fonts.styles.semiBold,
+    fontSize: 18,
+    color: '#3A8A55',
+    marginTop: 20,
+  },
+  harmfulTag: {
+    backgroundColor: '#FEE2E2',
+  },
+  beneficialTag: {
+    backgroundColor: '#D1FAE5',
+  },
+  harmfulText: {
+    color: '#EF4444',
+  },
+  beneficialText: {
+    color: '#059669',
+  },
 });

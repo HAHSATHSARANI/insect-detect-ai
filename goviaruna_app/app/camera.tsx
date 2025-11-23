@@ -45,10 +45,19 @@ export default function CameraScreen() {
 
   const takePicture = async () => {
     if (cameraRef.current) {
-      const photo = await cameraRef.current.takePictureAsync();
-      console.log(photo);
-      // Navigate to the details screen after taking a picture
-      router.push('/insect-details');
+      try {
+        const photo = await cameraRef.current.takePictureAsync();
+        console.log('Captured photo:', photo);
+        if (photo && photo.uri) {
+          // Navigate to the details screen with the image URI
+          router.push({
+            pathname: '/insect-details',
+            params: { imageUri: photo.uri }
+          });
+        }
+      } catch (error) {
+        console.error('Failed to take picture:', error);
+      }
     }
   };
 

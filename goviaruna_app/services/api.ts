@@ -58,6 +58,41 @@ export const api = {
         throw error;
       }
     }
+  },
+  insects: {
+    classify: async (imageUri: string) => {
+      try {
+        const formData = new FormData();
+        const filename = imageUri.split('/').pop() || 'photo.jpg';
+        const match = /\.(\w+)$/.exec(filename);
+        const type = match ? `image/${match[1]}` : 'image/jpeg';
+
+        // @ts-ignore - FormData expects { uri, name, type } for React Native
+        formData.append('file', {
+          uri: imageUri,
+          name: filename,
+          type: type,
+        });
+
+        const response = await fetch(`${API_URL}/api/insects/classify`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          body: formData,
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.detail || 'Classification failed');
+        }
+
+        return data;
+      } catch (error) {
+        throw error;
+      }
+    }
   }
 };
 
