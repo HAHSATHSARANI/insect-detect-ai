@@ -3,7 +3,7 @@ from typing import List
 from datetime import datetime
 from bson import ObjectId
 from database import collections_collection
-from schemas import Collection, CollectionCreate, CollectionItemCreate
+from schemas import Collection, CollectionCreate, CollectionItemCreate, CollectionUpdate
 from utils import admin_helper
 
 router = APIRouter(
@@ -16,6 +16,7 @@ def collection_helper(doc) -> dict:
         "id": str(doc["_id"]),
         "name": doc["name"],
         "description": doc.get("description", ""),
+        "date": doc.get("date"),
         "userId": doc["userId"],
         "items": doc.get("items", []),
         "createdAt": doc.get("createdAt"),
@@ -51,6 +52,24 @@ def delete_collection(collection_id: str):
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Collection not found")
     return {"message": "Collection deleted successfully"}
+
+@router.put("/{collection_id}", response_model=Collection)
+def update_collection(collection_id: str, collection: CollectionUpdate):
+    existing_collection = collections_collection.find_one({"_id": ObjectId(collection_id)})
+    if not existing_collection:
+        raise HTTPException(status_code=404, detail="Collection not found")
+    
+    update_data = {k: v for k, v in collection.dict().items() if v is not None}
+    
+    if update_data:
+        update_data["updatedAt"] = datetime.utcnow()
+        collections_collection.update_one(
+            {"_id": ObjectId(collection_id)},
+            {"$set": update_data}
+        )
+    
+    updated_collection = collections_collection.find_one({"_id": ObjectId(collection_id)})
+    return collection_helper(updated_collection)
 
 @router.post("/{collection_id}/items")
 def add_item_to_collection(collection_id: str, item: CollectionItemCreate):

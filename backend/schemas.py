@@ -117,13 +117,22 @@ class CollectionItemCreate(CollectionItemBase):
 class CollectionBase(BaseModel):
     name: str
     description: Optional[str] = None
+    date: Optional[datetime] = None
     userId: str # The user who owns this collection
 
 
 class CollectionCreate(BaseModel):
     name: str
     description: Optional[str] = None
+    date: Optional[datetime] = None
     userId: str
+
+
+class CollectionUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    date: Optional[datetime] = None
+
 
 
 class Collection(CollectionBase):

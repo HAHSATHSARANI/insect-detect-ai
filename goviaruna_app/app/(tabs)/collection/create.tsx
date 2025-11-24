@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, TextInput, ScrollView, Text, Alert, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Fonts } from '@/constants/Fonts';
 import { Feather } from '@expo/vector-icons';
@@ -20,17 +20,59 @@ LocaleConfig.defaultLocale = 'si';
 
 const CREATE_COLLECTION_CONTENT = {
   title: 'එකතුව එකතු කරන්න',
+  editTitle: 'එකතුව සංස්කරණය',
   inputPlaceholder: 'එකතුවේ නම ඇතුලත් කරන්න',
   cancelButton: 'අවලංගු කරන්න',
   createButton: 'නිර්මාණය කරන්න',
+  updateButton: 'යාවත්කාලීන කරන්න',
 };
 
 export default function CreateCollectionScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const collectionId = params.id as string;
+  const isEditing = !!collectionId;
+
   const [collectionName, setCollectionName] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(isEditing);
+
+  useEffect(() => {
+    if (isEditing) {
+      loadCollectionDetails();
+    }
+  }, [collectionId]);
+
+  const loadCollectionDetails = async () => {
+    try {
+      const userIdJson = await AsyncStorage.getItem('user');
+      if (!userIdJson) {
+        // Basic error handling, though in real app we'd have context
+        return; 
+      }
+      const user = JSON.parse(userIdJson);
+      const collections = await api.collections.getUserCollections(user.id);
+      const collection = collections.find((c: any) => c.id === collectionId);
+      
+      if (collection) {
+        setCollectionName(collection.name);
+        if (collection.date) {
+          // Assuming date comes as ISO string or similar that we can parse
+          const dateObj = new Date(collection.date);
+          const dateStr = dateObj.toISOString().split('T')[0];
+          setSelectedDate(dateStr);
+          setCurrentMonth(dateObj);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading collection:', error);
+      Alert.alert('දෝෂයකි', 'තොරතුරු ලබා ගැනීම අසාර්ථක විය');
+    } finally {
+      setInitialLoading(false);
+    }
+  };
 
   const handleCreate = async () => {
     if (!collectionName) {
@@ -40,44 +82,38 @@ export default function CreateCollectionScreen() {
 
     setLoading(true);
     try {
-      // Assuming we store user info in AsyncStorage after login. 
-      // For now, we need to fetch the userId. 
-      // TODO: Implement proper user context/storage.
-      // Using a temporary method to get userId if stored, or prompt login.
-      
-      // For demonstration, let's assume we can get the user from a previous login response 
-      // that we stored. If not, we might need to fetch /me or decode token.
-      // Let's try to get it from AsyncStorage 'user' key if we saved it.
-      
-      // NOTE: In a real app, use a Context or State Management for the User.
-      // I'll add a placeholder here. The backend requires userId.
-      
-      // TEMPORARY: Fetch user from local storage (assuming we saved it on login)
       const userJson = await AsyncStorage.getItem('user');
       let userId = '';
       if (userJson) {
         const user = JSON.parse(userJson);
         userId = user.id;
       } else {
-        // Fallback or error if not logged in
-        // For testing without login persistence, we might fail.
         Alert.alert('දෝෂයකි', 'කරුණාකර නැවත ඇතුල් වන්න');
         setLoading(false);
         return;
       }
 
-      await api.collections.create({
+      const payload = {
         name: collectionName,
         userId: userId,
-        description: selectedDate ? `Created for date: ${selectedDate}` : ''
-      });
-      
-      Alert.alert('සාර්ථකයි', 'එකතුව සාර්ථකව නිර්මාණය කරන ලදී', [
-        { text: 'OK', onPress: () => router.back() }
-      ]);
+        date: selectedDate ? new Date(selectedDate).toISOString() : new Date().toISOString(),
+        description: '' // Optional
+      };
+
+      if (isEditing) {
+        await api.collections.update(collectionId, payload);
+        Alert.alert('සාර්ථකයි', 'එකතුව යාවත්කාලීන කරන ලදී', [
+          { text: 'OK', onPress: () => router.back() }
+        ]);
+      } else {
+        await api.collections.create(payload);
+        Alert.alert('සාර්ථකයි', 'එකතුව සාර්ථකව නිර්මාණය කරන ලදී', [
+          { text: 'OK', onPress: () => router.back() }
+        ]);
+      }
     } catch (error: any) {
-      console.error('Create collection error:', error);
-      Alert.alert('අසාර්ථකයි', 'එකතුව නිර්මාණය කිරීම අසාර්ථක විය');
+      console.error('Save collection error:', error);
+      Alert.alert('අසාර්ථකයි', isEditing ? 'යාවත්කාලීන කිරීම අසාර්ථක විය' : 'නිර්මාණය කිරීම අසාර්ථක විය');
     } finally {
       setLoading(false);
     }
@@ -95,39 +131,45 @@ export default function CreateCollectionScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Feather name="arrow-left" size={24} color="#222222" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{CREATE_COLLECTION_CONTENT.title}</Text>
+        <Text style={styles.headerTitle}>{isEditing ? CREATE_COLLECTION_CONTENT.editTitle : CREATE_COLLECTION_CONTENT.title}</Text>
         <View style={{ width: 24 }} /> 
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <TextInput
-          style={styles.input}
-          placeholder={CREATE_COLLECTION_CONTENT.inputPlaceholder}
-          placeholderTextColor="#999"
-          value={collectionName}
-          onChangeText={setCollectionName}
-        />
-        
-        <Calendar
-          key={currentMonth.toISOString()} // Force re-render on month change
-          current={currentMonth.toISOString().split('T')[0]}
-          onDayPress={day => setSelectedDate(day.dateString)}
-          markedDates={{
-            [selectedDate]: {selected: true, disableTouchEvent: true, selectedColor: '#3A8A55', selectedTextColor: '#FFFFFF'}
-          }}
-          theme={calendarTheme}
-          renderArrow={(direction) => 
-            <TouchableOpacity onPress={() => handleMonthChange(direction === 'right')}>
-              <Feather name={direction === 'left' ? 'chevron-left' : 'chevron-right'} size={24} color="#3A8A55" />
-            </TouchableOpacity>
-          }
-          hideExtraDays={true}
-          monthFormat={'MMMM yyyy'}
-          onMonthChange={(month) => {
-            setCurrentMonth(new Date(month.timestamp));
-          }}
-        />
-      </ScrollView>
+      {initialLoading ? (
+        <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+          <ActivityIndicator size="large" color="#3A8A55" />
+        </View>
+      ) : (
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <TextInput
+            style={styles.input}
+            placeholder={CREATE_COLLECTION_CONTENT.inputPlaceholder}
+            placeholderTextColor="#999"
+            value={collectionName}
+            onChangeText={setCollectionName}
+          />
+          
+          <Calendar
+            key={currentMonth.toISOString()} // Force re-render on month change
+            current={currentMonth.toISOString().split('T')[0]}
+            onDayPress={day => setSelectedDate(day.dateString)}
+            markedDates={{
+              [selectedDate]: {selected: true, disableTouchEvent: true, selectedColor: '#3A8A55', selectedTextColor: '#FFFFFF'}
+            }}
+            theme={calendarTheme}
+            renderArrow={(direction) => 
+              <TouchableOpacity onPress={() => handleMonthChange(direction === 'right')}>
+                <Feather name={direction === 'left' ? 'chevron-left' : 'chevron-right'} size={24} color="#3A8A55" />
+              </TouchableOpacity>
+            }
+            hideExtraDays={true}
+            monthFormat={'MMMM yyyy'}
+            onMonthChange={(month) => {
+              setCurrentMonth(new Date(month.timestamp));
+            }}
+          />
+        </ScrollView>
+      )}
 
       <View style={styles.footer}>
         <TouchableOpacity 
@@ -141,12 +183,14 @@ export default function CreateCollectionScreen() {
           style={[styles.button, styles.createButton, loading && { opacity: 0.7 }]}
           onPress={handleCreate}
           activeOpacity={0.8}
-          disabled={loading}
+          disabled={loading || initialLoading}
         >
           {loading ? (
              <ActivityIndicator color="#FFFFFF" size="small" />
           ) : (
-             <Text style={styles.buttonText}>{CREATE_COLLECTION_CONTENT.createButton}</Text>
+             <Text style={styles.buttonText}>
+               {isEditing ? CREATE_COLLECTION_CONTENT.updateButton : CREATE_COLLECTION_CONTENT.createButton}
+             </Text>
           )}
         </TouchableOpacity>
       </View>

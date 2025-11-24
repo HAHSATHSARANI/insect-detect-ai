@@ -132,6 +132,17 @@ export const api = {
         if (!response.ok) throw new Error('Failed to delete collection');
         return await response.json();
       } catch (error) { throw error; }
+    },
+    update: async (collectionId: string, updateData: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/collections/${collectionId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updateData),
+        });
+        if (!response.ok) throw new Error('Failed to update collection');
+        return await response.json();
+      } catch (error) { throw error; }
     }
   }
 };
