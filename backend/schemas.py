@@ -88,17 +88,36 @@ class UserUpdate(BaseModel):
 # Chat Models
 class ChatMessage(BaseModel):
     id: Optional[str] = None
-    username: str  # The user this chat belongs to
+    conversationId: str  # Thread/conversation ID
+    userId: str  # The user who owns this conversation
     sender: str  # 'user' or 'admin'
     content: str
     timestamp: Optional[datetime] = None
-    read: bool = False  # NEW: Track read status
+    read: bool = False
 
 
 class ChatMessageCreate(BaseModel):
-    username: str
+    conversationId: str
+    userId: str
     content: str
-    sender: str = "user"  # Default to user for the test page
+    sender: str = "user"
+
+
+class Conversation(BaseModel):
+    id: Optional[str] = None
+    userId: str
+    title: str
+    lastMessage: Optional[str] = None
+    lastMessageTime: Optional[datetime] = None
+    unreadCount: int = 0
+    createdAt: Optional[datetime] = None
+    updatedAt: Optional[datetime] = None
+
+
+class ConversationCreate(BaseModel):
+    userId: str
+    title: str
+    initialMessage: str
 
 
 # --------------------------

@@ -47,9 +47,23 @@ def insect_helper(doc) -> dict:
 def chat_helper(doc) -> dict:
     return {
         "id": str(doc["_id"]),
-        "username": doc["username"],
+        "conversationId": doc.get("conversationId", ""),
+        "userId": doc.get("userId", doc.get("username", "")),  # Support both old and new format
         "sender": doc["sender"],
         "content": doc["content"],
         "timestamp": doc.get("timestamp", datetime.utcnow()),
-        "read": doc.get("read", False)  # NEW: Include read status
+        "read": doc.get("read", False)
+    }
+
+
+def conversation_helper(doc) -> dict:
+    return {
+        "id": str(doc["_id"]),
+        "userId": doc["userId"],
+        "title": doc["title"],
+        "lastMessage": doc.get("lastMessage", ""),
+        "lastMessageTime": doc.get("lastMessageTime"),
+        "unreadCount": doc.get("unreadCount", 0),
+        "createdAt": doc.get("createdAt"),
+        "updatedAt": doc.get("updatedAt")
     }

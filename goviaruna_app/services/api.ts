@@ -233,6 +233,62 @@ export const api = {
         return await response.json();
       } catch (error) { throw error; }
     }
+  },
+  chat: {
+    getConversations: async (userId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/chat/conversations/${userId}`);
+        if (!response.ok) throw new Error('Failed to fetch conversations');
+        return await response.json();
+      } catch (error) { throw error; }
+    },
+    createConversation: async (conversationData: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/chat/conversations`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(conversationData),
+        });
+        if (!response.ok) throw new Error('Failed to create conversation');
+        return await response.json();
+      } catch (error) { throw error; }
+    },
+    getMessages: async (conversationId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/chat/conversations/${conversationId}/messages`);
+        if (!response.ok) throw new Error('Failed to fetch messages');
+        return await response.json();
+      } catch (error) { throw error; }
+    },
+    sendMessage: async (conversationId: string, messageData: any) => {
+      try {
+        const response = await fetch(`${API_URL}/api/chat/conversations/${conversationId}/messages`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(messageData),
+        });
+        if (!response.ok) throw new Error('Failed to send message');
+        return await response.json();
+      } catch (error) { throw error; }
+    },
+    markAsRead: async (conversationId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/chat/conversations/${conversationId}/read`, {
+          method: 'PUT',
+        });
+        if (!response.ok) throw new Error('Failed to mark as read');
+        return await response.json();
+      } catch (error) { throw error; }
+    },
+    deleteConversation: async (conversationId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/chat/conversations/${conversationId}`, {
+          method: 'DELETE',
+        });
+        if (!response.ok) throw new Error('Failed to delete conversation');
+        return await response.json();
+      } catch (error) { throw error; }
+    }
   }
 };
 

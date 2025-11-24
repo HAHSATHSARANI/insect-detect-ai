@@ -42,7 +42,7 @@
     "home": "Home",
     "collection": "Collection",
     "profile": "Profile",
-    "search": "Search"
+    "community": "Community"
   },
   "home": {
     "welcome": "Welcome",
@@ -125,5 +125,17 @@
     "uploadFailed": "Failed to upload photo. Please check your connection.",
     "updateFailed": "Failed to update profile",
     "selectImageFailed": "Failed to select image"
+  },
+  "community": {
+    "title": "Community",
+    "noConversations": "No conversations yet",
+    "startConversation": "Start a conversation with our experts",
+    "startButton": "Start Conversation",
+    "newConversation": "New Conversation",
+    "conversationTitle": "Conversation title",
+    "yourMessage": "Your question or message...",
+    "expertSupport": "Expert Support",
+    "typeMessage": "Type your message...",
+    "noMessages": "No messages yet"
   }
 }

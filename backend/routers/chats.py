@@ -2,87 +2,128 @@ from fastapi import APIRouter, HTTPException
 from typing import List
 from bson import ObjectId
 from datetime import datetime
-from database import chat_collection
-from schemas import ChatMessage, ChatMessageCreate
-from utils import chat_helper
+from database import chat_collection, conversations_collection
+from schemas import ChatMessage, ChatMessageCreate, Conversation, ConversationCreate
+from utils import chat_helper, conversation_helper
 
 router = APIRouter(
     prefix="/api/chat",
     tags=["Chat"]
 )
 
-# Get list of unique users who have chatted
-@router.get("/users")
-def get_chat_users():
-    users = chat_collection.distinct("username")
-    return users
+# Get all conversations for a user
+@router.get("/conversations/{user_id}", response_model=List[Conversation])
+def get_user_conversations(user_id: str):
+    conversations = conversations_collection.find({"userId": user_id}).sort("updatedAt", -1)
+    return [conversation_helper(c) for c in conversations]
 
-
-# Get chat history for a specific user
-@router.get("/{username}", response_model=List[ChatMessage])
-def get_user_chat(username: str):
-    return [chat_helper(c) for c in chat_collection.find({"username": username}).sort("timestamp", 1)]
-
-
-# Send a message (from User or Admin)
-@router.post("", response_model=ChatMessage)
-def send_chat_message(payload: ChatMessageCreate):
+# Create a new conversation
+@router.post("/conversations", response_model=Conversation)
+def create_conversation(conversation: ConversationCreate):
     doc = {
-        "username": payload.username,
-        "sender": payload.sender,  # 'user' or 'admin'
-        "content": payload.content,
-        "timestamp": datetime.utcnow(),
-        "read": False  # NEW: Default to unread
+        "userId": conversation.userId,
+        "title": conversation.title,
+        "lastMessage": conversation.initialMessage,
+        "lastMessageTime": datetime.utcnow(),
+        "unreadCount": 0,
+        "createdAt": datetime.utcnow(),
+        "updatedAt": datetime.utcnow()
     }
+    
+    result = conversations_collection.insert_one(doc)
+    conversation_id = str(result.inserted_id)
+    
+    # Add the initial message
+    message_doc = {
+        "conversationId": conversation_id,
+        "userId": conversation.userId,
+        "sender": "user",
+        "content": conversation.initialMessage,
+        "timestamp": datetime.utcnow(),
+        "read": False
+    }
+    chat_collection.insert_one(message_doc)
+    
+    created_conversation = conversations_collection.find_one({"_id": result.inserted_id})
+    return conversation_helper(created_conversation)
+
+# Get messages for a specific conversation
+@router.get("/conversations/{conversation_id}/messages", response_model=List[ChatMessage])
+def get_conversation_messages(conversation_id: str):
+    messages = chat_collection.find({"conversationId": conversation_id}).sort("timestamp", 1)
+    return [chat_helper(m) for m in messages]
+
+# Send a message in a conversation
+@router.post("/conversations/{conversation_id}/messages", response_model=ChatMessage)
+def send_message(conversation_id: str, message: ChatMessageCreate):
+    # Verify conversation exists
+    conversation = conversations_collection.find_one({"_id": ObjectId(conversation_id)})
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    doc = {
+        "conversationId": conversation_id,
+        "userId": message.userId,
+        "sender": message.sender,
+        "content": message.content,
+        "timestamp": datetime.utcnow(),
+        "read": False
+    }
+    
     result = chat_collection.insert_one(doc)
+    
+    # Update conversation with last message info
+    update_data = {
+        "lastMessage": message.content,
+        "lastMessageTime": datetime.utcnow(),
+        "updatedAt": datetime.utcnow()
+    }
+    
+    # If message is from admin, increment unread count for user
+    if message.sender == "admin":
+        conversations_collection.update_one(
+            {"_id": ObjectId(conversation_id)},
+            {
+                "$set": update_data,
+                "$inc": {"unreadCount": 1}
+            }
+        )
+    else:
+        conversations_collection.update_one(
+            {"_id": ObjectId(conversation_id)},
+            {"$set": update_data}
+        )
+    
     return chat_helper(chat_collection.find_one({"_id": result.inserted_id}))
 
-
-# NEW: Mark a message as read
-@router.put("/{message_id}/read")
-def mark_message_as_read(message_id: str):
-    try:
-        result = chat_collection.update_one(
-            {"_id": ObjectId(message_id)},
-            {"$set": {"read": True}}
-        )
-        if result.matched_count == 0:
-            raise HTTPException(status_code=404, detail="Message not found")
-
-        updated_message = chat_collection.find_one({"_id": ObjectId(message_id)})
-        return chat_helper(updated_message)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid message ID: {str(e)}")
-
-
-# NEW: Mark all messages from a user as read
-@router.put("/{username}/read-all")
-def mark_all_messages_as_read(username: str):
-    result = chat_collection.update_many(
-        {"username": username, "sender": "user", "read": False},
-        {"$set": {"read": True}}
+# Mark conversation as read (reset unread count)
+@router.put("/conversations/{conversation_id}/read")
+def mark_conversation_as_read(conversation_id: str):
+    conversations_collection.update_one(
+        {"_id": ObjectId(conversation_id)},
+        {"$set": {"unreadCount": 0}}
     )
-    return {"message": f"Marked {result.modified_count} messages as read"}
+    return {"message": "Conversation marked as read"}
 
+# Delete a conversation
+@router.delete("/conversations/{conversation_id}")
+def delete_conversation(conversation_id: str):
+    # Delete all messages in the conversation
+    chat_collection.delete_many({"conversationId": conversation_id})
+    
+    # Delete the conversation
+    result = conversations_collection.delete_one({"_id": ObjectId(conversation_id)})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    return {"message": "Conversation deleted successfully"}
 
-# NEW: Delete a specific message
-@router.delete("/message/{message_id}")
-def delete_message(message_id: str):
-    try:
-        result = chat_collection.delete_one({"_id": ObjectId(message_id)})
-        if result.deleted_count == 0:
-            raise HTTPException(status_code=404, detail="Message not found")
-        return {"message": "Message deleted successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid message ID: {str(e)}")
+# Legacy endpoints for backward compatibility
+@router.get("/users")
+def get_chat_users():
+    users = chat_collection.distinct("userId")
+    return users
 
-
-# NEW: Delete multiple messages
-@router.post("/delete-multiple")
-def delete_multiple_messages(message_ids: List[str]):
-    try:
-        object_ids = [ObjectId(msg_id) for msg_id in message_ids]
-        result = chat_collection.delete_many({"_id": {"$in": object_ids}})
-        return {"message": f"Deleted {result.deleted_count} messages"}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid message IDs: {str(e)}")
+@router.get("/{username}", response_model=List[ChatMessage])
+def get_user_chat(username: str):
+    return [chat_helper(c) for c in chat_collection.find({"userId": username}).sort("timestamp", 1)]

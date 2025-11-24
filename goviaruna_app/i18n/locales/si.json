@@ -42,7 +42,7 @@
     "home": "මුල් පිටුව",
     "collection": "එකතුව",
     "profile": "පැතිකඩ",
-    "search": "සොයන්න"
+    "community": "ප්‍රජාව"
   },
   "home": {
     "welcome": "ආයුබෝවන්",
@@ -125,5 +125,17 @@
     "uploadFailed": "ඡායාරූපය උඩුගත කිරීම අසාර්ථක විය. කරුණාකර ඔබේ සම්බන්ධතාවය පරීක්ෂා කරන්න.",
     "updateFailed": "පැතිකඩ යාවත්කාලීන කිරීම අසාර්ථක විය",
     "selectImageFailed": "රූපය තෝරා ගැනීම අසාර්ථක විය"
+  },
+  "community": {
+    "title": "ප්‍රජාව",
+    "noConversations": "තවම සංවාද නැත",
+    "startConversation": "අපගේ ප්‍රවීණයන් සමඟ සංවාදයක් ආරම්භ කරන්න",
+    "startButton": "සංවාදය ආරම්භ කරන්න",
+    "newConversation": "නව සංවාදය",
+    "conversationTitle": "සංවාද මාතෘකාව",
+    "yourMessage": "ඔබේ ප්‍රශ්නය හෝ පණිවිඩය...",
+    "expertSupport": "ප්‍රවීණ සහාය",
+    "typeMessage": "ඔබේ පණිවිඩය ටයිප් කරන්න...",
+    "noMessages": "තවම පණිවිඩ නැත"
   }
 }
