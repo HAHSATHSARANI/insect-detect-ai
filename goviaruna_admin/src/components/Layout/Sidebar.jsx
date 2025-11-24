@@ -4,6 +4,7 @@ import {
     Dashboard as DashboardIcon,
     BugReport as BugReportIcon,
     SupervisorAccount as SupervisorAccountIcon,
+    People as PeopleIcon,
     Forum as CommunityIcon,
     Logout as LogoutIcon
 } from '@mui/icons-material';
@@ -12,6 +13,7 @@ export const Sidebar = ({ user, currentPage, onPageChange, onLogout }) => {
     const menuItems = [
         { label: 'Dashboard', icon: DashboardIcon },
         { label: 'Insects', icon: BugReportIcon },
+        { label: 'Farmers', icon: PeopleIcon },
         { label: 'Admins', icon: SupervisorAccountIcon },
         { label: 'Community', icon: CommunityIcon },
     ];

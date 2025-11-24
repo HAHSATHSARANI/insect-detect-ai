@@ -57,6 +57,11 @@ def get_user(user_id: str):
         raise HTTPException(status_code=404, detail="User not found")
     return user_helper(user)
 
+@router.get("/users")
+def get_all_users():
+    users = users_collection.find({"role": "User"})
+    return [user_helper(user) for user in users]
+
 @router.put("/user/{user_id}")
 def update_user(user_id: str, user_update: UserUpdate):
     user = users_collection.find_one({"_id": ObjectId(user_id)})

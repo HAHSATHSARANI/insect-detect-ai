@@ -9,6 +9,7 @@ import { MainLayout } from './components/Layout/MainLayout';
 import { Dashboard } from './components/Dashboard/Dashboard';
 import { AdminUsers } from './components/AdminUsers/AdminUsers';
 import { AdminModal } from './components/AdminUsers/AdminModal';
+import { FarmersPage } from './components/Farmers/FarmersPage';
 import CommunityPage from './components/Community/CommunityPage';
 import { AnalyticsPage } from './components/Analytics/AnalyticsPage';
 import { SpeciesDatabase } from './components/SpeciesDatabase/SpeciesDatabase';
@@ -345,6 +346,7 @@ const App = () => {
                         handleDeleteInsect={handleDeleteInsect}
                     />
                 )}
+                {currentPage === "Farmers" && <FarmersPage />}
                 {currentPage === "Analytics" && (
                     <AnalyticsPage
                         detectionData={detectionData}
