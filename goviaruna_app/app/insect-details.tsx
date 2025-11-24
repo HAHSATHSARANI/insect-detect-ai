@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Text, Image, TouchableOpacity, Dimensions, ActivityIndicator, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, Text, Image, TouchableOpacity, Dimensions, ActivityIndicator, Alert, Modal, FlatList } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Fonts } from '@/constants/Fonts';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import PagerView from 'react-native-pager-view';
 import { api } from '@/services/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
@@ -32,36 +33,35 @@ export default function InsectDetailsScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const imageUri = params.imageUri as string;
+  const savedDataStr = params.savedData as string;
   
   const [activeTab, setActiveTab] = useState(0);
-  const [loading, setLoading] = useState(!!imageUri);
-  const [details, setDetails] = useState<any>(imageUri ? INITIAL_INSECT_DETAILS : {
-    name: 'දුඹුරු පැළ කීඩෑවා',
-    scientificName: '(Brown PlantBopper)',
-    commonName: 'දුඹුරු පැළ කීඩෑවා',
-    scientificNameFull: 'Nilaparvata lugens',
-    family: 'Lamiacese',
-    description: 'දුඹුරු පැළ කීඩෑවා (BPH) යනු සුලභ පළිබෝධකයෙකි. එය වී වගාවට බරපතල හානි සිදු කරයි. මෙම කෘමියා (ගොයම් පලඟැටියා ලෙසද හැඳින්වේ) ශාකයේ යුෂ උරා බොන අතර, එය වෛරස් රෝග පැතිරවිය හැකිය. BPH ආසාදනය පාලනය නොකළහොත් සැලකිය යුතු අස්වැන්නක් අහිමි විය හැකිය.',
-    images: [
-      require('@/assets/images/insect_3.jpg'),
-      require('@/assets/images/insect_3.jpg'),
-      require('@/assets/images/insect_3.jpg'),
-    ],
-    tabs: ['තොරතුරු', 'හානිය', 'පාලනය'],
-    lifeCycleTitle: 'ජීවන චක්‍රය',
-    lifeCycleContent: 'ගැහැණු සතා බිත්තර දමන්නේ කොළ කොපුවල හෝ පත්‍ර තලයේ මැද නාරටිය මතය. බිත්තර දැමීමෙන් පසු දින 7-9 කින් පමණ පිපිරීම සිදුවේ. පැටවුන් දින 13-15 කින් පමණ වැඩෙයි.',
-    damageSymptomsTitle: 'හානි ලක්ෂණ',
-    damageSymptomsContent: 'පැළෑටිය කහ වීම, වර්ධනය බාල වීම සහ “හොපර් පිළිස්සීම” ලෙස හැඳින්වෙන වියළී යාමේ රෝග ලක්ෂණ පෙන්නුම් කරයි.',
-    controlMethodsTitle: 'පාලන ක්‍රම',
-    controlMethodsContent: 'ප්‍රතිරෝධී ප්‍රභේද භාවිතා කිරීම, කෘමිනාශක යෙදීම සහ ස්වභාවික සතුරන් දිරිමත් කිරීම වැනි ක්‍රම ඇතුළත් වේ.',
-    relatedImagesTitle: 'රූප',
-  });
+  const [loading, setLoading] = useState(!savedDataStr && !!imageUri);
+  const [details, setDetails] = useState<any>(INITIAL_INSECT_DETAILS);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [collections, setCollections] = useState<any[]>([]);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (imageUri) {
+    if (savedDataStr) {
+        // If viewing saved data, use it directly
+        try {
+            const saved = JSON.parse(savedDataStr);
+            const insectData = saved.insectData || {};
+            setDetails({
+                ...INITIAL_INSECT_DETAILS,
+                ...insectData,
+                // Ensure we show the saved image if available
+                images: saved.imageUrl ? [] : insectData.images // Assuming logic to show main image separately
+            });
+        } catch (e) {
+            console.error("Error parsing saved data", e);
+        }
+        setLoading(false);
+    } else if (imageUri) {
       analyzeImage();
     }
-  }, [imageUri]);
+  }, [imageUri, savedDataStr]);
 
   const analyzeImage = async () => {
     try {
@@ -81,6 +81,57 @@ export default function InsectDetailsScreen() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSavePress = async () => {
+      if (savedDataStr) return; // Already saved/viewing mode
+
+      try {
+          const userJson = await AsyncStorage.getItem('user');
+          if (!userJson) {
+              Alert.alert('Error', 'Please login to save');
+              return;
+          }
+          const user = JSON.parse(userJson);
+          const cols = await api.collections.getUserCollections(user.id);
+          setCollections(cols);
+          setModalVisible(true);
+      } catch (error) {
+          console.error('Error fetching collections', error);
+          Alert.alert('Error', 'Failed to load collections');
+      }
+  };
+
+  const saveToCollection = async (collectionId: string) => {
+      setSaving(true);
+      try {
+          // 1. Upload Image
+          let uploadedImageId = null;
+          if (imageUri) {
+              const uploadResult = await api.collections.uploadImage(imageUri);
+              uploadedImageId = uploadResult.fileId;
+          }
+
+          // 2. Add Item
+          const itemData = {
+              insectName: details.name,
+              scientificName: details.scientificNameFull || details.scientificName,
+              imageUrl: uploadedImageId,
+              confidence: details.confidence || 0,
+              category: details.category || 'Unknown',
+              insectData: details
+          };
+
+          await api.collections.addItem(collectionId, itemData);
+          
+          setModalVisible(false);
+          Alert.alert('සාර්ථකයි', 'එකතුවට එකතු කරන ලදී');
+      } catch (error) {
+          console.error('Save error:', error);
+          Alert.alert('අසාර්ථකයි', 'සුරැකීම අසාර්ථක විය');
+      } finally {
+          setSaving(false);
+      }
   };
   
   // If we have a captured image, put it first in the list
@@ -112,10 +163,13 @@ export default function InsectDetailsScreen() {
           <TouchableOpacity onPress={() => router.back()} style={[styles.iconButton, styles.backButton]}>
             <Feather name="arrow-left" size={24} color="#FFFFFF" />
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.iconButton, styles.saveButton]}>
-            <Feather name="bookmark" size={24} color="#FFFFFF" />
-            <Text style={styles.saveButtonText}>ගබඩා කරන්න</Text>
-          </TouchableOpacity>
+          
+          {!savedDataStr && (
+              <TouchableOpacity onPress={handleSavePress} style={[styles.iconButton, styles.saveButton]}>
+                <Feather name="bookmark" size={24} color="#FFFFFF" />
+                <Text style={styles.saveButtonText}>ගබඩා කරන්න</Text>
+              </TouchableOpacity>
+          )}
         </View>
 
         {/* Main Content */}
@@ -285,6 +339,49 @@ export default function InsectDetailsScreen() {
 
         </View>
       </ScrollView>
+      
+      {/* Collection Selection Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>එකතුව තෝරන්න</Text>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <Feather name="x" size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+            
+            {collections.length === 0 ? (
+                 <View style={styles.emptyState}>
+                     <Text style={styles.emptyText}>එකතු කිසිවක් නැත. කරුණාකර පළමුව එකතුවක් සාදන්න.</Text>
+                 </View>
+            ) : (
+                <FlatList
+                  data={collections}
+                  keyExtractor={(item) => item.id}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity 
+                        style={styles.collectionItem}
+                        onPress={() => saveToCollection(item.id)}
+                        disabled={saving}
+                    >
+                      <View style={styles.collectionIcon}>
+                          <Feather name="folder" size={24} color="#3A8A55" />
+                      </View>
+                      <Text style={styles.collectionName}>{item.name}</Text>
+                      {saving && <ActivityIndicator size="small" color="#3A8A55" />}
+                    </TouchableOpacity>
+                  )}
+                />
+            )}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -472,4 +569,59 @@ const styles = StyleSheet.create({
       fontSize: 12,
       color: '#4B5563',
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '90%',
+    backgroundColor: '#FFF',
+    borderRadius: 15,
+    padding: 20,
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    paddingBottom: 10,
+  },
+  modalTitle: {
+    ...Fonts.styles.bold,
+    fontSize: 18,
+    color: '#333',
+  },
+  collectionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  collectionIcon: {
+    marginRight: 15,
+    backgroundColor: '#E8F5E9',
+    padding: 8,
+    borderRadius: 8,
+  },
+  collectionName: {
+    ...Fonts.styles.semiBold,
+    fontSize: 16,
+    color: '#333',
+    flex: 1,
+  },
+  emptyState: {
+      padding: 20,
+      alignItems: 'center',
+  },
+  emptyText: {
+      textAlign: 'center',
+      color: '#666',
+      ...Fonts.styles.regular
+  }
 });

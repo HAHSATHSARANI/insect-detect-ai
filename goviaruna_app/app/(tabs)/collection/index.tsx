@@ -97,7 +97,7 @@ export default function CollectionScreen() {
     });
 
     return (
-      <View style={styles.card}>
+      <TouchableOpacity style={styles.card} onPress={() => router.push(`/collection/${item.id}`)}>
         <View style={styles.cardHeader}>
           <View style={styles.cardIconContainer}>
             <Feather name="folder" size={24} color="#3A8A55" />
@@ -112,18 +112,24 @@ export default function CollectionScreen() {
         <View style={styles.cardActions}>
           <TouchableOpacity 
             style={styles.actionButton} 
-            onPress={() => handleEdit(item.id)}
+            onPress={(e) => {
+              e.stopPropagation();
+              handleEdit(item.id);
+            }}
           >
             <Feather name="edit-2" size={18} color="#666" />
           </TouchableOpacity>
           <TouchableOpacity 
             style={[styles.actionButton, { marginLeft: 15 }]} 
-            onPress={() => handleDelete(item.id)}
+            onPress={(e) => {
+              e.stopPropagation();
+              handleDelete(item.id);
+            }}
           >
             <Feather name="trash-2" size={18} color="#FF5252" />
           </TouchableOpacity>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 

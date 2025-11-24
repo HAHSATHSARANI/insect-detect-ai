@@ -113,6 +113,13 @@ export const api = {
         return await response.json();
       } catch (error) { throw error; }
     },
+    getCollection: async (collectionId: string) => {
+      try {
+        const response = await fetch(`${API_URL}/api/collections/${collectionId}`);
+        if (!response.ok) throw new Error('Failed to fetch collection');
+        return await response.json();
+      } catch (error) { throw error; }
+    },
     addItem: async (collectionId: string, itemData: any) => {
       try {
         const response = await fetch(`${API_URL}/api/collections/${collectionId}/items`, {
@@ -121,6 +128,15 @@ export const api = {
           body: JSON.stringify(itemData),
         });
         if (!response.ok) throw new Error('Failed to add item');
+        return await response.json();
+      } catch (error) { throw error; }
+    },
+    removeItem: async (collectionId: string, itemIndex: number) => {
+      try {
+        const response = await fetch(`${API_URL}/api/collections/${collectionId}/items/${itemIndex}`, {
+          method: 'DELETE',
+        });
+        if (!response.ok) throw new Error('Failed to remove item');
         return await response.json();
       } catch (error) { throw error; }
     },
@@ -141,6 +157,35 @@ export const api = {
           body: JSON.stringify(updateData),
         });
         if (!response.ok) throw new Error('Failed to update collection');
+        return await response.json();
+      } catch (error) { throw error; }
+    },
+    uploadImage: async (imageUri: string) => {
+      try {
+        const formData = new FormData();
+        const filename = imageUri.split('/').pop() || 'photo.jpg';
+        const match = /\.(\w+)$/.exec(filename);
+        const type = match ? `image/${match[1]}` : 'image/jpeg';
+
+        // @ts-ignore
+        formData.append('file', {
+          uri: imageUri,
+          name: filename,
+          type: type,
+        });
+
+        const response = await fetch(`${API_URL}/api/collections/upload`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          body: formData,
+        });
+
+        if (!response.ok) {
+            const errData = await response.text();
+            throw new Error(`Image upload failed: ${errData}`);
+        }
         return await response.json();
       } catch (error) { throw error; }
     }

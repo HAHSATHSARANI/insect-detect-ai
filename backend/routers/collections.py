@@ -1,8 +1,8 @@
-from fastapi import APIRouter, HTTPException, Body
+from fastapi import APIRouter, HTTPException, Body, UploadFile, File
 from typing import List
 from datetime import datetime
 from bson import ObjectId
-from database import collections_collection
+from database import collections_collection, fs
 from schemas import Collection, CollectionCreate, CollectionItemCreate, CollectionUpdate
 from utils import admin_helper
 
@@ -10,6 +10,15 @@ router = APIRouter(
     prefix="/api/collections",
     tags=["Collections"]
 )
+
+@router.post("/upload", response_model=dict)
+async def upload_collection_image(file: UploadFile = File(...)):
+    try:
+        contents = await file.read()
+        file_id = fs.put(contents, filename=file.filename, content_type=file.content_type)
+        return {"fileId": str(file_id), "filename": file.filename}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Image upload failed: {str(e)}")
 
 def collection_helper(doc) -> dict:
     return {
