@@ -27,110 +27,88 @@ import {
     Send as SendIcon,
     Delete as DeleteIcon,
     CheckBoxOutlineBlank as CheckBoxOutlineBlankIcon,
-    CheckBox as CheckBoxIcon
+    CheckBox as CheckBoxIcon,
+    Forum as ForumIcon
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:8001/api';
 
 export default function CommunityPage() {
-    // List of users who have chatted with their latest message
-    const [users, setUsers] = useState([]);
-    // Messages for the selected user
+    // List of conversations with their details
+    const [conversations, setConversations] = useState([]);
+    // Messages for the selected conversation
     const [chatMessages, setChatMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
 
-    // Selected user to chat with
-    const [selectedUser, setSelectedUser] = useState(null);
-    const selectedUserRef = useRef(null); // Ref to access selectedUser in interval closures
-    const lastReadTimeRef = useRef({}); // Ref to track last read timestamp for each user
+    // Selected conversation to chat with
+    const [selectedConversation, setSelectedConversation] = useState(null);
+    const [selectedUser, setSelectedUser] = useState(null); // User info for the conversation
     const scrollRef = useRef(null);
-
-    // Update ref when state changes
-    useEffect(() => {
-        selectedUserRef.current = selectedUser;
-    }, [selectedUser]);
-
-    // Update lastReadTimeRef when chatMessages update for selected user
-    useEffect(() => {
-        if (selectedUser && chatMessages.length > 0) {
-            const lastMsg = chatMessages[chatMessages.length - 1];
-            if (lastMsg && lastMsg.timestamp) {
-                lastReadTimeRef.current = {
-                    ...lastReadTimeRef.current,
-                    [selectedUser]: lastMsg.timestamp
-                };
-            }
-        }
-    }, [selectedUser, chatMessages]);
 
     // Message selection and deletion
     const [selectionMode, setSelectionMode] = useState(false);
     const [selectedMessages, setSelectedMessages] = useState([]);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-    // Fetch list of users with their latest messages and unread count
-    const loadUsers = async () => {
+    // Fetch all conversations from all users
+    const loadConversations = async () => {
         try {
-            const res = await fetch(`${API}/chat/users`);
-            if (res.ok) {
-                const userList = await res.json();
-
-                // Fetch latest message for each user
-                const usersWithDetails = await Promise.all(
-                    userList.map(async (username) => {
-                        try {
-                            const chatRes = await fetch(`${API}/chat/${username}`);
-                            if (chatRes.ok) {
-                                const messages = await chatRes.json();
-                                const latestMessage = messages[messages.length - 1];
-
-                                // Get local last read time
-                                const lastRead = lastReadTimeRef.current[username];
-
-                                // Count unread messages from user only
-                                let unreadCount = messages.filter(m => {
-                                    if (m.sender !== 'user') return false;
-                                    if (m.read) return false; // If marked as read by backend, it's read
-
-                                    // If backend says unread, check our local timestamp
-                                    // If we have seen a message with this timestamp or newer, it's read
-                                    if (lastRead && m.timestamp && new Date(m.timestamp) <= new Date(lastRead)) {
-                                        return false;
-                                    }
-                                    return true;
-                                }).length;
-
-                                // If this is the currently selected user, force unread count to 0
-                                if (username === selectedUserRef.current) {
-                                    unreadCount = 0;
+            // Get all user IDs who have conversations
+            const usersRes = await fetch(`${API}/chat/users`);
+            if (!usersRes.ok) return;
+            
+            const userIds = await usersRes.json();
+            
+            // Fetch conversations for each user
+            const allConversations = [];
+            for (const userId of userIds) {
+                try {
+                    const conversationsRes = await fetch(`${API}/chat/conversations/${userId}`);
+                    if (conversationsRes.ok) {
+                        const userConversations = await conversationsRes.json();
+                        
+                        // Fetch user details for each conversation
+                        for (const conv of userConversations) {
+                            try {
+                                const userRes = await fetch(`${API}/app/auth/user/${userId}`);
+                                if (userRes.ok) {
+                                    const userData = await userRes.json();
+                                    conv.user = userData;
+                                } else {
+                                    // Fallback if user endpoint fails
+                                    conv.user = { name: `User ${userId.slice(-4)}`, email: '', id: userId };
                                 }
-
-                                return {
-                                    username,
-                                    latestMessage: latestMessage?.content || 'No messages',
-                                    timestamp: latestMessage?.timestamp,
-                                    unreadCount
-                                };
+                            } catch (err) {
+                                console.log('Could not fetch user data for', userId);
+                                conv.user = { name: `User ${userId.slice(-4)}`, email: '', id: userId };
                             }
-                        } catch (err) {
-                            console.error(`Failed to load messages for ${username}`, err);
                         }
-                        return { username, latestMessage: 'No messages', timestamp: null, unreadCount: 0 };
-                    })
-                );
-
-                setUsers(usersWithDetails);
+                        
+                        allConversations.push(...userConversations);
+                    }
+                } catch (err) {
+                    console.error(`Failed to load conversations for user ${userId}`, err);
+                }
             }
+            
+            // Sort by last message time (newest first)
+            allConversations.sort((a, b) => {
+                const timeA = new Date(a.lastMessageTime || a.updatedAt || 0);
+                const timeB = new Date(b.lastMessageTime || b.updatedAt || 0);
+                return timeB - timeA;
+            });
+            
+            setConversations(allConversations);
         } catch (err) {
-            console.error('Failed to load chat users', err);
+            console.error('Failed to load conversations', err);
         }
     };
 
-    // Fetch chat history for selected user
-    const loadChatHistory = async (username) => {
+    // Fetch chat history for selected conversation
+    const loadChatHistory = async (conversationId) => {
         try {
-            const res = await fetch(`${API}/chat/${username}`);
+            const res = await fetch(`${API}/chat/conversations/${conversationId}/messages`);
             if (res.ok) {
                 const messages = await res.json();
                 setChatMessages(messages);
@@ -140,42 +118,39 @@ export default function CommunityPage() {
         }
     };
 
-    // Mark all unread messages as read when opening a chat
-    const markMessagesAsRead = async (username) => {
-        // Optimistically update UI first
-        setUsers(prevUsers => prevUsers.map(user =>
-            user.username === username
-                ? { ...user, unreadCount: 0 }
-                : user
-        ));
-
+    // Mark conversation as read when admin opens it
+    const markConversationAsRead = async (conversationId) => {
         try {
-            await fetch(`${API}/chat/${username}/read-all`, {
+            await fetch(`${API}/chat/conversations/${conversationId}/read`, {
                 method: 'PUT'
             });
-            // Reload users to confirm update from backend
-            loadUsers();
+            // Update local state
+            setConversations(prev => prev.map(conv =>
+                conv.id === conversationId
+                    ? { ...conv, unreadCount: 0 }
+                    : conv
+            ));
         } catch (err) {
-            console.error('Failed to mark messages as read', err);
+            console.error('Failed to mark conversation as read', err);
         }
     };
 
-    // Initial load + polling every 3 seconds
+    // Initial load + polling every 5 seconds
     useEffect(() => {
-        loadUsers();
-        const interval = setInterval(loadUsers, 3000);
+        loadConversations();
+        const interval = setInterval(loadConversations, 5000);
         return () => clearInterval(interval);
     }, []);
 
-    // Load chat history when user is selected
+    // Load chat history when conversation is selected
     useEffect(() => {
-        if (selectedUser) {
-            loadChatHistory(selectedUser);
-            markMessagesAsRead(selectedUser);
-            const interval = setInterval(() => loadChatHistory(selectedUser), 3000);
+        if (selectedConversation) {
+            loadChatHistory(selectedConversation.id);
+            markConversationAsRead(selectedConversation.id);
+            const interval = setInterval(() => loadChatHistory(selectedConversation.id), 3000);
             return () => clearInterval(interval);
         }
-    }, [selectedUser]);
+    }, [selectedConversation]);
 
     // Auto‑scroll to latest message when chat view updates
     useEffect(() => {
@@ -184,23 +159,26 @@ export default function CommunityPage() {
         }
     }, [chatMessages]);
 
-    // Send a message to the selected user
+    // Send a message to the selected conversation
     const handleSend = async (e) => {
         e.preventDefault();
-        if (!newMessage.trim() || !selectedUser) return;
+        if (!newMessage.trim() || !selectedConversation) return;
+        
         try {
-            const res = await fetch(`${API}/chat`, {
+            const res = await fetch(`${API}/chat/conversations/${selectedConversation.id}/messages`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    username: selectedUser,
+                    conversationId: selectedConversation.id,
+                    userId: selectedConversation.userId,
                     content: newMessage,
                     sender: 'admin'
                 }),
             });
             if (res.ok) {
                 setNewMessage('');
-                loadChatHistory(selectedUser);
+                loadChatHistory(selectedConversation.id);
+                loadConversations(); // Refresh conversation list
             }
         } catch (err) {
             console.error('Failed to send message', err);
@@ -231,8 +209,8 @@ export default function CommunityPage() {
                 setSelectedMessages([]);
                 setSelectionMode(false);
                 setDeleteDialogOpen(false);
-                loadChatHistory(selectedUser);
-                loadUsers();
+                loadChatHistory(selectedConversation.id);
+                loadConversations();
             }
         } catch (err) {
             console.error('Failed to delete messages', err);
@@ -267,8 +245,8 @@ export default function CommunityPage() {
             bgcolor: '#f5f7fa',
             overflow: 'hidden',
         }}>
-            {/* Chat List View */}
-            {!selectedUser && (
+            {/* Conversations List View */}
+            {!selectedConversation && (
                 <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                     {/* Page Header */}
                     <Box sx={{ p: 3, bgcolor: 'white', borderBottom: '1px solid #e0e0e0' }}>
@@ -280,41 +258,52 @@ export default function CommunityPage() {
                         </Typography>
                     </Box>
 
-                    {/* Chat List */}
+                    {/* Conversations List */}
                     <Container maxWidth="lg" sx={{ flex: 1, py: 3, overflow: 'auto' }}>
                         <Paper sx={{ overflow: 'hidden' }}>
                             <List sx={{ p: 0 }}>
-                                {users.length === 0 ? (
+                                {conversations.length === 0 ? (
                                     <Box sx={{ p: 6, textAlign: 'center' }}>
+                                        <ForumIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
                                         <Typography variant="h6" color="text.secondary" gutterBottom>
-                                            No messages yet
+                                            No conversations yet
                                         </Typography>
                                         <Typography variant="body2" color="text.secondary">
-                                            Use the Test Chat page to add some test messages.
+                                            Farmers will start conversations from the mobile app.
                                         </Typography>
                                     </Box>
                                 ) : (
-                                    users.map((user, index) => (
-                                        <React.Fragment key={user.username}>
+                                    conversations.map((conversation, index) => (
+                                        <React.Fragment key={conversation.id}>
                                             <ListItem disablePadding>
                                                 <ListItemButton
-                                                    onClick={() => setSelectedUser(user.username)}
+                                                    onClick={() => {
+                                                        setSelectedConversation(conversation);
+                                                        setSelectedUser(conversation.user);
+                                                    }}
                                                     sx={{ py: 2, px: 3 }}
                                                 >
                                                     <Badge
-                                                        badgeContent={user.unreadCount}
+                                                        badgeContent={conversation.unreadCount}
                                                         color="primary"
                                                         sx={{ mr: 2 }}
                                                     >
                                                         <Avatar sx={{ bgcolor: 'primary.main', width: 50, height: 50 }}>
-                                                            {user.username.charAt(0).toUpperCase()}
+                                                            {(conversation.user?.name || 'U').charAt(0).toUpperCase()}
                                                         </Avatar>
                                                     </Badge>
                                                     <ListItemText
                                                         primary={
-                                                            <Typography variant="subtitle1" fontWeight={user.unreadCount > 0 ? 700 : 400}>
-                                                                {user.username}
-                                                            </Typography>
+                                                            <Box>
+                                                                <Typography variant="subtitle1" fontWeight={conversation.unreadCount > 0 ? 700 : 600}>
+                                                                    {conversation.title}
+                                                                </Typography>
+                                                                <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                                    <span style={{ fontWeight: 500, color: '#008069' }}>{conversation.user?.name || 'Unknown User'}</span>
+                                                                    •
+                                                                    <span style={{ fontSize: '0.75rem' }}>{formatTimestamp(conversation.lastMessageTime)}</span>
+                                                                </Typography>
+                                                            </Box>
                                                         }
                                                         secondary={
                                                             <Typography
@@ -324,19 +313,19 @@ export default function CommunityPage() {
                                                                     overflow: 'hidden',
                                                                     textOverflow: 'ellipsis',
                                                                     whiteSpace: 'nowrap',
-                                                                    maxWidth: '400px'
+                                                                    maxWidth: '400px',
+                                                                    mt: 0.5,
+                                                                    fontStyle: 'italic'
                                                                 }}
                                                             >
-                                                                {user.latestMessage}
+                                                                {conversation.lastMessage || 'No messages yet'}
                                                             </Typography>
                                                         }
                                                     />
-                                                    <Typography variant="caption" color="text.secondary">
-                                                        {formatTimestamp(user.timestamp)}
-                                                    </Typography>
+                                                    {/* Removed separate timestamp Typography since it's now integrated */}
                                                 </ListItemButton>
                                             </ListItem>
-                                            {index < users.length - 1 && <Divider />}
+                                            {index < conversations.length - 1 && <Divider />}
                                         </React.Fragment>
                                     ))
                                 )}
@@ -347,7 +336,7 @@ export default function CommunityPage() {
             )}
 
             {/* Full Screen Chat View */}
-            {selectedUser && (
+            {selectedConversation && (
                 <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                     {/* Chat Header */}
                     <Box sx={{
@@ -361,6 +350,7 @@ export default function CommunityPage() {
                     }}>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                             <IconButton onClick={() => {
+                                setSelectedConversation(null);
                                 setSelectedUser(null);
                                 setSelectionMode(false);
                                 setSelectedMessages([]);
@@ -368,11 +358,16 @@ export default function CommunityPage() {
                                 <ArrowBackIcon />
                             </IconButton>
                             <Avatar sx={{ mr: 2, bgcolor: 'white', color: '#008069' }}>
-                                {selectedUser.charAt(0).toUpperCase()}
+                                {(selectedUser?.name || 'U').charAt(0).toUpperCase()}
                             </Avatar>
-                            <Typography variant="h6" fontWeight="600">
-                                {selectedUser}
-                            </Typography>
+                            <Box>
+                                <Typography variant="h6" fontWeight="600">
+                                    {selectedUser?.name || 'Unknown User'}
+                                </Typography>
+                                <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                                    {selectedConversation.title}
+                                </Typography>
+                            </Box>
                         </Box>
 
                         {/* Selection Mode Controls */}

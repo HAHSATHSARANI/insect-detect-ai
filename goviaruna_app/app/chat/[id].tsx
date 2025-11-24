@@ -24,6 +24,10 @@ export default function ChatScreen() {
   useEffect(() => {
     loadMessages();
     markAsRead();
+    
+    // Set up polling for new messages every 3 seconds
+    const interval = setInterval(loadMessages, 3000);
+    return () => clearInterval(interval);
   }, [id]);
 
   const loadMessages = async () => {

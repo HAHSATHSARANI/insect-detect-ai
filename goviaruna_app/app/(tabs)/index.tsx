@@ -95,7 +95,7 @@ export default function HomeScreen() {
           <Image source={getProfileImageUrl()} style={styles.avatar} />
           <View>
             <Text style={[styles.welcomeText, getFontStyle('regular', 16, lang)]}>{t('home.welcome')} 👋</Text>
-            <Text style={[styles.userName, getFontStyle('bold', 20, lang)]}>{user?.name || 'User'}</Text>
+            <Text style={[styles.userName, getFontStyle('bold', 20, 'en')]}>{user?.name || 'User'}</Text>
           </View>
           <Text style={[styles.headerTitle, getFontStyle('bold', 22, lang)]}>{t('welcome.title')}</Text>
         </View>

@@ -39,6 +39,10 @@ export default function CommunityScreen() {
     useCallback(() => {
       setLoading(true);
       loadConversations();
+      
+      // Set up polling for real-time updates every 5 seconds
+      const interval = setInterval(loadConversations, 5000);
+      return () => clearInterval(interval);
     }, [])
   );
 
