@@ -93,18 +93,39 @@ export default function CollectionDetailsScreen() {
           imageUrl = `${API_URL}/api/insects/image/${imageUrl}`;
       }
 
+      // Extract English and Sinhala names from insect data
+      const englishName = item.insectData?.scientificName || item.scientificName || 'Unknown';
+      const sinhalaName = item.insectData?.name || item.insectName || 'නොදන්නා';
+      const category = item.category || 'Unknown';
+      const isHarmful = category === 'Harmful';
+
       return (
-        <TouchableOpacity style={styles.itemCard} onPress={() => handleItemPress(item)}>
-          <Image source={{ uri: imageUrl }} style={styles.itemImage} />
-          <View style={styles.itemContent}>
-            <Text style={[styles.itemName, getFontStyle('semiBold', 16, lang)]}>{item.insectName}</Text>
-            <Text style={[styles.scientificName, getFontStyle('regular', 12, lang)]}>{item.scientificName}</Text>
-            <Text style={[styles.category, getFontStyle('medium', 12, lang)]}>{item.category}</Text>
-          </View>
+        <View style={styles.itemCard}>
+          <TouchableOpacity style={styles.cardContent} onPress={() => handleItemPress(item)}>
+            <Image source={{ uri: imageUrl }} style={styles.itemImage} />
+            <View style={styles.itemInfo}>
+              <Text style={[styles.sinhalaName, getFontStyle('semiBold', 16, 'si')]}>{sinhalaName}</Text>
+              <Text style={[styles.englishName, getFontStyle('regular', 14, 'en')]}>{englishName}</Text>
+              <View style={[styles.categoryBadge, isHarmful ? styles.harmfulBadge : styles.beneficialBadge]}>
+                <Feather 
+                  name={isHarmful ? "alert-triangle" : "check-circle"} 
+                  size={14} 
+                  color={isHarmful ? "#EF4444" : "#059669"} 
+                />
+                <Text style={[
+                  styles.categoryText, 
+                  getFontStyle('semiBold', 12, 'si'),
+                  isHarmful ? styles.harmfulText : styles.beneficialText
+                ]}>
+                  {isHarmful ? 'හානිකරයි' : 'හිතකරයි'}
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeleteItem(index)}>
               <Feather name="trash-2" size={20} color="#FF5252" />
           </TouchableOpacity>
-        </TouchableOpacity>
+        </View>
       );
   };
 
@@ -115,7 +136,7 @@ export default function CollectionDetailsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Feather name="arrow-left" size={24} color="#222" />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, getFontStyle('bold', 20, lang)]}>{collection.name}</Text>
+        <Text style={[styles.headerTitle, getFontStyle('bold', 20, 'en')]}>{collection.name}</Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -152,19 +173,74 @@ const styles = StyleSheet.create({
   listContent: { padding: 20 },
   itemCard: {
     flexDirection: 'row',
-    backgroundColor: '#F9FAFB',
-    borderRadius: 12,
-    padding: 10,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 15,
     marginBottom: 15,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 2,
   },
-  itemImage: { width: 60, height: 60, borderRadius: 8, marginRight: 15, backgroundColor: '#eee' },
-  itemContent: { flex: 1 },
-  itemName: { fontSize: 16, color: '#333' },
-  scientificName: { fontSize: 12, color: '#666' },
-  category: { fontSize: 12, color: '#3A8A55', marginTop: 2 },
+  cardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  itemImage: { 
+    width: 80, 
+    height: 80, 
+    borderRadius: 12, 
+    marginRight: 15, 
+    backgroundColor: '#F0F0F0' 
+  },
+  itemInfo: { 
+    flex: 1,
+    justifyContent: 'center',
+  },
+  sinhalaName: { 
+    fontSize: 16, 
+    color: '#333',
+    marginBottom: 4,
+  },
+  englishName: { 
+    fontSize: 14, 
+    color: '#666',
+    marginBottom: 8,
+  },
+  categoryBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+  },
+  harmfulBadge: {
+    backgroundColor: '#FEE2E2',
+  },
+  beneficialBadge: {
+    backgroundColor: '#D1FAE5',
+  },
+  categoryText: {
+    fontSize: 12,
+    marginLeft: 4,
+  },
+  harmfulText: {
+    color: '#EF4444',
+  },
+  beneficialText: {
+    color: '#059669',
+  },
   emptyContainer: { padding: 40, alignItems: 'center' },
   emptyText: { color: '#888', textAlign: 'center' },
-  deleteButton: { padding: 10 },
+  deleteButton: { 
+    padding: 10,
+    marginLeft: 10,
+  },
 });
 

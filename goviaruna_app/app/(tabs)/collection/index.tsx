@@ -88,13 +88,13 @@ export default function CollectionScreen() {
     });
 
     return (
-      <TouchableOpacity style={styles.card} onPress={() => router.push(`/collection/${item.id}`)}>
+      <TouchableOpacity style={styles.card} onPress={() => router.push({ pathname: '/collection/[id]', params: { id: item.id } })}>
         <View style={styles.cardHeader}>
           <View style={styles.cardIconContainer}>
             <Feather name="folder" size={24} color="#3A8A55" />
           </View>
           <View style={styles.cardContent}>
-            <Text style={[styles.cardTitle, getFontStyle('semiBold', 16, lang)]}>{item.name}</Text>
+            <Text style={[styles.cardTitle, getFontStyle('semiBold', 16, 'en')]}>{item.name}</Text>
             <Text style={[styles.cardDate, getFontStyle('regular', 12, lang)]}>{dateString}</Text>
             <Text style={[styles.cardItemsCount, getFontStyle('medium', 12, lang)]}>{item.items?.length || 0} කෘමීන්</Text>
           </View>

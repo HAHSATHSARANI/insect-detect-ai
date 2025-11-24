@@ -144,7 +144,7 @@ export default function CreateCollectionScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <TextInput
-            style={[styles.input, getFontStyle('regular', 16, lang)]}
+            style={[styles.input, getFontStyle('regular', 16, 'en')]}
             placeholder={t('collection.input_placeholder')}
             placeholderTextColor="#999"
             value={collectionName}
