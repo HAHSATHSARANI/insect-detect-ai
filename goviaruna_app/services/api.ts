@@ -57,6 +57,50 @@ export const api = {
       } catch (error) {
         throw error;
       }
+    },
+    getUser: async (userId: string) => {
+        try {
+            const response = await fetch(`${API_URL}/api/app/auth/user/${userId}`);
+            if (!response.ok) throw new Error('Failed to fetch user');
+            return await response.json();
+        } catch (error) { throw error; }
+    },
+    updateUser: async (userId: string, userData: any) => {
+        try {
+            const response = await fetch(`${API_URL}/api/app/auth/user/${userId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userData),
+            });
+            if (!response.ok) throw new Error('Failed to update user');
+            return await response.json();
+        } catch (error) { throw error; }
+    },
+    uploadProfileImage: async (userId: string, imageUri: string) => {
+        try {
+            const formData = new FormData();
+            const filename = imageUri.split('/').pop() || 'profile.jpg';
+            const match = /\.(\w+)$/.exec(filename);
+            const type = match ? `image/${match[1]}` : 'image/jpeg';
+
+            // @ts-ignore
+            formData.append('file', {
+                uri: imageUri,
+                name: filename,
+                type: type,
+            });
+
+            const response = await fetch(`${API_URL}/api/app/auth/user/${userId}/image`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+                body: formData,
+            });
+
+            if (!response.ok) throw new Error('Failed to upload profile image');
+            return await response.json();
+        } catch (error) { throw error; }
     }
   },
   insects: {

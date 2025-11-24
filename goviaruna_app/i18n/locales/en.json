@@ -112,5 +112,18 @@
     "error": "Error",
     "success": "Success",
     "loading": "Loading..."
+  },
+  "profile": {
+    "title": "Profile",
+    "name": "Name",
+    "district": "District",
+    "landSize": "Land Size (Acres)",
+    "email": "Email",
+    "editProfile": "Edit Profile",
+    "profileUpdated": "Profile updated successfully",
+    "photoUpdated": "Profile photo updated",
+    "uploadFailed": "Failed to upload photo. Please check your connection.",
+    "updateFailed": "Failed to update profile",
+    "selectImageFailed": "Failed to select image"
   }
 }

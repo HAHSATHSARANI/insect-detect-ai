@@ -26,6 +26,7 @@ def user_helper(doc) -> dict:
         "email": doc["email"],
         "district": doc.get("district", ""),
         "landSize": doc.get("landSize", ""),
+        "imageUrl": doc.get("imageUrl", ""),
         "role": "User"
     }
 

@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, Text, Image, TextInput, FlatList, TouchableOpacity, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { getFontStyle } from '@/constants/Fonts';
 import { Feather } from '@expo/vector-icons';
 import InsectCard from '@/components/InsectCard';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from 'react-i18next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { api, API_URL } from '@/services/api';
 
 const INSECT_DATA = [
   { id: '1', image: require('@/assets/images/insect_1.png'), title: 'ලේඩි බග් මකුණා', subtitle: 'Pilea Peperomioides', tag: 'Beneficial' },
@@ -18,12 +20,39 @@ export default function HomeScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
   const lang = i18n.language as 'si' | 'en';
+  const [user, setUser] = useState<any>(null);
 
   const CONTACT_ITEMS = [
     { icon: 'voicemail', title: 'Voice mail', subtitle: 'Send Voice Mail', key: '1' },
     { icon: 'mail', title: 'Mail', subtitle: 'Example@gmail.com', key: '2' },
     { icon: 'phone-call', title: 'whatsapp / Viber/ Skype', subtitle: '070 220 1920', key: '3' },
   ];
+
+  const loadUser = async () => {
+    try {
+      const userJson = await AsyncStorage.getItem('user');
+      if (userJson) {
+        const storedUser = JSON.parse(userJson);
+        setUser(storedUser);
+        
+        // Try to fetch fresh data, but don't fail if it doesn't work
+        try {
+          const freshUser = await api.auth.getUser(storedUser.id);
+          setUser(freshUser);
+        } catch (error) {
+          console.log('Could not fetch fresh user data, using stored data');
+        }
+      }
+    } catch (error) {
+      console.error('Error loading user:', error);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      loadUser();
+    }, [])
+  );
 
   const pickImage = async () => {
     try {
@@ -41,8 +70,20 @@ export default function HomeScreen() {
       }
     } catch (error) {
       console.error('Error picking image:', error);
-      Alert.alert(t('common.error'), t('common.error')); // Simplified error for now
+      Alert.alert(t('common.error'), 'Failed to select image');
     }
+  };
+
+  const getProfileImageUrl = () => {
+      if (user?.localImageUri) {
+          // Use local image if available (for offline functionality)
+          return { uri: user.localImageUri };
+      }
+      if (user?.imageUrl && !user.imageUrl.startsWith('local_')) {
+          return { uri: `${API_URL}/api/app/auth/image/${user.imageUrl}` };
+      }
+      // Use a generated avatar with user's name
+      return { uri: `https://ui-avatars.com/api/?name=${user?.name || 'User'}&background=3A8A55&color=fff&size=48` };
   };
 
   return (
@@ -51,10 +92,10 @@ export default function HomeScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
-          <Image source={{ uri: 'https://randomuser.me/api/portraits/women/44.jpg' }} style={styles.avatar} />
+          <Image source={getProfileImageUrl()} style={styles.avatar} />
           <View>
             <Text style={[styles.welcomeText, getFontStyle('regular', 16, lang)]}>{t('home.welcome')} 👋</Text>
-            <Text style={[styles.userName, getFontStyle('bold', 20, lang)]}>නදී</Text>
+            <Text style={[styles.userName, getFontStyle('bold', 20, lang)]}>{user?.name || 'User'}</Text>
           </View>
           <Text style={[styles.headerTitle, getFontStyle('bold', 22, lang)]}>{t('welcome.title')}</Text>
         </View>

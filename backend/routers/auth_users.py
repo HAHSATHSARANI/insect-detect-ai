@@ -1,7 +1,11 @@
-from fastapi import APIRouter, HTTPException
-from database import users_collection
-from schemas import UserCreate, UserLogin
+from fastapi import APIRouter, HTTPException, UploadFile, File, Body
+from database import users_collection, fs
+from schemas import UserCreate, UserLogin, UserUpdate
 from utils import hash_password, user_helper
+from bson import ObjectId
+from datetime import datetime
+import io
+from fastapi.responses import StreamingResponse
 
 router = APIRouter(
     prefix="/api/app/auth",
@@ -46,5 +50,46 @@ def login(user: UserLogin):
         "user": user_helper(existing_user)
     }
 
-from datetime import datetime
+@router.get("/user/{user_id}")
+def get_user(user_id: str):
+    user = users_collection.find_one({"_id": ObjectId(user_id)})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user_helper(user)
+
+@router.put("/user/{user_id}")
+def update_user(user_id: str, user_update: UserUpdate):
+    user = users_collection.find_one({"_id": ObjectId(user_id)})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    update_data = {k: v for k, v in user_update.dict().items() if v is not None}
+    
+    if update_data:
+        users_collection.update_one({"_id": ObjectId(user_id)}, {"$set": update_data})
+        
+    updated_user = users_collection.find_one({"_id": ObjectId(user_id)})
+    return user_helper(updated_user)
+
+@router.post("/user/{user_id}/image")
+async def upload_profile_image(user_id: str, file: UploadFile = File(...)):
+    user = users_collection.find_one({"_id": ObjectId(user_id)})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    contents = await file.read()
+    file_id = fs.put(contents, filename=file.filename, content_type=file.content_type)
+    
+    users_collection.update_one({"_id": ObjectId(user_id)}, {"$set": {"imageUrl": str(file_id)}})
+    
+    return {"fileId": str(file_id), "filename": file.filename}
+
+@router.get("/image/{file_id}")
+def get_profile_image(file_id: str):
+    try:
+        file_obj = fs.get(ObjectId(file_id))
+        return StreamingResponse(io.BytesIO(file_obj.read()), media_type=file_obj.content_type)
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=f"Image not found: {str(e)}")
+
 

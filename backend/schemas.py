@@ -79,6 +79,12 @@ class UserLogin(BaseModel):
     password: str
 
 
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    district: Optional[str] = None
+    landSize: Optional[str] = None
+
+
 # Chat Models
 class ChatMessage(BaseModel):
     id: Optional[str] = None
