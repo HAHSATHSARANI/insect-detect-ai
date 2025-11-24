@@ -209,10 +209,16 @@ export default function InsectDetailsScreen() {
               </Text>
             </View>
           </View>
-          <Text style={[styles.scientificName, getFontStyle('regular', 16, lang)]}>{details.scientificName}</Text>
+          <Text style={[styles.scientificName, getFontStyle('regular', 16, 'en')]}>{details.scientificName}</Text>
           
-          <Text style={[styles.detailText, getFontStyle('regular', 15, lang)]}><Text style={[styles.detailLabel, getFontStyle('semiBold', 15, lang)]}>{t('insect_details.scientific_name')} :</Text> {details.scientificNameFull}</Text>
-          <Text style={[styles.detailText, getFontStyle('regular', 15, lang)]}><Text style={[styles.detailLabel, getFontStyle('semiBold', 15, lang)]}>{t('insect_details.family')} :</Text> {details.family}</Text>
+          <Text style={[styles.detailText, getFontStyle('regular', 15, lang)]}>
+            <Text style={[styles.detailLabel, getFontStyle('semiBold', 15, lang)]}>{t('insect_details.scientific_name')} :</Text> 
+            <Text style={getFontStyle('regular', 15, 'en')}> {details.scientificNameFull}</Text>
+          </Text>
+          <Text style={[styles.detailText, getFontStyle('regular', 15, lang)]}>
+            <Text style={[styles.detailLabel, getFontStyle('semiBold', 15, lang)]}>{t('insect_details.family')} :</Text> 
+            <Text style={getFontStyle('regular', 15, 'en')}> {details.family}</Text>
+          </Text>
           
           <Text style={[styles.description, getFontStyle('regular', 15, lang)]}>{details.description}</Text>
 

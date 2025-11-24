@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, StyleSheet, Text, Image, TouchableOpacity } from 'react-native';
-import { Fonts } from '@/constants/Fonts';
+import { getFontStyle } from '@/constants/Fonts';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 
 export type InsectCardProps = {
   imageSource: any;
@@ -12,6 +13,8 @@ export type InsectCardProps = {
 };
 
 const InsectCard: React.FC<InsectCardProps> = ({ imageSource, title, subtitle, tag, onPress }) => {
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language as 'si' | 'en';
   const isHarmful = tag === 'Harmful';
   const router = useRouter();
 
@@ -23,15 +26,21 @@ const InsectCard: React.FC<InsectCardProps> = ({ imageSource, title, subtitle, t
     }
   };
 
+  const translatedTag = isHarmful ? t('insect_details.harmful') : t('insect_details.beneficial');
+
   return (
     <TouchableOpacity style={styles.cardContainer} onPress={handlePress} activeOpacity={0.8}>
       <Image source={imageSource} style={styles.image} />
       <View style={styles.textContainer}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.subtitle}>{subtitle}</Text>
+        <Text style={[styles.title, getFontStyle('semiBold', 16, lang)]}>{title}</Text>
+        <Text style={[styles.subtitle, getFontStyle('regular', 12, 'en')]}>{subtitle}</Text>
         <View style={[styles.tagContainer, isHarmful ? styles.harmfulTag : styles.beneficialTag]}>
-          <Text style={[styles.tagText, isHarmful ? styles.harmfulText : styles.beneficialText]}>
-            {tag}
+          <Text style={[
+            styles.tagText, 
+            isHarmful ? styles.harmfulText : styles.beneficialText,
+            getFontStyle('medium', 12, lang)
+          ]}>
+            {translatedTag}
           </Text>
         </View>
       </View>
@@ -66,14 +75,10 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   title: {
-    ...Fonts.styles.semiBold,
-    fontSize: 16,
     color: '#333333',
     marginBottom: 4,
   },
   subtitle: {
-    ...Fonts.styles.regular,
-    fontSize: 12,
     color: '#888888',
     marginBottom: 8,
   },
@@ -90,8 +95,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#D1FAE5', // Light green
   },
   tagText: {
-    ...Fonts.styles.medium,
-    fontSize: 12,
+    // Font handled dynamically
   },
   harmfulText: {
     color: '#EF4444', // Red

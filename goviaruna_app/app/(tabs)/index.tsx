@@ -111,8 +111,8 @@ export default function HomeScreen() {
                 <Feather name={item.icon as any} size={24} color="#3A8A55" />
               </View>
               <View style={styles.contactTextContainer}>
-                <Text style={[styles.contactTitle, getFontStyle('semiBold', 16, lang)]}>{item.title}</Text>
-                <Text style={[styles.contactSubtitle, getFontStyle('regular', 14, lang)]}>{item.subtitle}</Text>
+                <Text style={[styles.contactTitle, getFontStyle('semiBold', 16, 'en')]}>{item.title}</Text>
+                <Text style={[styles.contactSubtitle, getFontStyle('regular', 14, 'en')]}>{item.subtitle}</Text>
               </View>
               <Feather name="chevron-right" size={24} color="#BDBDBD" />
             </TouchableOpacity>
