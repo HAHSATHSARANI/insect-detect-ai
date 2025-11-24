@@ -15,6 +15,11 @@ export default function RootLayout() {
     'AbhayaLibre-SemiBold': require('../assets/fonts/AbhayaLibre-SemiBold.ttf'),
     'AbhayaLibre-Bold': require('../assets/fonts/AbhayaLibre-Bold.ttf'),
     'AbhayaLibre-ExtraBold': require('../assets/fonts/AbhayaLibre-ExtraBold.ttf'),
+    'Lato-Regular': require('../assets/fonts/Lato/Lato-Regular.ttf'),
+    'Lato-Bold': require('../assets/fonts/Lato/Lato-Bold.ttf'),
+    'Lato-Light': require('../assets/fonts/Lato/Lato-Light.ttf'),
+    'Lato-Thin': require('../assets/fonts/Lato/Lato-Thin.ttf'),
+    'Lato-Black': require('../assets/fonts/Lato/Lato-Black.ttf'),
   });
 
   if (!loaded) {

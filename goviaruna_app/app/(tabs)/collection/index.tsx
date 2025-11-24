@@ -1,26 +1,17 @@
 import React, { useCallback, useState } from 'react';
 import { View, StyleSheet, Text, Image, TouchableOpacity, FlatList, RefreshControl, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { Fonts } from '@/constants/Fonts';
+import { Fonts, getFontStyle } from '@/constants/Fonts';
 import { Feather } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { api } from '@/services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const COLLECTION_CONTENT = {
-  title: 'එකතුව',
-  emptyTitle: 'ඔබට එකතුවක් නැත.',
-  emptySubtitle: 'ඔබේ කෘමියා එකතු කරන්න',
-  addButton: 'කෘමියා එකතු කරන්න',
-  deleteConfirmTitle: 'එකතුව මකන්න',
-  deleteConfirmMessage: 'ඔබට මෙම එකතුව මැකීමට අවශ්‍ය බව විශ්වාසද?',
-  deleteSuccess: 'එකතුව මකා දමන ලදී',
-  cancel: 'අවලංගු කරන්න',
-  delete: 'මකන්න',
-};
+import { useTranslation } from 'react-i18next';
 
 export default function CollectionScreen() {
   const router = useRouter();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language as 'si' | 'en';
   const [collections, setCollections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -65,22 +56,22 @@ export default function CollectionScreen() {
 
   const handleDelete = (id: string) => {
     Alert.alert(
-      COLLECTION_CONTENT.deleteConfirmTitle,
-      COLLECTION_CONTENT.deleteConfirmMessage,
+      t('collection.delete_confirm_title'),
+      t('collection.delete_confirm_message'),
       [
-        { text: COLLECTION_CONTENT.cancel, style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         { 
-          text: COLLECTION_CONTENT.delete, 
+          text: t('common.delete'), 
           style: 'destructive',
           onPress: async () => {
             try {
               await api.collections.delete(id);
               // Optimistic update or refresh
               setCollections(prev => prev.filter(c => c.id !== id));
-              Alert.alert('සාර්ථකයි', COLLECTION_CONTENT.deleteSuccess);
+              Alert.alert(t('common.success'), t('collection.delete_success'));
             } catch (error) {
               console.error('Delete error:', error);
-              Alert.alert('දෝෂයකි', 'එකතුව මැකීම අසාර්ථක විය');
+              Alert.alert(t('common.error'), t('collection.delete_fail'));
             }
           }
         }
@@ -90,7 +81,7 @@ export default function CollectionScreen() {
 
   const renderCollectionItem = ({ item }: { item: any }) => {
     const date = item.date ? new Date(item.date) : new Date(item.createdAt);
-    const dateString = date.toLocaleDateString('si-LK', { 
+    const dateString = date.toLocaleDateString(i18n.language === 'si' ? 'si-LK' : 'en-US', { 
       year: 'numeric', 
       month: 'long', 
       day: 'numeric' 
@@ -103,9 +94,9 @@ export default function CollectionScreen() {
             <Feather name="folder" size={24} color="#3A8A55" />
           </View>
           <View style={styles.cardContent}>
-            <Text style={styles.cardTitle}>{item.name}</Text>
-            <Text style={styles.cardDate}>{dateString}</Text>
-            <Text style={styles.cardItemsCount}>{item.items?.length || 0} කෘමීන්</Text>
+            <Text style={[styles.cardTitle, getFontStyle('semiBold', 16, lang)]}>{item.name}</Text>
+            <Text style={[styles.cardDate, getFontStyle('regular', 12, lang)]}>{dateString}</Text>
+            <Text style={[styles.cardItemsCount, getFontStyle('medium', 12, lang)]}>{item.items?.length || 0} කෘමීන්</Text>
           </View>
         </View>
         
@@ -137,7 +128,7 @@ export default function CollectionScreen() {
     <View style={styles.container}>
       <StatusBar style="dark" />
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>{COLLECTION_CONTENT.title}</Text>
+        <Text style={[styles.headerTitle, getFontStyle('bold', 22, lang)]}>{t('collection.title')}</Text>
         {collections.length > 0 && (
            <TouchableOpacity onPress={() => router.push('/collection/create')}>
              <Feather name="plus" size={24} color="#3A8A55" />
@@ -151,8 +142,8 @@ export default function CollectionScreen() {
             source={require('@/assets/images/empty_collection.png')}
             style={styles.emptyImage}
           />
-          <Text style={styles.emptyTitle}>{COLLECTION_CONTENT.emptyTitle}</Text>
-          <Text style={styles.emptySubtitle}>{COLLECTION_CONTENT.emptySubtitle}</Text>
+          <Text style={[styles.emptyTitle, getFontStyle('semiBold', 22, lang)]}>{t('collection.empty_title')}</Text>
+          <Text style={[styles.emptySubtitle, getFontStyle('regular', 16, lang)]}>{t('collection.empty_subtitle')}</Text>
           
           <TouchableOpacity 
             style={styles.addButton} 
@@ -160,7 +151,7 @@ export default function CollectionScreen() {
             onPress={() => router.push('/collection/create')}
           >
             <Feather name="plus-circle" size={22} color="#3A8A55" />
-            <Text style={styles.addButtonText}>{COLLECTION_CONTENT.addButton}</Text>
+            <Text style={[styles.addButtonText, getFontStyle('semiBold', 16, lang)]}>{t('collection.add_insect')}</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -195,8 +186,6 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F0F0F0',
   },
   headerTitle: {
-    ...Fonts.styles.bold,
-    fontSize: 22,
     color: '#222222',
   },
   listContent: {
@@ -236,20 +225,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cardTitle: {
-    ...Fonts.styles.semiBold,
-    fontSize: 16,
     color: '#222',
     marginBottom: 4,
   },
   cardDate: {
-    ...Fonts.styles.regular,
-    fontSize: 12,
     color: '#888',
     marginBottom: 2,
   },
   cardItemsCount: {
-    ...Fonts.styles.medium,
-    fontSize: 12,
     color: '#3A8A55',
   },
   cardActions: {
@@ -274,15 +257,11 @@ const styles = StyleSheet.create({
     marginBottom: 35,
   },
   emptyTitle: {
-    ...Fonts.styles.semiBold,
-    fontSize: 22,
     color: '#333333',
     textAlign: 'center',
     marginBottom: 10,
   },
   emptySubtitle: {
-    ...Fonts.styles.regular,
-    fontSize: 16,
     color: '#888888',
     textAlign: 'center',
     marginBottom: 35,
@@ -296,8 +275,6 @@ const styles = StyleSheet.create({
     borderRadius: 30,
   },
   addButtonText: {
-    ...Fonts.styles.semiBold,
-    fontSize: 16,
     color: '#3A8A55',
     marginLeft: 12,
   },

@@ -10,6 +10,25 @@ export const Fonts = {
   semiBold: 'AbhayaLibre-SemiBold',
   bold: 'AbhayaLibre-Bold',
   extraBold: 'AbhayaLibre-ExtraBold',
+
+  // English Fonts (Lato)
+  en: {
+    regular: 'Lato-Regular',
+    medium: 'Lato-Regular', // Lato doesn't have Medium, mapped to Regular
+    semiBold: 'Lato-Bold', // Mapped to Bold as Lato doesn't have SemiBold in the list provided, or could use Bold
+    bold: 'Lato-Bold',
+    extraBold: 'Lato-Black',
+    light: 'Lato-Light',
+  },
+  
+  // Sinhala Fonts (AbhayaLibre)
+  si: {
+    regular: 'AbhayaLibre-Regular',
+    medium: 'AbhayaLibre-Medium',
+    semiBold: 'AbhayaLibre-SemiBold',
+    bold: 'AbhayaLibre-Bold',
+    extraBold: 'AbhayaLibre-ExtraBold',
+  },
   
   // Font sizes
   sizes: {
@@ -55,11 +74,16 @@ export const Fonts = {
  */
 export const getFontStyle = (
   weight: 'regular' | 'medium' | 'semiBold' | 'bold' | 'extraBold' = 'regular',
-  fontSize?: number
-) => ({
-  ...Fonts.styles[weight],
-  ...(fontSize && { fontSize }),
-});
+  fontSize?: number,
+  language: 'en' | 'si' = 'si'
+) => {
+  const fontFamily = Fonts[language][weight];
+  return {
+    fontFamily,
+    fontWeight: 'normal' as const, // Custom fonts usually handle weight via family name
+    ...(fontSize && { fontSize }),
+  };
+};
 
 /**
  * Common text style presets

@@ -2,13 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, FlatList, Image, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Fonts } from '@/constants/Fonts';
+import { Fonts, getFontStyle } from '@/constants/Fonts';
 import { Feather } from '@expo/vector-icons';
 import { api, API_URL } from '@/services/api';
+import { useTranslation } from 'react-i18next';
 
 export default function CollectionDetailsScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language as 'si' | 'en';
   const [collection, setCollection] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -22,7 +25,7 @@ export default function CollectionDetailsScreen() {
       setCollection(data);
     } catch (error) {
       console.error('Error loading collection:', error);
-      Alert.alert('Error', 'Failed to load collection details');
+      Alert.alert(t('common.error'), t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -48,19 +51,19 @@ export default function CollectionDetailsScreen() {
 
   const handleDeleteItem = (index: number) => {
       Alert.alert(
-          "Delete Item",
-          "Are you sure you want to remove this item?",
+          t('collection.delete'),
+          t('collection.delete_confirm_message'),
           [
-              { text: "Cancel", style: "cancel" },
+              { text: t('common.cancel'), style: 'cancel' },
               { 
-                  text: "Delete", 
-                  style: "destructive",
+                  text: t('common.delete'), 
+                  style: 'destructive',
                   onPress: async () => {
                       try {
                           await api.collections.removeItem(id as string, index);
                           loadCollection(); // Reload
                       } catch (error) {
-                          Alert.alert("Error", "Failed to delete item");
+                          Alert.alert(t('common.error'), t('common.error'));
                       }
                   }
               }
@@ -79,7 +82,7 @@ export default function CollectionDetailsScreen() {
   if (!collection) {
     return (
       <View style={styles.container}>
-        <Text>Collection not found</Text>
+        <Text style={[styles.emptyText, getFontStyle('regular', 16, lang)]}>Collection not found</Text>
       </View>
     );
   }
@@ -94,9 +97,9 @@ export default function CollectionDetailsScreen() {
         <TouchableOpacity style={styles.itemCard} onPress={() => handleItemPress(item)}>
           <Image source={{ uri: imageUrl }} style={styles.itemImage} />
           <View style={styles.itemContent}>
-            <Text style={styles.itemName}>{item.insectName}</Text>
-            <Text style={styles.scientificName}>{item.scientificName}</Text>
-            <Text style={styles.category}>{item.category}</Text>
+            <Text style={[styles.itemName, getFontStyle('semiBold', 16, lang)]}>{item.insectName}</Text>
+            <Text style={[styles.scientificName, getFontStyle('regular', 12, lang)]}>{item.scientificName}</Text>
+            <Text style={[styles.category, getFontStyle('medium', 12, lang)]}>{item.category}</Text>
           </View>
           <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeleteItem(index)}>
               <Feather name="trash-2" size={20} color="#FF5252" />
@@ -112,7 +115,7 @@ export default function CollectionDetailsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Feather name="arrow-left" size={24} color="#222" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{collection.name}</Text>
+        <Text style={[styles.headerTitle, getFontStyle('bold', 20, lang)]}>{collection.name}</Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -123,7 +126,7 @@ export default function CollectionDetailsScreen() {
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No insects in this collection yet.</Text>
+            <Text style={[styles.emptyText, getFontStyle('regular', 16, lang)]}>{t('collection.empty_subtitle')}</Text>
           </View>
         }
       />
@@ -144,7 +147,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
   },
-  headerTitle: { ...Fonts.styles.bold, fontSize: 20, color: '#222' },
+  headerTitle: { fontSize: 20, color: '#222' },
   backButton: { padding: 5 },
   listContent: { padding: 20 },
   itemCard: {
@@ -157,11 +160,11 @@ const styles = StyleSheet.create({
   },
   itemImage: { width: 60, height: 60, borderRadius: 8, marginRight: 15, backgroundColor: '#eee' },
   itemContent: { flex: 1 },
-  itemName: { ...Fonts.styles.semiBold, fontSize: 16, color: '#333' },
-  scientificName: { ...Fonts.styles.regular, fontSize: 12, color: '#666' },
-  category: { ...Fonts.styles.medium, fontSize: 12, color: '#3A8A55', marginTop: 2 },
+  itemName: { fontSize: 16, color: '#333' },
+  scientificName: { fontSize: 12, color: '#666' },
+  category: { fontSize: 12, color: '#3A8A55', marginTop: 2 },
   emptyContainer: { padding: 40, alignItems: 'center' },
-  emptyText: { ...Fonts.styles.regular, color: '#888', textAlign: 'center' },
+  emptyText: { color: '#888', textAlign: 'center' },
   deleteButton: { padding: 10 },
 });
 

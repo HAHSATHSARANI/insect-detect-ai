@@ -7,10 +7,12 @@
   "onboarding": {
     "skip": "මගහරින්න",
     "next": "ඊළඟ",
-    "getStarted": "ආරම්භ කරන්න"
+    "getStarted": "ආරම්භ කරන්න",
+    "title": "කෘමීන් දැනගන්න, විශ්වාසයෙන් වැඩෙන්න",
+    "subtitle": "පළිබෝධකයන් කලින් හඳුනාගෙන, විසඳුම් සොයා ගෙන, ඔබේ අස්වැන්න පහසුවෙන් ආරක්ෂා කරගන්න."
   },
   "auth": {
-    "login": "පිවිසෙන්න",
+    "login": "ඇතුල් වන්න",
     "register": "ලියාපදිංචි වන්න",
     "email": "විද්‍යුත් ලිපිනය",
     "password": "මුරපදය",
@@ -20,12 +22,21 @@
     "verifyAccount": "ගිණුම සත්‍යාපනය",
     "verificationCode": "සත්‍යාපන කේතය",
     "resendCode": "කේතය නැවත යවන්න",
-    "verify": "සත්‍යාපනය කරන්න"
+    "verify": "සත්‍යාපනය කරන්න",
+    "welcome": "සාදරයෙන් පිළිගනිමු!",
+    "enterDetails": "කරුණාකර ඔබගේ විස්තර ඇතුළත් කරන්න.",
+    "or": "හෝ",
+    "signupGoogle": "Google සමඟ ලියාපදිංචි වන්න",
+    "notRegistered": "තවම ලියාපදිංචි වී නැද්ද? ",
+    "createAccount": "ගිණුමක් සාදන්න",
+    "alreadyAccount": "දැනටමත් ගිණුමක් තිබේද? "
   },
   "language": {
-    "selectLanguage": "භාෂාව තෝරන්න",
+    "title": "ගොවි අරුණ",
+    "subtitle": "ඔබේ භාෂාව තෝරන්න",
     "sinhala": "සිංහල",
-    "english": "English"
+    "english": "English",
+    "start": "ආරම්භ කරන්න"
   },
   "tabs": {
     "home": "මුල් පිටුව",
@@ -33,17 +44,73 @@
     "profile": "පැතිකඩ",
     "search": "සොයන්න"
   },
+  "home": {
+    "welcome": "ආයුබෝවන්",
+    "searchPlaceholder": "සොයන්න",
+    "detectAction": "කැමරාවෙන් හදුනාගන්න",
+    "uploadAction": "ගොනුවකින් එකතු කරන්න",
+    "commonInsectsTitle": "වඩාත් සුලබ කෘමීන්",
+    "commonInsectsSubtitle": "ශ්‍රී ලංකාවේ බහුලවම වාර්තා වන කෘමීන්",
+    "contactTitle": "හදිසි ඇමතුම්",
+    "mapTitle": "ගොවිජන සේවා මධ්‍යස්ථාන"
+  },
   "collection": {
+    "title": "එකතුව",
     "add": "එකතුවක් එක් කරන්න",
+    "edit": "එකතුව සංස්කරණය",
     "empty_title": "ඔබට එකතුවක් නැත.",
     "empty_subtitle": "ඔබේ කෘමියා එකතු කරන්න",
-    "add_insect": "කෘමියා එකතු කරන්න"
+    "add_insect": "කෘමියා එකතු කරන්න",
+    "create_title": "එකතුව එකතු කරන්න",
+    "input_placeholder": "එකතුවේ නම ඇතුලත් කරන්න",
+    "cancel": "අවලංගු කරන්න",
+    "create": "නිර්මාණය කරන්න",
+    "update": "යාවත්කාලීන කරන්න",
+    "delete_confirm_title": "එකතුව මකන්න",
+    "delete_confirm_message": "ඔබට මෙම එකතුව මැකීමට අවශ්‍ය බව විශ්වාසද?",
+    "delete_success": "එකතුව මකා දමන ලදී",
+    "delete": "මකන්න",
+    "select_collection": "එකතුව තෝරන්න",
+    "no_collections": "එකතු කිසිවක් නැත. කරුණාකර පළමුව එකතුවක් සාදන්න."
+  },
+  "insect_details": {
+    "analyzing": "විශ්ලේෂණය කරමින්...",
+    "save": "ගබඩා කරන්න",
+    "info": "තොරතුරු",
+    "damage": "හානිය",
+    "control": "පාලනය",
+    "lifecycle": "ජීවන චක්‍රය",
+    "damage_symptoms": "හානි ලක්ෂණ",
+    "control_methods": "පාලන ක්‍රම",
+    "images": "රූප",
+    "beneficial": "හිතකරයි",
+    "harmful": "හානිකරයි",
+    "scientific_name": "විද්‍යාත්මක නම",
+    "family": "කුලය",
+    "resistant_varieties": "ප්‍රතිරෝධී වී ප්‍රභේද",
+    "pesticides": "කෘමි නාශක",
+    "eco_friendly": "පරිසර හිතකාමී විසඳුම්",
+    "additional_notes": "වෙනත් කරුණු",
+    "chemical_control": "කෘමි නාශක",
+    "saved_success": "එකතුවට එකතු කරන ලදී",
+    "saved_fail": "සුරැකීම අසාර්ථක විය",
+    "analysis_fail": "විශ්ලේෂණය අසාර්ථකයි",
+    "retry": "කරුණාකර නැවත උත්සාහ කරන්න"
+  },
+  "camera": {
+    "permission_title": "We need your permission to show the camera",
+    "grant_permission": "Grant Permission",
+    "instruction": "රාමුව තුල එක් කෘමියෙකු අල්ලා ගන්න",
+    "help": "සහාය ඉල්ලන්න"
   },
   "common": {
     "continue": "ඉදිරියට",
     "back": "ආපසු",
     "cancel": "අවලංගු කරන්න",
     "save": "සුරකින්න",
-    "ok": "හරි"
+    "ok": "හරි",
+    "error": "දෝෂයකි",
+    "success": "සාර්ථකයි",
+    "loading": "රැඳී සිටින්න..."
   }
 }

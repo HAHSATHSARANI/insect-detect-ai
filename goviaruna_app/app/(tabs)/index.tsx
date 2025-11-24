@@ -1,28 +1,12 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, Text, Image, TextInput, FlatList, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, Text, Image, TextInput, FlatList, TouchableOpacity, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { Fonts } from '@/constants/Fonts';
+import { getFontStyle } from '@/constants/Fonts';
 import { Feather } from '@expo/vector-icons';
 import InsectCard from '@/components/InsectCard';
 import { useRouter } from 'expo-router';
-
-const HOME_CONTENT = {
-  welcome: 'ආයුබෝවන්',
-  userName: 'නදී',
-  title: 'ගොවි අරුණ',
-  searchPlaceholder: 'සොයන්න',
-  detectAction: 'කැමරාවෙන් හදුනාගන්න',
-  uploadAction: 'ගොනුවකින් එකතු කරන්න',
-  commonInsectsTitle: 'වඩාත් සුලබ කෘමීන්',
-  commonInsectsSubtitle: 'ශ්‍රී ලංකාවේ බහුලවම වාර්තා වන කෘමීන්',
-  contactTitle: 'හදිසි ඇමතුම්',
-  contactItems: [
-    { icon: 'voicemail', title: 'Voice mail', subtitle: 'Send Voice Mail', key: '1' },
-    { icon: 'mail', title: 'Mail', subtitle: 'Example@gmail.com', key: '2' },
-    { icon: 'phone-call', title: 'whatsapp / Viber/ Skype', subtitle: '070 220 1920', key: '3' },
-  ],
-  mapTitle: 'ගොවිජන සේවා මධ්‍යස්ථාන',
-};
+import * as ImagePicker from 'expo-image-picker';
+import { useTranslation } from 'react-i18next';
 
 const INSECT_DATA = [
   { id: '1', image: require('@/assets/images/insect_1.png'), title: 'ලේඩි බග් මකුණා', subtitle: 'Pilea Peperomioides', tag: 'Beneficial' },
@@ -32,6 +16,35 @@ const INSECT_DATA = [
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language as 'si' | 'en';
+
+  const CONTACT_ITEMS = [
+    { icon: 'voicemail', title: 'Voice mail', subtitle: 'Send Voice Mail', key: '1' },
+    { icon: 'mail', title: 'Mail', subtitle: 'Example@gmail.com', key: '2' },
+    { icon: 'phone-call', title: 'whatsapp / Viber/ Skype', subtitle: '070 220 1920', key: '3' },
+  ];
+
+  const pickImage = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: false,
+        quality: 1,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        router.push({
+          pathname: '/insect-details',
+          params: { imageUri: result.assets[0].uri }
+        });
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert(t('common.error'), t('common.error')); // Simplified error for now
+    }
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
@@ -40,18 +53,18 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <Image source={{ uri: 'https://randomuser.me/api/portraits/women/44.jpg' }} style={styles.avatar} />
           <View>
-            <Text style={styles.welcomeText}>{HOME_CONTENT.welcome} 👋</Text>
-            <Text style={styles.userName}>{HOME_CONTENT.userName}</Text>
+            <Text style={[styles.welcomeText, getFontStyle('regular', 16, lang)]}>{t('home.welcome')} 👋</Text>
+            <Text style={[styles.userName, getFontStyle('bold', 20, lang)]}>නදී</Text>
           </View>
-          <Text style={styles.headerTitle}>{HOME_CONTENT.title}</Text>
+          <Text style={[styles.headerTitle, getFontStyle('bold', 22, lang)]}>{t('welcome.title')}</Text>
         </View>
 
         {/* Search Bar */}
         <View style={styles.searchContainer}>
           <Feather name="search" size={22} color="#888" style={styles.searchIcon} />
           <TextInput
-            placeholder={HOME_CONTENT.searchPlaceholder}
-            style={styles.searchInput}
+            placeholder={t('home.searchPlaceholder')}
+            style={[styles.searchInput, getFontStyle('regular', 16, lang)]}
             placeholderTextColor="#888"
           />
         </View>
@@ -60,18 +73,18 @@ export default function HomeScreen() {
         <View style={styles.actionCardContainer}>
           <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/camera')}>
             <Feather name="camera" size={28} color="#3A8A55" />
-            <Text style={styles.actionText}>{HOME_CONTENT.detectAction}</Text>
+            <Text style={[styles.actionText, getFontStyle('semiBold', 14, lang)]}>{t('home.detectAction')}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionCard}>
+          <TouchableOpacity style={styles.actionCard} onPress={pickImage}>
             <Feather name="folder-plus" size={28} color="#3A8A55" />
-            <Text style={styles.actionText}>{HOME_CONTENT.uploadAction}</Text>
+            <Text style={[styles.actionText, getFontStyle('semiBold', 14, lang)]}>{t('home.uploadAction')}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Common Insects Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{HOME_CONTENT.commonInsectsTitle}</Text>
-          <Text style={styles.sectionSubtitle}>{HOME_CONTENT.commonInsectsSubtitle}</Text>
+          <Text style={[styles.sectionTitle, getFontStyle('bold', 20, lang)]}>{t('home.commonInsectsTitle')}</Text>
+          <Text style={[styles.sectionSubtitle, getFontStyle('regular', 14, lang)]}>{t('home.commonInsectsSubtitle')}</Text>
           <FlatList
             data={INSECT_DATA}
             horizontal
@@ -91,15 +104,15 @@ export default function HomeScreen() {
         
         {/* Contact Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{HOME_CONTENT.contactTitle}</Text>
-          {HOME_CONTENT.contactItems.map(item => (
+          <Text style={[styles.sectionTitle, getFontStyle('bold', 20, lang)]}>{t('home.contactTitle')}</Text>
+          {CONTACT_ITEMS.map(item => (
             <TouchableOpacity key={item.key} style={styles.contactItem}>
               <View style={styles.contactIconContainer}>
                 <Feather name={item.icon as any} size={24} color="#3A8A55" />
               </View>
               <View style={styles.contactTextContainer}>
-                <Text style={styles.contactTitle}>{item.title}</Text>
-                <Text style={styles.contactSubtitle}>{item.subtitle}</Text>
+                <Text style={[styles.contactTitle, getFontStyle('semiBold', 16, lang)]}>{item.title}</Text>
+                <Text style={[styles.contactSubtitle, getFontStyle('regular', 14, lang)]}>{item.subtitle}</Text>
               </View>
               <Feather name="chevron-right" size={24} color="#BDBDBD" />
             </TouchableOpacity>
@@ -108,7 +121,7 @@ export default function HomeScreen() {
         
         {/* Map Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{HOME_CONTENT.mapTitle}</Text>
+          <Text style={[styles.sectionTitle, getFontStyle('bold', 20, lang)]}>{t('home.mapTitle')}</Text>
            <Image source={require('@/assets/images/sample_map.png')} style={styles.mapImage} />
         </View>
       </ScrollView>
@@ -135,18 +148,12 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   welcomeText: {
-    ...Fonts.styles.regular,
-    fontSize: 16,
     color: '#666',
   },
   userName: {
-    ...Fonts.styles.bold,
-    fontSize: 20,
     color: '#222',
   },
   headerTitle: {
-    ...Fonts.styles.bold,
-    fontSize: 22,
     color: '#222',
     position: 'absolute',
     right: 20,
@@ -166,7 +173,6 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   searchInput: {
-    ...Fonts.styles.regular,
     flex: 1,
     height: 55,
     fontSize: 16,
@@ -186,8 +192,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   actionText: {
-    ...Fonts.styles.semiBold,
-    fontSize: 14,
     color: '#3A8A55',
     marginTop: 10,
     textAlign: 'center',
@@ -197,13 +201,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   sectionTitle: {
-    ...Fonts.styles.bold,
-    fontSize: 20,
     color: '#222',
   },
   sectionSubtitle: {
-    ...Fonts.styles.regular,
-    fontSize: 14,
     color: '#666',
     marginTop: 4,
   },
@@ -228,13 +228,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contactTitle: {
-    ...Fonts.styles.semiBold,
-    fontSize: 16,
     color: '#333',
   },
   contactSubtitle: {
-    ...Fonts.styles.regular,
-    fontSize: 14,
     color: '#888',
   },
   mapImage: {

@@ -1,23 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { StatusBar } from 'expo-status-bar';
-import { Fonts } from '@/constants/Fonts';
+import { Fonts, getFontStyle } from '@/constants/Fonts';
 import { BackButton } from '@/components/BackButton';
-
-const LANG_CONTENT = {
-  title: 'ගොවි අරුණ',
-  subtitle: 'ඔබේ භාෂාව තෝරන්න',
-  sinhala: 'සිංහල',
-  english: 'English',
-  startButton: 'ආරම්භ කරන්න',
-};
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LanguageSelectionScreen() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const [selectedLang, setSelectedLang] = useState(i18n.language);
+
+  useEffect(() => {
+    setSelectedLang(i18n.language);
+  }, [i18n.language]);
 
   const handleLanguageSelect = (language: string) => {
     setSelectedLang(language);
@@ -25,8 +22,11 @@ export default function LanguageSelectionScreen() {
   
   const handleStart = async () => {
     await i18n.changeLanguage(selectedLang);
-    router.push('/(tabs)'); // Navigate to the main app tabs
+    await AsyncStorage.setItem('language', selectedLang);
+    router.replace('/(tabs)'); // Navigate to the main app tabs
   };
+
+  const currentLang = selectedLang as 'si' | 'en';
 
   return (
     <View style={styles.container}>
@@ -34,8 +34,8 @@ export default function LanguageSelectionScreen() {
       <BackButton />
       
       <View style={styles.header}>
-        <Text style={styles.title}>{LANG_CONTENT.title}</Text>
-        <Text style={styles.subtitle}>{LANG_CONTENT.subtitle}</Text>
+        <Text style={[styles.title, getFontStyle('bold', 36, currentLang)]}>{t('language.title')}</Text>
+        <Text style={[styles.subtitle, getFontStyle('regular', 18, currentLang)]}>{t('language.subtitle')}</Text>
       </View>
 
       <View style={styles.buttonGroup}>
@@ -44,8 +44,12 @@ export default function LanguageSelectionScreen() {
           onPress={() => handleLanguageSelect('si')}
           activeOpacity={0.8}
         >
-          <Text style={[styles.languageText, selectedLang === 'si' && styles.selectedText]}>
-            {LANG_CONTENT.sinhala}
+          <Text style={[
+            styles.languageText, 
+            selectedLang === 'si' && styles.selectedText,
+            getFontStyle('semiBold', 18, 'si')
+          ]}>
+            {t('language.sinhala')}
           </Text>
         </TouchableOpacity>
 
@@ -54,8 +58,12 @@ export default function LanguageSelectionScreen() {
           onPress={() => handleLanguageSelect('en')}
           activeOpacity={0.8}
         >
-          <Text style={[styles.languageText, selectedLang === 'en' && styles.selectedText]}>
-            {LANG_CONTENT.english}
+          <Text style={[
+            styles.languageText, 
+            selectedLang === 'en' && styles.selectedText,
+            getFontStyle('semiBold', 18, 'en')
+          ]}>
+            {t('language.english')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -65,7 +73,9 @@ export default function LanguageSelectionScreen() {
         onPress={handleStart}
         activeOpacity={0.8}
       >
-        <Text style={styles.startButtonText}>{LANG_CONTENT.startButton}</Text>
+        <Text style={[styles.startButtonText, getFontStyle('semiBold', 18, currentLang)]}>
+          {t('language.start')}
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -84,14 +94,10 @@ const styles = StyleSheet.create({
     marginBottom: 50,
   },
   title: {
-    ...Fonts.styles.bold,
-    fontSize: 36,
     color: '#222222',
     marginBottom: 12,
   },
   subtitle: {
-    ...Fonts.styles.regular,
-    fontSize: 18,
     color: '#666666',
   },
   buttonGroup: {
@@ -112,8 +118,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#E8F5E9',
   },
   languageText: {
-    ...Fonts.styles.semiBold,
-    fontSize: 18,
     color: '#333333',
   },
   selectedText: {
@@ -129,8 +133,6 @@ const styles = StyleSheet.create({
     bottom: 50,
   },
   startButtonText: {
-    ...Fonts.styles.semiBold,
-    fontSize: 18,
     color: '#FFFFFF',
   },
 });

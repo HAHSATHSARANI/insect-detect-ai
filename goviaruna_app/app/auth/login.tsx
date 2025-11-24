@@ -2,28 +2,19 @@ import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ScrollView, Text, Image, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Fonts } from '@/constants/Fonts';
+import { Fonts, getFontStyle } from '@/constants/Fonts';
 import { BackButton } from '@/components/BackButton';
 import { Feather, AntDesign } from '@expo/vector-icons';
 import { api } from '@/services/api';
+import { useTranslation } from 'react-i18next';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const LOGIN_CONTENT = {
-  title: 'ඇතුල් වන්න',
-  subtitle: 'සාදරයෙන් පිළිගනිමු! කරුණාකර ඔබගේ විස්තර ඇතුළත් කරන්න.',
-  email: 'ඔබගේ විද්‍යුත් තැපෑල ඇතුළත් කරන්න',
-  password: 'මුරපදය ඇතුළත් කරන්න',
-  forgotPassword: 'මුරපදය අමතක වුණා ද?',
-  loginButton: 'ඇතුල් වන්න',
-  or: 'හෝ',
-  googleButton: 'Google සමඟ ලියාපදිංචි වන්න',
-  registerPrompt: 'තවම ලියාපදිංචි වී නැද්ද? ',
-  registerLink: 'ගිණුමක් සාදන්න',
-};
-
 export default function LoginScreen() {
   const router = useRouter();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language as 'si' | 'en';
+  
   const [email, setEmail] = useState('mihin@gmail.com');
   const [password, setPassword] = useState('mihin1234');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -31,7 +22,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('දෝෂයකි', 'කරුණාකර විද්‍යුත් තැපෑල සහ මුරපදය ඇතුළත් කරන්න');
+      Alert.alert(t('common.error'), t('auth.enterDetails'));
       return;
     }
 
@@ -52,7 +43,7 @@ export default function LoginScreen() {
       router.replace('/(tabs)'); 
     } catch (error: any) {
       console.error('Login error:', error);
-      Alert.alert('ඇතුල් වීම අසාර්ථකයි', error.message || 'කරුණාකර නැවත උත්සාහ කරන්න');
+      Alert.alert(t('common.error'), error.message || t('common.error'));
     } finally {
       setIsLoading(false);
     }
@@ -79,14 +70,14 @@ export default function LoginScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.header}>
-            <Text style={styles.title}>{LOGIN_CONTENT.title}</Text>
-            <Text style={styles.subtitle}>{LOGIN_CONTENT.subtitle}</Text>
+            <Text style={[styles.title, getFontStyle('bold', 32, lang)]}>{t('auth.login')}</Text>
+            <Text style={[styles.subtitle, getFontStyle('regular', 16, lang)]}>{t('auth.enterDetails')}</Text>
           </View>
 
           <View style={styles.formContainer}>
             <TextInput
-              style={styles.input}
-              placeholder={LOGIN_CONTENT.email}
+              style={[styles.input, getFontStyle('regular', 16, lang)]}
+              placeholder={t('auth.email')}
               placeholderTextColor="#999"
               value={email}
               onChangeText={setEmail}
@@ -95,8 +86,8 @@ export default function LoginScreen() {
             />
             <View style={styles.passwordContainer}>
               <TextInput
-                style={styles.inputPassword}
-                placeholder={LOGIN_CONTENT.password}
+                style={[styles.inputPassword, getFontStyle('regular', 16, lang)]}
+                placeholder={t('auth.password')}
                 placeholderTextColor="#999"
                 value={password}
                 onChangeText={setPassword}
@@ -109,7 +100,7 @@ export default function LoginScreen() {
             </View>
 
             <TouchableOpacity onPress={handleForgotPassword} style={styles.forgotPasswordContainer}>
-              <Text style={styles.forgotPasswordText}>{LOGIN_CONTENT.forgotPassword}</Text>
+              <Text style={[styles.forgotPasswordText, getFontStyle('semiBold', 14, lang)]}>{t('auth.forgotPassword')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
@@ -121,14 +112,14 @@ export default function LoginScreen() {
               {isLoading ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
-                <Text style={styles.buttonText}>{LOGIN_CONTENT.loginButton}</Text>
+                <Text style={[styles.buttonText, getFontStyle('semiBold', 18, lang)]}>{t('auth.login')}</Text>
               )}
             </TouchableOpacity>
           </View>
           
           <View style={styles.dividerContainer}>
             <View style={styles.divider} />
-            <Text style={styles.orText}>{LOGIN_CONTENT.or}</Text>
+            <Text style={[styles.orText, getFontStyle('regular', 14, lang)]}>{t('auth.or')}</Text>
             <View style={styles.divider} />
           </View>
           
@@ -137,13 +128,13 @@ export default function LoginScreen() {
             activeOpacity={0.8}
           >
             <Image source={require('@/assets/images/google.png')} style={styles.googleIcon} />
-            <Text style={styles.googleButtonText}>{LOGIN_CONTENT.googleButton}</Text>
+            <Text style={[styles.googleButtonText, getFontStyle('semiBold', 16, lang)]}>{t('auth.signupGoogle')}</Text>
           </TouchableOpacity>
 
           <View style={styles.registerContainer}>
-            <Text style={styles.registerText}>{LOGIN_CONTENT.registerPrompt}</Text>
+            <Text style={[styles.registerText, getFontStyle('regular', 15, lang)]}>{t('auth.notRegistered')}</Text>
             <TouchableOpacity onPress={handleRegister}>
-              <Text style={styles.registerLink}>{LOGIN_CONTENT.registerLink}</Text>
+              <Text style={[styles.registerLink, getFontStyle('semiBold', 15, lang)]}>{t('auth.createAccount')}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

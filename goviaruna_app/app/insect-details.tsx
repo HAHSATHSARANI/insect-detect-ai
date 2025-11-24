@@ -2,34 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Text, Image, TouchableOpacity, Dimensions, ActivityIndicator, Alert, Modal, FlatList } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Fonts } from '@/constants/Fonts';
+import { Fonts, getFontStyle } from '@/constants/Fonts';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import PagerView from 'react-native-pager-view';
 import { api } from '@/services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
 
 const { width, height } = Dimensions.get('window');
 
-// Initial fallback data
-const INITIAL_INSECT_DETAILS = {
-  name: 'විශ්ලේෂණය කරමින්...',
-  scientificName: '(Analyzing...)',
-  commonName: '',
-  scientificNameFull: '...',
-  family: '...',
-  description: 'රූපය විශ්ලේෂණය කරමින් පවතී. කරුණාකර රැඳී සිටින්න.',
-  images: [],
-  tabs: ['තොරතුරු', 'හානිය', 'පාලනය'],
-  lifeCycleTitle: 'ජීවන චක්‍රය',
-  lifeCycleContent: '...',
-  damageSymptomsTitle: 'හානි ලක්ෂණ',
-  damageSymptomsContent: '...',
-  controlMethodsTitle: 'පාලන ක්‍රම',
-  controlMethodsContent: '...',
-  relatedImagesTitle: 'රූප',
-};
-
 export default function InsectDetailsScreen() {
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language as 'si' | 'en';
   const router = useRouter();
   const params = useLocalSearchParams();
   const imageUri = params.imageUri as string;
@@ -37,10 +21,41 @@ export default function InsectDetailsScreen() {
   
   const [activeTab, setActiveTab] = useState(0);
   const [loading, setLoading] = useState(!savedDataStr && !!imageUri);
+  
+  const INITIAL_INSECT_DETAILS = {
+    name: t('insect_details.analyzing'),
+    scientificName: '(Analyzing...)',
+    commonName: '',
+    scientificNameFull: '...',
+    family: '...',
+    description: t('insect_details.analyzing'),
+    images: [],
+    tabs: [t('insect_details.info'), t('insect_details.damage'), t('insect_details.control')],
+    lifeCycleTitle: t('insect_details.lifecycle'),
+    lifeCycleContent: '...',
+    damageSymptomsTitle: t('insect_details.damage_symptoms'),
+    damageSymptomsContent: '...',
+    controlMethodsTitle: t('insect_details.control_methods'),
+    controlMethodsContent: '...',
+    relatedImagesTitle: t('insect_details.images'),
+  };
+
   const [details, setDetails] = useState<any>(INITIAL_INSECT_DETAILS);
   const [modalVisible, setModalVisible] = useState(false);
   const [collections, setCollections] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    // Update initial details when language changes
+    setDetails(prev => ({
+      ...prev,
+      tabs: [t('insect_details.info'), t('insect_details.damage'), t('insect_details.control')],
+      lifeCycleTitle: t('insect_details.lifecycle'),
+      damageSymptomsTitle: t('insect_details.damage_symptoms'),
+      controlMethodsTitle: t('insect_details.control_methods'),
+      relatedImagesTitle: t('insect_details.images'),
+    }));
+  }, [lang]);
 
   useEffect(() => {
     if (savedDataStr) {
@@ -66,18 +81,18 @@ export default function InsectDetailsScreen() {
   const analyzeImage = async () => {
     try {
       const result = await api.insects.classify(imageUri);
-      setDetails({
-        ...INITIAL_INSECT_DETAILS,
+      setDetails(prev => ({
+        ...prev,
         ...result,
         images: [
           // Try to use provided images if available, otherwise fallbacks
           require('@/assets/images/insect_3.jpg'),
           require('@/assets/images/insect_3.jpg')
         ] 
-      });
+      }));
     } catch (error) {
       console.error('Analysis failed:', error);
-      Alert.alert('විශ්ලේෂණය අසාර්ථකයි', 'කරුණාකර නැවත උත්සාහ කරන්න');
+      Alert.alert(t('insect_details.analysis_fail'), t('insect_details.retry'));
     } finally {
       setLoading(false);
     }
@@ -89,7 +104,7 @@ export default function InsectDetailsScreen() {
       try {
           const userJson = await AsyncStorage.getItem('user');
           if (!userJson) {
-              Alert.alert('Error', 'Please login to save');
+              Alert.alert(t('common.error'), t('auth.login')); // Prompt login
               return;
           }
           const user = JSON.parse(userJson);
@@ -98,7 +113,7 @@ export default function InsectDetailsScreen() {
           setModalVisible(true);
       } catch (error) {
           console.error('Error fetching collections', error);
-          Alert.alert('Error', 'Failed to load collections');
+          Alert.alert(t('common.error'), t('common.error'));
       }
   };
 
@@ -125,10 +140,10 @@ export default function InsectDetailsScreen() {
           await api.collections.addItem(collectionId, itemData);
           
           setModalVisible(false);
-          Alert.alert('සාර්ථකයි', 'එකතුවට එකතු කරන ලදී');
+          Alert.alert(t('common.success'), t('insect_details.saved_success'));
       } catch (error) {
           console.error('Save error:', error);
-          Alert.alert('අසාර්ථකයි', 'සුරැකීම අසාර්ථක විය');
+          Alert.alert(t('common.error'), t('insect_details.saved_fail'));
       } finally {
           setSaving(false);
       }
@@ -146,7 +161,7 @@ export default function InsectDetailsScreen() {
       {loading && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color="#3A8A55" />
-          <Text style={styles.loadingText}>රූපය විශ්ලේෂණය කරමින්...</Text>
+          <Text style={[styles.loadingText, getFontStyle('semiBold', 18, lang)]}>{t('insect_details.analyzing')}</Text>
         </View>
       )}
 
@@ -167,7 +182,7 @@ export default function InsectDetailsScreen() {
           {!savedDataStr && (
               <TouchableOpacity onPress={handleSavePress} style={[styles.iconButton, styles.saveButton]}>
                 <Feather name="bookmark" size={24} color="#FFFFFF" />
-                <Text style={styles.saveButtonText}>ගබඩා කරන්න</Text>
+                <Text style={[styles.saveButtonText, getFontStyle('semiBold', 14, lang)]}>{t('insect_details.save')}</Text>
               </TouchableOpacity>
           )}
         </View>
@@ -175,7 +190,7 @@ export default function InsectDetailsScreen() {
         {/* Main Content */}
         <View style={styles.contentContainer}>
           <View style={styles.titleContainer}>
-            <Text style={styles.title}>{details.name}</Text>
+            <Text style={[styles.title, getFontStyle('bold', 26, lang)]}>{details.name}</Text>
             <View style={[
               styles.tagContainer, 
               details.category === 'Beneficial' ? styles.beneficialTag : styles.harmfulTag
@@ -187,31 +202,36 @@ export default function InsectDetailsScreen() {
               />
               <Text style={[
                 styles.tagText,
+                getFontStyle('semiBold', 14, lang),
                 details.category === 'Beneficial' ? styles.beneficialText : styles.harmfulText
               ]}>
-                {details.category === 'Beneficial' ? 'හිතකරයි' : 'හානිකරයි'}
+                {details.category === 'Beneficial' ? t('insect_details.beneficial') : t('insect_details.harmful')}
               </Text>
             </View>
           </View>
-          <Text style={styles.scientificName}>{details.scientificName}</Text>
+          <Text style={[styles.scientificName, getFontStyle('regular', 16, lang)]}>{details.scientificName}</Text>
           
-          <Text style={styles.detailText}><Text style={styles.detailLabel}>විද්‍යාත්මක නම :</Text> {details.scientificNameFull}</Text>
-          <Text style={styles.detailText}><Text style={styles.detailLabel}>කුලය :</Text> {details.family}</Text>
+          <Text style={[styles.detailText, getFontStyle('regular', 15, lang)]}><Text style={[styles.detailLabel, getFontStyle('semiBold', 15, lang)]}>{t('insect_details.scientific_name')} :</Text> {details.scientificNameFull}</Text>
+          <Text style={[styles.detailText, getFontStyle('regular', 15, lang)]}><Text style={[styles.detailLabel, getFontStyle('semiBold', 15, lang)]}>{t('insect_details.family')} :</Text> {details.family}</Text>
           
-          <Text style={styles.description}>{details.description}</Text>
+          <Text style={[styles.description, getFontStyle('regular', 15, lang)]}>{details.description}</Text>
 
           {/* Tabs */}
           <View style={styles.tabContainer}>
             {details.tabs.map((tab: string, index: number) => (
               <TouchableOpacity key={index} onPress={() => setActiveTab(index)} style={[styles.tab, activeTab === index && styles.activeTab]}>
-                <Text style={[styles.tabText, activeTab === index && styles.activeTabText]}>{tab}</Text>
+                <Text style={[
+                    styles.tabText, 
+                    getFontStyle('semiBold', 16, lang),
+                    activeTab === index && styles.activeTabText
+                ]}>{tab}</Text>
               </TouchableOpacity>
             ))}
           </View>
 
           {/* Related Images */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{details.relatedImagesTitle}</Text>
+            <Text style={[styles.sectionTitle, getFontStyle('bold', 20, lang)]}>{details.relatedImagesTitle}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {(details.images || []).map((img: any, index: number) => (
                 <Image key={index} source={img} style={styles.relatedImage} />
@@ -221,42 +241,42 @@ export default function InsectDetailsScreen() {
 
           {/* Accordion Sections - REPLACED WITH DETAILED CARDS */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{details.lifeCycleTitle}</Text>
+            <Text style={[styles.sectionTitle, getFontStyle('bold', 20, lang)]}>{details.lifeCycleTitle}</Text>
             <View style={styles.card}>
               <View style={styles.cardHeader}>
                  <View style={[styles.iconCircle, { backgroundColor: '#059669' }]}>
                    <MaterialCommunityIcons name="leaf-circle" size={24} color="white" />
                  </View>
-                 <Text style={styles.cardTitle}>{details.lifeCycleTitle}</Text>
+                 <Text style={[styles.cardTitle, getFontStyle('bold', 18, lang)]}>{details.lifeCycleTitle}</Text>
                  <Feather name="volume-2" size={20} color="#059669" />
               </View>
-              <Text style={styles.cardContent}>{details.lifeCycleContent}</Text>
+              <Text style={[styles.cardContent, getFontStyle('regular', 15, lang)]}>{details.lifeCycleContent}</Text>
             </View>
           </View>
 
            {/* Damage / Symptoms */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{details.damageSymptomsTitle}</Text>
+            <Text style={[styles.sectionTitle, getFontStyle('bold', 20, lang)]}>{details.damageSymptomsTitle}</Text>
             <View style={styles.card}>
               <View style={styles.cardHeader}>
                  <View style={[styles.iconCircle, { backgroundColor: '#059669' }]}>
                    <MaterialCommunityIcons name="alert-decagram" size={24} color="white" />
                  </View>
-                 <Text style={styles.cardTitle}>හානිය</Text>
+                 <Text style={[styles.cardTitle, getFontStyle('bold', 18, lang)]}>{t('insect_details.damage')}</Text>
                  <Feather name="volume-2" size={20} color="#059669" />
               </View>
-              <Text style={styles.cardContent}>{details.damageSymptomsContent}</Text>
+              <Text style={[styles.cardContent, getFontStyle('regular', 15, lang)]}>{details.damageSymptomsContent}</Text>
             </View>
           </View>
 
           {/* Control Methods - Expanded */}
           <View style={styles.section}>
             <View style={styles.sectionHeaderRow}>
-                <Text style={styles.sectionTitle}>{details.controlMethodsTitle}</Text>
+                <Text style={[styles.sectionTitle, getFontStyle('bold', 20, lang)]}>{details.controlMethodsTitle}</Text>
                 <View style={styles.sectionHeaderUnderline} />
             </View>
             
-            <Text style={styles.introText}>{details.controlMethodsContent}</Text>
+            <Text style={[styles.introText, getFontStyle('regular', 15, lang)]}>{details.controlMethodsContent}</Text>
 
             {/* Resistant Varieties */}
             {details.resistantVarieties && (
@@ -265,8 +285,8 @@ export default function InsectDetailsScreen() {
                   <MaterialCommunityIcons name="sprout" size={24} color="white" />
                 </View>
                 <View style={styles.infoCardContent}>
-                   <Text style={styles.infoCardTitle}>ප්‍රතිරෝධී වී ප්‍රභේද</Text>
-                   <Text style={styles.infoCardText}>{details.resistantVarieties}</Text>
+                   <Text style={[styles.infoCardTitle, getFontStyle('bold', 16, lang)]}>{t('insect_details.resistant_varieties')}</Text>
+                   <Text style={[styles.infoCardText, getFontStyle('regular', 14, lang)]}>{details.resistantVarieties}</Text>
                 </View>
               </View>
             )}
@@ -278,8 +298,8 @@ export default function InsectDetailsScreen() {
                   <MaterialCommunityIcons name="bottle-tonic-skull" size={24} color="white" />
                 </View>
                 <View style={styles.infoCardContent}>
-                   <Text style={styles.infoCardTitle}>කෘමි නාශක</Text>
-                   <Text style={styles.infoCardText}>{details.pesticideInstructions}</Text>
+                   <Text style={[styles.infoCardTitle, getFontStyle('bold', 16, lang)]}>{t('insect_details.pesticides')}</Text>
+                   <Text style={[styles.infoCardText, getFontStyle('regular', 14, lang)]}>{details.pesticideInstructions}</Text>
                 </View>
               </View>
             )}
@@ -291,8 +311,8 @@ export default function InsectDetailsScreen() {
                   <MaterialCommunityIcons name="ladybug" size={24} color="white" />
                 </View>
                 <View style={styles.infoCardContent}>
-                   <Text style={styles.infoCardTitle}>පරිසර හිතකාමී විසඳුම්</Text>
-                   <Text style={styles.infoCardText}>{details.ecoFriendlySolutions}</Text>
+                   <Text style={[styles.infoCardTitle, getFontStyle('bold', 16, lang)]}>{t('insect_details.eco_friendly')}</Text>
+                   <Text style={[styles.infoCardText, getFontStyle('regular', 14, lang)]}>{details.ecoFriendlySolutions}</Text>
                 </View>
               </View>
             )}
@@ -302,21 +322,21 @@ export default function InsectDetailsScreen() {
           {details.chemicalControlTable && (
              <View style={styles.section}>
                 <View style={styles.sectionHeaderRow}>
-                    <Text style={styles.sectionTitle}>කෘමි නාශක</Text>
+                    <Text style={[styles.sectionTitle, getFontStyle('bold', 20, lang)]}>{t('insect_details.chemical_control')}</Text>
                     <Feather name="volume-2" size={20} color="#059669" style={{marginLeft: 10}} />
                 </View>
                 
                 <View style={styles.tableContainer}>
                     <View style={styles.tableHeader}>
-                        <Text style={[styles.tableHeaderText, { flex: 2 }]}>කෘමිනාශකයේ පොදු නාමය</Text>
-                        <Text style={[styles.tableHeaderText, { flex: 1 }]}>සාන්ද්‍රණය</Text>
-                        <Text style={[styles.tableHeaderText, { flex: 1.5 }]}>හෙක්ටයාරයකට යෙදිය යුතු ප්‍රමාණය</Text>
+                        <Text style={[styles.tableHeaderText, getFontStyle('bold', 12, lang), { flex: 2 }]}>කෘමිනාශකයේ පොදු නාමය</Text>
+                        <Text style={[styles.tableHeaderText, getFontStyle('bold', 12, lang), { flex: 1 }]}>සාන්ද්‍රණය</Text>
+                        <Text style={[styles.tableHeaderText, getFontStyle('bold', 12, lang), { flex: 1.5 }]}>හෙක්ටයාරයකට යෙදිය යුතු ප්‍රමාණය</Text>
                     </View>
                     {details.chemicalControlTable.map((row: any, index: number) => (
                          <View key={index} style={[styles.tableRow, index % 2 === 0 ? styles.tableRowEven : {}]}>
-                            <Text style={[styles.tableCell, { flex: 2, fontWeight: 'bold' }]}>{row.name}</Text>
-                            <Text style={[styles.tableCell, { flex: 1 }]}>{row.concentration || '-'}</Text>
-                            <Text style={[styles.tableCell, { flex: 1.5 }]}>{row.amount || '-'}</Text>
+                            <Text style={[styles.tableCell, getFontStyle('regular', 12, lang), { flex: 2, fontWeight: 'bold' }]}>{row.name}</Text>
+                            <Text style={[styles.tableCell, getFontStyle('regular', 12, lang), { flex: 1 }]}>{row.concentration || '-'}</Text>
+                            <Text style={[styles.tableCell, getFontStyle('regular', 12, lang), { flex: 1.5 }]}>{row.amount || '-'}</Text>
                          </View>
                     ))}
                 </View>
@@ -330,9 +350,9 @@ export default function InsectDetailsScreen() {
                   <MaterialCommunityIcons name="information-variant" size={24} color="white" />
                 </View>
                 <View style={styles.infoCardContent}>
-                   <Text style={styles.infoCardTitle}>වෙනත් කරුණු</Text>
+                   <Text style={[styles.infoCardTitle, getFontStyle('bold', 16, lang)]}>{t('insect_details.additional_notes')}</Text>
                    <Feather name="volume-2" size={18} color="#059669" style={{position: 'absolute', right: 0, top: 0}} />
-                   <Text style={styles.infoCardText}>{details.additionalNotes}</Text>
+                   <Text style={[styles.infoCardText, getFontStyle('regular', 14, lang)]}>{details.additionalNotes}</Text>
                 </View>
               </View>
             )}
@@ -350,7 +370,7 @@ export default function InsectDetailsScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>එකතුව තෝරන්න</Text>
+              <Text style={[styles.modalTitle, getFontStyle('bold', 18, lang)]}>{t('collection.select_collection')}</Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
                 <Feather name="x" size={24} color="#666" />
               </TouchableOpacity>
@@ -358,7 +378,7 @@ export default function InsectDetailsScreen() {
             
             {collections.length === 0 ? (
                  <View style={styles.emptyState}>
-                     <Text style={styles.emptyText}>එකතු කිසිවක් නැත. කරුණාකර පළමුව එකතුවක් සාදන්න.</Text>
+                     <Text style={[styles.emptyText, getFontStyle('regular', 16, lang)]}>{t('collection.no_collections')}</Text>
                  </View>
             ) : (
                 <FlatList
@@ -373,7 +393,7 @@ export default function InsectDetailsScreen() {
                       <View style={styles.collectionIcon}>
                           <Feather name="folder" size={24} color="#3A8A55" />
                       </View>
-                      <Text style={styles.collectionName}>{item.name}</Text>
+                      <Text style={[styles.collectionName, getFontStyle('semiBold', 16, lang)]}>{item.name}</Text>
                       {saving && <ActivityIndicator size="small" color="#3A8A55" />}
                     </TouchableOpacity>
                   )}

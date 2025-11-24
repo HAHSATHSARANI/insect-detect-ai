@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, TextInput, ScrollView, Text, Alert, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Fonts } from '@/constants/Fonts';
+import { Fonts, getFontStyle } from '@/constants/Fonts';
 import { Feather } from '@expo/vector-icons';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { api } from '@/services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
 
 // Sinhala locale config for the calendar
 LocaleConfig.locales['si'] = {
@@ -18,17 +19,10 @@ LocaleConfig.locales['si'] = {
 };
 LocaleConfig.defaultLocale = 'si';
 
-const CREATE_COLLECTION_CONTENT = {
-  title: 'එකතුව එකතු කරන්න',
-  editTitle: 'එකතුව සංස්කරණය',
-  inputPlaceholder: 'එකතුවේ නම ඇතුලත් කරන්න',
-  cancelButton: 'අවලංගු කරන්න',
-  createButton: 'නිර්මාණය කරන්න',
-  updateButton: 'යාවත්කාලීන කරන්න',
-};
-
 export default function CreateCollectionScreen() {
   const router = useRouter();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language as 'si' | 'en';
   const params = useLocalSearchParams();
   const collectionId = params.id as string;
   const isEditing = !!collectionId;
@@ -38,6 +32,14 @@ export default function CreateCollectionScreen() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(isEditing);
+
+  useEffect(() => {
+    if (lang === 'en') {
+      LocaleConfig.defaultLocale = 'en';
+    } else {
+      LocaleConfig.defaultLocale = 'si';
+    }
+  }, [lang]);
 
   useEffect(() => {
     if (isEditing) {
@@ -68,7 +70,7 @@ export default function CreateCollectionScreen() {
       }
     } catch (error) {
       console.error('Error loading collection:', error);
-      Alert.alert('දෝෂයකි', 'තොරතුරු ලබා ගැනීම අසාර්ථක විය');
+      Alert.alert(t('common.error'), t('common.error'));
     } finally {
       setInitialLoading(false);
     }
@@ -76,7 +78,7 @@ export default function CreateCollectionScreen() {
 
   const handleCreate = async () => {
     if (!collectionName) {
-      Alert.alert('දෝෂයකි', 'කරුණාකර එකතුවේ නම ඇතුලත් කරන්න');
+      Alert.alert(t('common.error'), t('collection.input_placeholder'));
       return;
     }
 
@@ -88,7 +90,7 @@ export default function CreateCollectionScreen() {
         const user = JSON.parse(userJson);
         userId = user.id;
       } else {
-        Alert.alert('දෝෂයකි', 'කරුණාකර නැවත ඇතුල් වන්න');
+        Alert.alert(t('common.error'), t('auth.login'));
         setLoading(false);
         return;
       }
@@ -102,18 +104,18 @@ export default function CreateCollectionScreen() {
 
       if (isEditing) {
         await api.collections.update(collectionId, payload);
-        Alert.alert('සාර්ථකයි', 'එකතුව යාවත්කාලීන කරන ලදී', [
-          { text: 'OK', onPress: () => router.back() }
+        Alert.alert(t('common.success'), t('common.success'), [
+          { text: t('common.ok'), onPress: () => router.back() }
         ]);
       } else {
         await api.collections.create(payload);
-        Alert.alert('සාර්ථකයි', 'එකතුව සාර්ථකව නිර්මාණය කරන ලදී', [
-          { text: 'OK', onPress: () => router.back() }
+        Alert.alert(t('common.success'), t('common.success'), [
+          { text: t('common.ok'), onPress: () => router.back() }
         ]);
       }
     } catch (error: any) {
       console.error('Save collection error:', error);
-      Alert.alert('අසාර්ථකයි', isEditing ? 'යාවත්කාලීන කිරීම අසාර්ථක විය' : 'නිර්මාණය කිරීම අසාර්ථක විය');
+      Alert.alert(t('common.error'), isEditing ? t('common.error') : t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -131,7 +133,7 @@ export default function CreateCollectionScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Feather name="arrow-left" size={24} color="#222222" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{isEditing ? CREATE_COLLECTION_CONTENT.editTitle : CREATE_COLLECTION_CONTENT.title}</Text>
+        <Text style={[styles.headerTitle, getFontStyle('bold', 22, lang)]}>{isEditing ? t('collection.edit') : t('collection.create_title')}</Text>
         <View style={{ width: 24 }} /> 
       </View>
 
@@ -142,8 +144,8 @@ export default function CreateCollectionScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <TextInput
-            style={styles.input}
-            placeholder={CREATE_COLLECTION_CONTENT.inputPlaceholder}
+            style={[styles.input, getFontStyle('regular', 16, lang)]}
+            placeholder={t('collection.input_placeholder')}
             placeholderTextColor="#999"
             value={collectionName}
             onChangeText={setCollectionName}
@@ -177,7 +179,7 @@ export default function CreateCollectionScreen() {
           onPress={() => router.back()}
           activeOpacity={0.8}
         >
-          <Text style={[styles.buttonText, styles.cancelButtonText]}>{CREATE_COLLECTION_CONTENT.cancelButton}</Text>
+          <Text style={[styles.buttonText, styles.cancelButtonText, getFontStyle('semiBold', 16, lang)]}>{t('collection.cancel')}</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.button, styles.createButton, loading && { opacity: 0.7 }]}
@@ -188,8 +190,8 @@ export default function CreateCollectionScreen() {
           {loading ? (
              <ActivityIndicator color="#FFFFFF" size="small" />
           ) : (
-             <Text style={styles.buttonText}>
-               {isEditing ? CREATE_COLLECTION_CONTENT.updateButton : CREATE_COLLECTION_CONTENT.createButton}
+             <Text style={[styles.buttonText, getFontStyle('semiBold', 16, lang)]}>
+               {isEditing ? t('collection.update') : t('collection.create')}
              </Text>
           )}
         </TouchableOpacity>
@@ -233,8 +235,6 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F0F0F0',
   },
   headerTitle: {
-    ...Fonts.styles.bold,
-    fontSize: 22,
     color: '#222222',
   },
   backButton: {
@@ -244,7 +244,6 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   input: {
-    ...Fonts.styles.regular,
     backgroundColor: '#F7F7F7',
     paddingHorizontal: 20,
     paddingVertical: 18,
@@ -277,8 +276,6 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   buttonText: {
-    ...Fonts.styles.semiBold,
-    fontSize: 16,
     color: '#FFFFFF',
   },
   cancelButtonText: {

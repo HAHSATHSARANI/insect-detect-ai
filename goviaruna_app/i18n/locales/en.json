@@ -7,7 +7,9 @@
   "onboarding": {
     "skip": "Skip",
     "next": "Next",
-    "getStarted": "Get Started"
+    "getStarted": "Get Started",
+    "title": "Know Insects, Grow with Confidence",
+    "subtitle": "Identify pests early, find solutions, and protect your harvest easily."
   },
   "auth": {
     "login": "Login",
@@ -20,12 +22,21 @@
     "verifyAccount": "Verify Account",
     "verificationCode": "Verification Code",
     "resendCode": "Resend Code",
-    "verify": "Verify"
+    "verify": "Verify",
+    "welcome": "Welcome",
+    "enterDetails": "Welcome! Please enter your details.",
+    "or": "OR",
+    "signupGoogle": "Sign up with Google",
+    "notRegistered": "Not registered yet? ",
+    "createAccount": "Create an account",
+    "alreadyAccount": "Already have an account? "
   },
   "language": {
-    "selectLanguage": "Select Language",
-    "sinhala": "සිංහල",
-    "english": "English"
+    "title": "Govi Aruna",
+    "subtitle": "Select your language",
+    "sinhala": "Sinhala",
+    "english": "English",
+    "start": "Start"
   },
   "tabs": {
     "home": "Home",
@@ -33,17 +44,73 @@
     "profile": "Profile",
     "search": "Search"
   },
+  "home": {
+    "welcome": "Welcome",
+    "searchPlaceholder": "Search",
+    "detectAction": "Detect with Camera",
+    "uploadAction": "Add from File",
+    "commonInsectsTitle": "Most Common Insects",
+    "commonInsectsSubtitle": "Insects commonly reported in Sri Lanka",
+    "contactTitle": "Emergency Contacts",
+    "mapTitle": "Agrarian Service Centers"
+  },
   "collection": {
+    "title": "Collection",
     "add": "Add Collection",
+    "edit": "Edit Collection",
     "empty_title": "You don't have a collection.",
     "empty_subtitle": "Add your insect",
-    "add_insect": "Add Insect"
+    "add_insect": "Add Insect",
+    "create_title": "Create Collection",
+    "input_placeholder": "Enter collection name",
+    "cancel": "Cancel",
+    "create": "Create",
+    "update": "Update",
+    "delete_confirm_title": "Delete Collection",
+    "delete_confirm_message": "Are you sure you want to delete this collection?",
+    "delete_success": "Collection deleted successfully",
+    "delete": "Delete",
+    "select_collection": "Select Collection",
+    "no_collections": "No collections found. Please create one first."
+  },
+  "insect_details": {
+    "analyzing": "Analyzing...",
+    "save": "Save",
+    "info": "Info",
+    "damage": "Damage",
+    "control": "Control",
+    "lifecycle": "Life Cycle",
+    "damage_symptoms": "Damage Symptoms",
+    "control_methods": "Control Methods",
+    "images": "Images",
+    "beneficial": "Beneficial",
+    "harmful": "Harmful",
+    "scientific_name": "Scientific Name",
+    "family": "Family",
+    "resistant_varieties": "Resistant Varieties",
+    "pesticides": "Pesticides",
+    "eco_friendly": "Eco-friendly Solutions",
+    "additional_notes": "Additional Notes",
+    "chemical_control": "Chemical Control",
+    "saved_success": "Added to collection successfully",
+    "saved_fail": "Failed to save",
+    "analysis_fail": "Analysis failed",
+    "retry": "Please try again"
+  },
+  "camera": {
+    "permission_title": "We need your permission to show the camera",
+    "grant_permission": "Grant Permission",
+    "instruction": "Capture one insect within the frame",
+    "help": "Request Help"
   },
   "common": {
     "continue": "Continue",
     "back": "Back",
     "cancel": "Cancel",
     "save": "Save",
-    "ok": "OK"
+    "ok": "OK",
+    "error": "Error",
+    "success": "Success",
+    "loading": "Loading..."
   }
 }
