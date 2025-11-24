@@ -24,8 +24,8 @@ const LOGIN_CONTENT = {
 
 export default function LoginScreen() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('mihin@gmail.com');
+  const [password, setPassword] = useState('mihin1234');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
