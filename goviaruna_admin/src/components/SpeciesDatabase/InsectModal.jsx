@@ -127,6 +127,15 @@ export const InsectModal = ({ open, onClose, onSave, isEditing, formData, setFor
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         />
                         <TextField
+                            label="Key (YOLO Class Name)"
+                            fullWidth
+                            required
+                            margin="normal"
+                            value={formData.key || ''}
+                            onChange={(e) => setFormData({ ...formData, key: e.target.value })}
+                            helperText="Must match the class name used in the YOLO model (e.g., Rice_Bug)"
+                        />
+                        <TextField
                             label="Scientific Name (Short)"
                             fullWidth
                             required

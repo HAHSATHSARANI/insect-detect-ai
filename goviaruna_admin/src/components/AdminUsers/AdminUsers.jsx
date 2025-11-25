@@ -3,7 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { AdminModal } from './AdminModal';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    Paper, Avatar, Switch, IconButton, Box, Typography, Chip, Button, Container
+    Paper, Avatar, Switch, IconButton, Box, Typography, Chip, Button, Container,
+    Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon, PersonAdd as PersonAddIcon } from '@mui/icons-material';
 
@@ -12,6 +13,8 @@ export const AdminUsers = () => {
     const [adminUsers, setAdminUsers] = useState([]);
     const [selectedAdmin, setSelectedAdmin] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [adminToDelete, setAdminToDelete] = useState(null);
 
     // Load admins from backend
     useEffect(() => {
@@ -74,14 +77,26 @@ export const AdminUsers = () => {
         setSelectedAdmin(null);
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm("Are you sure you want to delete this admin?")) return;
+    const handleDeleteClick = (admin) => {
+        setAdminToDelete(admin);
+        setDeleteConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!adminToDelete) return;
         try {
-            const res = await fetch(`${API}/admins/${id}`, { method: 'DELETE' });
-            if (res.ok) setAdminUsers(prev => prev.filter(a => a.id !== id));
+            const res = await fetch(`${API}/admins/${adminToDelete.id}`, { method: 'DELETE' });
+            if (res.ok) setAdminUsers(prev => prev.filter(a => a.id !== adminToDelete.id));
         } catch (err) {
             console.error(err);
         }
+        setDeleteConfirmOpen(false);
+        setAdminToDelete(null);
+    };
+
+    const handleCancelDelete = () => {
+        setDeleteConfirmOpen(false);
+        setAdminToDelete(null);
     };
 
     const handleEdit = (admin) => {
@@ -130,11 +145,16 @@ export const AdminUsers = () => {
                                         <Chip label={admin.role} color={admin.role === "Super Admin" ? "primary" : "default"} />
                                     </TableCell>
                                     <TableCell>
-                                        <Switch checked={admin.isActive} onChange={() => handleToggleStatus(admin.id, admin.isActive)} />
+                                        <Chip
+                                            label={admin.isActive ? "Active" : "Inactive"}
+                                            color={admin.isActive ? "success" : "default"}
+                                            variant="outlined"
+                                            size="small"
+                                        />
                                     </TableCell>
                                     <TableCell>
                                         <IconButton onClick={() => handleEdit(admin)}><EditIcon /></IconButton>
-                                        <IconButton onClick={() => handleDelete(admin.id)} color="error"><DeleteIcon /></IconButton>
+                                        <IconButton onClick={() => handleDeleteClick(admin)} color="error"><DeleteIcon /></IconButton>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -149,6 +169,23 @@ export const AdminUsers = () => {
                     isEditing={!!selectedAdmin}
                     formData={selectedAdmin}
                 />
+
+                <Dialog
+                    open={deleteConfirmOpen}
+                    onClose={handleCancelDelete}
+                    PaperProps={{ sx: { borderRadius: 2 } }}
+                >
+                    <DialogTitle sx={{ fontWeight: 600 }}>Confirm Delete</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            Are you sure you want to delete admin <strong>{adminToDelete?.name}</strong>? This action cannot be undone.
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions sx={{ px: 3, pb: 2 }}>
+                        <Button onClick={handleCancelDelete} sx={{ color: 'text.secondary' }}>Cancel</Button>
+                        <Button onClick={handleConfirmDelete} variant="contained" color="error" sx={{ fontWeight: 600 }}>Delete</Button>
+                    </DialogActions>
+                </Dialog>
             </Container>
         </Box>
     );

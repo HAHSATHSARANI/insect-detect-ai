@@ -37,6 +37,7 @@ export const SpeciesDatabase = ({
                             setEditingInsect(null);
                             setInsectFormData({
                                 name: '',
+                                key: '',
                                 scientificName: '',
                                 scientificNameFull: '',
                                 family: '',
