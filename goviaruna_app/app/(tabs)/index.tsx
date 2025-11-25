@@ -117,6 +117,19 @@ export default function HomeScreen() {
     }
   };
 
+  const handleMapPress = async () => {
+    try {
+      // Open Google Maps with search for agriculture offices in Sri Lanka
+      const query = 'Agriculture Office Sri Lanka';
+      const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+      await Linking.openURL(url);
+    } catch (error) {
+      console.error('Error opening map:', error);
+      Alert.alert(t('common.error'), 'Could not open map');
+    }
+  };
+
+
   const getProfileImageUrl = () => {
     if (user?.localImageUri) {
       // Use local image if available (for offline functionality)
@@ -217,7 +230,9 @@ export default function HomeScreen() {
         {/* Map Section */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, getFontStyle('bold', 20, lang)]}>{t('home.mapTitle')}</Text>
-          <Image source={require('@/assets/images/sample_map.png')} style={styles.mapImage} />
+          <TouchableOpacity onPress={handleMapPress} activeOpacity={0.8}>
+            <Image source={require('@/assets/images/sample_map.png')} style={styles.mapImage} />
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
