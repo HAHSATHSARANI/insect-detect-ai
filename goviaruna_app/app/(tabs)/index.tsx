@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, StyleSheet, ScrollView, Text, Image, TextInput, FlatList, TouchableOpacity, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, Text, Image, TextInput, FlatList, TouchableOpacity, Alert, Linking } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { getFontStyle } from '@/constants/Fonts';
 import { Feather } from '@expo/vector-icons';
@@ -21,9 +21,10 @@ export default function HomeScreen() {
   const [featuredInsects, setFeaturedInsects] = useState<any[]>([]);
 
   const CONTACT_ITEMS = [
-    { icon: 'voicemail', title: 'Voice mail', subtitle: 'Send Voice Mail', key: '1' },
-    { icon: 'mail', title: 'Mail', subtitle: 'Example@gmail.com', key: '2' },
-    { icon: 'phone-call', title: 'whatsapp / Viber/ Skype', subtitle: '070 220 1920', key: '3' },
+    { icon: 'mail', title: 'Mail', subtitle: 'info@agrimin.gov.lk', key: '1', type: 'email' },
+    { icon: 'phone-call', title: 'Whatsapp No 1', subtitle: '+94 812 388 331', key: '2', type: 'phone' },
+    { icon: 'phone-call', title: 'Whatsapp No 2', subtitle: '+94 812 388 332', key: '3', type: 'phone' },
+    { icon: 'phone-call', title: 'Whatsapp No 3', subtitle: '+94 812 388 334', key: '4', type: 'phone' },
   ];
 
   const loadUser = async () => {
@@ -32,7 +33,7 @@ export default function HomeScreen() {
       if (userJson) {
         const storedUser = JSON.parse(userJson);
         setUser(storedUser);
-        
+
         // Try to fetch fresh data, but don't fail if it doesn't work
         try {
           const freshUser = await api.auth.getUser(storedUser.id);
@@ -47,33 +48,33 @@ export default function HomeScreen() {
   };
 
   const loadRandomInsects = async () => {
-      try {
-          const insects = await api.insects.getRandom();
-          console.log('DEBUG: Random insects fetched:', JSON.stringify(insects, null, 2)); // DEBUG PRINT
-          
-          const mappedInsects = insects.map((insect: any) => {
-              let imageSource = require('@/assets/images/insect_1.png');
-              if (insect.images && insect.images.length > 0) {
-                  // Use first image from DB
-                  const imageId = insect.images[0];
-                  if (typeof imageId === 'string') {
-                      imageSource = { uri: `${API_URL}/api/insects/image/${imageId}` };
-                  }
-              }
-              
-              return {
-                  id: insect.id,
-                  title: insect.name,
-                  subtitle: insect.scientificName,
-                  tag: insect.category === 'Non-Harmful' ? 'Beneficial' : insect.category,
-                  image: imageSource,
-                  fullData: insect
-              };
-          });
-          setFeaturedInsects(mappedInsects);
-      } catch (error) {
-          console.error('Error loading random insects:', error);
-      }
+    try {
+      const insects = await api.insects.getRandom();
+      console.log('DEBUG: Random insects fetched:', JSON.stringify(insects, null, 2)); // DEBUG PRINT
+
+      const mappedInsects = insects.map((insect: any) => {
+        let imageSource = require('@/assets/images/insect_1.png');
+        if (insect.images && insect.images.length > 0) {
+          // Use first image from DB
+          const imageId = insect.images[0];
+          if (typeof imageId === 'string') {
+            imageSource = { uri: `${API_URL}/api/insects/image/${imageId}` };
+          }
+        }
+
+        return {
+          id: insect.id,
+          title: insect.name,
+          subtitle: insect.scientificName,
+          tag: insect.category === 'Non-Harmful' ? 'Beneficial' : insect.category,
+          image: imageSource,
+          fullData: insect
+        };
+      });
+      setFeaturedInsects(mappedInsects);
+    } catch (error) {
+      console.error('Error loading random insects:', error);
+    }
   };
 
   useFocusEffect(
@@ -103,16 +104,29 @@ export default function HomeScreen() {
     }
   };
 
+  const handleContactPress = async (item: any) => {
+    try {
+      if (item.type === 'email') {
+        await Linking.openURL(`mailto:${item.subtitle}`);
+      } else if (item.type === 'phone') {
+        await Linking.openURL(`tel:${item.subtitle}`);
+      }
+    } catch (error) {
+      console.error('Error opening contact:', error);
+      Alert.alert(t('common.error'), 'Could not open contact');
+    }
+  };
+
   const getProfileImageUrl = () => {
-      if (user?.localImageUri) {
-          // Use local image if available (for offline functionality)
-          return { uri: user.localImageUri };
-      }
-      if (user?.imageUrl && !user.imageUrl.startsWith('local_')) {
-          return { uri: `${API_URL}/api/app/auth/image/${user.imageUrl}` };
-      }
-      // Use a generated avatar with user's name
-      return { uri: `https://ui-avatars.com/api/?name=${user?.name || 'User'}&background=3A8A55&color=fff&size=48` };
+    if (user?.localImageUri) {
+      // Use local image if available (for offline functionality)
+      return { uri: user.localImageUri };
+    }
+    if (user?.imageUrl && !user.imageUrl.startsWith('local_')) {
+      return { uri: `${API_URL}/api/app/auth/image/${user.imageUrl}` };
+    }
+    // Use a generated avatar with user's name
+    return { uri: `https://ui-avatars.com/api/?name=${user?.name || 'User'}&background=3A8A55&color=fff&size=48` };
   };
 
   return (
@@ -166,28 +180,28 @@ export default function HomeScreen() {
                 subtitle={item.subtitle}
                 tag={item.tag as 'Harmful' | 'Beneficial'}
                 onPress={() => {
-                    router.push({
-                        pathname: '/insect-details',
-                        params: { 
-                            savedData: JSON.stringify({ insectData: item.fullData }) 
-                        }
-                    });
+                  router.push({
+                    pathname: '/insect-details',
+                    params: {
+                      savedData: JSON.stringify({ insectData: item.fullData })
+                    }
+                  });
                 }}
               />
             )}
             keyExtractor={item => item.id}
             contentContainerStyle={{ marginTop: 15 }}
             ListEmptyComponent={
-                <Text style={{ marginLeft: 20, marginTop: 20, color: '#888' }}>Loading...</Text>
+              <Text style={{ marginLeft: 20, marginTop: 20, color: '#888' }}>Loading...</Text>
             }
           />
         </View>
-        
+
         {/* Contact Section */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, getFontStyle('bold', 20, lang)]}>{t('home.contactTitle')}</Text>
           {CONTACT_ITEMS.map(item => (
-            <TouchableOpacity key={item.key} style={styles.contactItem}>
+            <TouchableOpacity key={item.key} style={styles.contactItem} onPress={() => handleContactPress(item)}>
               <View style={styles.contactIconContainer}>
                 <Feather name={item.icon as any} size={24} color="#3A8A55" />
               </View>
@@ -199,11 +213,11 @@ export default function HomeScreen() {
             </TouchableOpacity>
           ))}
         </View>
-        
+
         {/* Map Section */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, getFontStyle('bold', 20, lang)]}>{t('home.mapTitle')}</Text>
-           <Image source={require('@/assets/images/sample_map.png')} style={styles.mapImage} />
+          <Image source={require('@/assets/images/sample_map.png')} style={styles.mapImage} />
         </View>
       </ScrollView>
     </View>
