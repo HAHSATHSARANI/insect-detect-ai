@@ -8,6 +8,7 @@ import PagerView from 'react-native-pager-view';
 import { api, API_URL } from '@/services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
+import { useTTS } from '@/hooks/useTTS';
 
 const { width, height } = Dimensions.get('window');
 
@@ -47,6 +48,7 @@ export default function InsectDetailsScreen() {
   const [collections, setCollections] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
   const [dataMissing, setDataMissing] = useState(false);
+  const { speak, stop, speakingId } = useTTS();
 
   useEffect(() => {
     // Update initial details when language changes
@@ -378,7 +380,15 @@ export default function InsectDetailsScreen() {
             )}
           </View>
 
-          <Text style={[styles.description, getFontStyle('regular', 15, 'si')]}>{details.description}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+            <Text style={[styles.description, getFontStyle('regular', 15, 'si'), { marginBottom: 0, flex: 1 }]}>{details.description}</Text>
+            <TouchableOpacity
+              onPress={() => speak(details.description, 'description', lang)}
+              style={{ marginLeft: 10, padding: 10, backgroundColor: '#F0FDF4', borderRadius: 20 }}
+            >
+              <Feather name={speakingId === 'description' ? "square" : "volume-2"} size={24} color="#059669" />
+            </TouchableOpacity>
+          </View>
 
           {/* Tabs */}
           <View style={styles.tabContainer}>
@@ -422,7 +432,9 @@ export default function InsectDetailsScreen() {
                         <MaterialCommunityIcons name="leaf-circle" size={24} color="white" />
                       </View>
                       <Text style={[styles.cardTitle, getFontStyle('bold', 18, 'si')]}>{details.lifeCycleTitle || t('insect_details.lifecycle')}</Text>
-                      <Feather name="volume-2" size={20} color="#059669" />
+                      <TouchableOpacity onPress={() => speak(details.lifeCycleContent, 'lifecycle', lang)}>
+                        <Feather name={speakingId === 'lifecycle' ? "square" : "volume-2"} size={20} color="#059669" />
+                      </TouchableOpacity>
                     </View>
                     <Text style={[styles.cardContent, getFontStyle('regular', 15, 'si')]}>{details.lifeCycleContent}</Text>
                   </View>
@@ -437,7 +449,12 @@ export default function InsectDetailsScreen() {
                   </View>
                   <View style={styles.infoCardContent}>
                     <Text style={[styles.infoCardTitle, getFontStyle('bold', 16, 'si')]}>{t('insect_details.additional_notes')}</Text>
-                    <Feather name="volume-2" size={18} color="#059669" style={{ position: 'absolute', right: 0, top: 0 }} />
+                    <TouchableOpacity
+                      style={{ position: 'absolute', right: 0, top: 0 }}
+                      onPress={() => speak(details.additionalNotes, 'additionalNotes', lang)}
+                    >
+                      <Feather name={speakingId === 'additionalNotes' ? "square" : "volume-2"} size={18} color="#059669" />
+                    </TouchableOpacity>
                     <Text style={[styles.infoCardText, getFontStyle('regular', 14, 'si')]}>{details.additionalNotes}</Text>
                   </View>
                 </View>
@@ -458,7 +475,9 @@ export default function InsectDetailsScreen() {
                         <MaterialCommunityIcons name="alert-decagram" size={24} color="white" />
                       </View>
                       <Text style={[styles.cardTitle, getFontStyle('bold', 18, 'si')]}>{t('insect_details.damage')}</Text>
-                      <Feather name="volume-2" size={20} color="#059669" />
+                      <TouchableOpacity onPress={() => speak(details.damageSymptomsContent, 'damage', lang)}>
+                        <Feather name={speakingId === 'damage' ? "square" : "volume-2"} size={20} color="#059669" />
+                      </TouchableOpacity>
                     </View>
                     <Text style={[styles.cardContent, getFontStyle('regular', 15, 'si')]}>{details.damageSymptomsContent}</Text>
                   </View>
@@ -474,7 +493,12 @@ export default function InsectDetailsScreen() {
               <View style={styles.section}>
                 <View style={styles.sectionHeaderRow}>
                   <Text style={[styles.sectionTitle, getFontStyle('bold', 20, 'si')]}>{details.controlMethodsTitle || t('insect_details.control_methods')}</Text>
-                  <Feather name="volume-2" size={20} color="#059669" style={{ marginLeft: 10, marginTop: -12 }} />
+                  <TouchableOpacity
+                    onPress={() => speak(details.controlMethodsContent, 'control', lang)}
+                    style={{ marginLeft: 10, marginTop: -12 }}
+                  >
+                    <Feather name={speakingId === 'control' ? "square" : "volume-2"} size={20} color="#059669" />
+                  </TouchableOpacity>
                 </View>
 
                 {details.controlMethodsContent && (
@@ -598,15 +622,25 @@ export default function InsectDetailsScreen() {
 
 const Accordion = ({ title, content }: { title: string, content: string }) => {
   const [expanded, setExpanded] = useState(false);
+  const { speak, stop, speakingId } = useTTS();
+  const { i18n } = useTranslation();
+  const lang = i18n.language as 'si' | 'en';
+  // Generate a simple ID based on title (or pass a unique ID prop if available)
+  const id = `accordion-${title.replace(/\s+/g, '-').toLowerCase()}`;
+
   return (
     <View style={styles.accordionContainer}>
-      <TouchableOpacity onPress={() => setExpanded(!expanded)} style={styles.accordionHeader}>
-        <View style={styles.accordionIcon}>
-          <Feather name="droplet" size={24} color="#3A8A55" />
-        </View>
-        <Text style={styles.accordionTitle}>{title}</Text>
-        <Feather name="volume-2" size={24} color="#666" />
-      </TouchableOpacity>
+      <View style={styles.accordionHeader}>
+        <TouchableOpacity onPress={() => setExpanded(!expanded)} style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+          <View style={styles.accordionIcon}>
+            <Feather name="droplet" size={24} color="#3A8A55" />
+          </View>
+          <Text style={styles.accordionTitle}>{title}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => speak(content, id, lang)}>
+          <Feather name={speakingId === id ? "square" : "volume-2"} size={24} color="#666" />
+        </TouchableOpacity>
+      </View>
       {expanded && <Text style={styles.accordionContent}>{content}</Text>}
     </View>
   );
@@ -633,6 +667,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginBottom: 4,
     alignItems: 'center',
+  },
+  detailLabel: {
+    color: '#333',
+    fontWeight: '600',
   },
   detailValue: {
     color: '#555',
