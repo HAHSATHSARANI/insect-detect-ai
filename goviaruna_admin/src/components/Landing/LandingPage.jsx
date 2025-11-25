@@ -23,7 +23,7 @@ export const LandingPage = ({ onLoginClick, onSignupClick }) => {
                 variant="h2"
                 sx={{ fontWeight: 800, mb: 2, textShadow: '2px 2px 10px rgba(0,0,0,0.6)' }}
             >
-                AI-Powered Insect Identifier
+                GoviAruna Admin
             </Typography>
             <Typography
                 variant="h6"

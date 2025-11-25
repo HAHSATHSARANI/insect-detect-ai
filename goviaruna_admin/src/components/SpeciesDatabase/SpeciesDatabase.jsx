@@ -25,7 +25,7 @@ export const SpeciesDatabase = ({
     );
 
     return (
-        <Box sx={{ position: 'fixed', top: 0, left: '230px', right: 0, bottom: 0, bgcolor: '#f5f7fa', overflow: 'auto' }}>
+        <Box sx={{ position: 'fixed', top: 0, left: '280px', right: 0, bottom: 0, paddingRight: '20px', bgcolor: '#f5f7fa', overflow: 'auto' }}>
             <Container maxWidth="xl" sx={{ py: 4 }}>
                 {/* Header + Add Button */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
@@ -44,22 +44,22 @@ export const SpeciesDatabase = ({
                                 images: [],
                                 category: 'Harmful',
                                 confidence: 95,
-                                
+
                                 lifeCycleTitle: 'ජීවන චක්‍රය',
                                 lifeCycleContent: '',
-                                
+
                                 damageSymptomsTitle: 'හානි ලක්ෂණ',
                                 damageSymptomsContent: '',
-                                
+
                                 controlMethodsTitle: 'පාලන ක්‍රම',
                                 controlMethodsContent: '',
-                                
+
                                 resistantVarieties: '',
                                 pesticideInstructions: '',
                                 ecoFriendlySolutions: '',
-                                
+
                                 chemicalControlTable: [],
-                                
+
                                 additionalNotes: ''
                             });
                             setShowInsectModal(true);

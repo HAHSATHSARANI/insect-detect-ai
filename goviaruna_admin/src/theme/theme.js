@@ -11,7 +11,7 @@ export const COLOR_CONSTANTS = {
     secondary: blue[500],
     error: red[600],
     warning: amber[500],
-    background: grey[50],
+    background: '#f4f4f4',
     textPrimary: grey[900],
     textSecondary: grey[600],
 };
@@ -34,8 +34,8 @@ export const theme = createTheme({
         h4: { fontWeight: 600 },
         h5: { fontWeight: 600 },
         h6: { fontWeight: 500 },
-        body1: { fontWeight: 400 },
-        body2: { fontWeight: 400 },
+        body1: { fontWeight: 500 },
+        body2: { fontWeight: 500 },
     },
     components: {
         MuiButton: {

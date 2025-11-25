@@ -234,27 +234,13 @@ const App = () => {
     };
 
     // Insects
-    const handleSaveInsect = async () => {
+    const handleSaveInsect = async (savedInsect) => {
         try {
-            if (editingInsect) {
-                const res = await fetch(`${API}/insects/${editingInsect.id}`, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(insectFormData)
-                });
-                if (res.ok) {
-                    const updated = await res.json();
-                    setInsects(prev => prev.map(i => i.id === updated.id ? updated : i));
-                }
-            } else {
-                const res = await fetch(`${API}/insects`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(insectFormData)
-                });
-                if (res.ok) {
-                    const created = await res.json();
-                    setInsects(prev => [...prev, created]);
+            if (savedInsect) {
+                if (editingInsect) {
+                    setInsects(prev => prev.map(i => i.id === savedInsect.id ? savedInsect : i));
+                } else {
+                    setInsects(prev => [...prev, savedInsect]);
                 }
             }
         } catch (err) { console.error(err); }
