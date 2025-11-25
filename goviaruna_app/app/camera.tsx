@@ -15,7 +15,7 @@ export default function CameraScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
   const lang = i18n.language as 'si' | 'en';
-  
+
   const [facing, setFacing] = useState<CameraType>('back');
   const [flash, setFlash] = useState<FlashMode>('off');
   const [permission, requestPermission] = useCameraPermissions();
@@ -42,7 +42,7 @@ export default function CameraScreen() {
   const toggleCameraFacing = () => {
     setFacing(current => (current === 'back' ? 'front' : 'back'));
   };
-  
+
   const toggleFlash = () => {
     setFlash(current => (current === 'off' ? 'on' : 'off'));
   };
@@ -87,43 +87,43 @@ export default function CameraScreen() {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      <CameraView style={styles.camera} facing={facing} flash={flash} ref={cameraRef}>
-        {/* Top Controls */}
-        <View style={styles.topControls}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Feather name="x" size={30} color="#FFFFFF" />
+      <CameraView style={styles.camera} facing={facing} flash={flash} ref={cameraRef} />
+
+      {/* Top Controls */}
+      <View style={styles.topControls}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Feather name="x" size={30} color="#FFFFFF" />
+        </TouchableOpacity>
+        <View style={{ flexDirection: 'row' }}>
+          <TouchableOpacity onPress={toggleFlash} style={{ marginRight: 20 }}>
+            <Feather name={flash === 'on' ? 'zap' : 'zap-off'} size={24} color="#FFFFFF" />
           </TouchableOpacity>
-          <View style={{ flexDirection: 'row' }}>
-            <TouchableOpacity onPress={toggleFlash} style={{ marginRight: 20 }}>
-              <Feather name={flash === 'on' ? 'zap' : 'zap-off'} size={24} color="#FFFFFF" />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={toggleCameraFacing}>
-              <Feather name="rotate-cw" size={24} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity onPress={toggleCameraFacing}>
+            <Feather name="rotate-cw" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
         </View>
+      </View>
 
-        {/* Center Focus Frame */}
-        <View style={styles.focusFrameContainer}>
-          <View style={styles.focusFrame} />
-        </View>
+      {/* Center Focus Frame */}
+      <View style={styles.focusFrameContainer}>
+        <View style={styles.focusFrame} />
+      </View>
 
-        {/* Bottom Controls */}
-        <View style={styles.bottomControls}>
-           <Text style={[styles.instructionText, getFontStyle('regular', 16, lang)]}>{t('camera.instruction')}</Text>
-           <View style={styles.bottomButtons}>
-              <TouchableOpacity onPress={pickImage}>
-                <Feather name="image" size={32} color="#FFFFFF" />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.shutterButton} onPress={takePicture}>
-                <View style={styles.shutterButtonInner} />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.helpButton} onPress={() => setHelpVisible(true)}>
-                <Feather name="help-circle" size={32} color="#FFFFFF" />
-              </TouchableOpacity>
-           </View>
+      {/* Bottom Controls */}
+      <View style={styles.bottomControls}>
+        <Text style={[styles.instructionText, getFontStyle('regular', 16, lang)]}>{t('camera.instruction')}</Text>
+        <View style={styles.bottomButtons}>
+          <TouchableOpacity onPress={pickImage}>
+            <Feather name="image" size={32} color="#FFFFFF" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.shutterButton} onPress={takePicture}>
+            <View style={styles.shutterButtonInner} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.helpButton} onPress={() => setHelpVisible(true)}>
+            <Feather name="help-circle" size={32} color="#FFFFFF" />
+          </TouchableOpacity>
         </View>
-      </CameraView>
+      </View>
 
       {/* Help Modal */}
       <Modal
@@ -137,14 +137,14 @@ export default function CameraScreen() {
             <TouchableOpacity style={styles.closeButton} onPress={() => setHelpVisible(false)}>
               <Feather name="x" size={24} color="#333" />
             </TouchableOpacity>
-            
+
             <Text style={StyleSheet.flatten([styles.modalTitle, getFontStyle('bold', 22, lang)])}>
               {t('camera.help_modal_title')}
             </Text>
 
-            <PagerView 
-              style={styles.pager} 
-              initialPage={0} 
+            <PagerView
+              style={styles.pager}
+              initialPage={0}
               ref={pagerRef}
               onPageSelected={e => setCurrentPage(e.nativeEvent.position)}
             >
@@ -160,7 +160,7 @@ export default function CameraScreen() {
                 <View style={[styles.imageExample, styles.imageIncorrect]}>
                   <Image source={require('@/assets/images/butterfly.png')} style={[styles.exampleImage, styles.exampleImageOffCenter]} />
                   <View style={styles.focusFrameSmall} />
-                   <View style={[styles.statusIcon, styles.statusIncorrect]}>
+                  <View style={[styles.statusIcon, styles.statusIncorrect]}>
                     <Feather name="x" size={20} color="white" />
                   </View>
                 </View>
@@ -177,7 +177,7 @@ export default function CameraScreen() {
                 <View style={[styles.imageExample, styles.imageIncorrect]}>
                   <Image source={require('@/assets/images/butterfly.png')} style={[styles.exampleImage, { transform: [{ scale: 0.5 }] }]} />
                   <View style={styles.focusFrameSmall} />
-                   <View style={[styles.statusIcon, styles.statusIncorrect]}>
+                  <View style={[styles.statusIcon, styles.statusIncorrect]}>
                     <Feather name="x" size={20} color="white" />
                   </View>
                 </View>
@@ -194,13 +194,13 @@ export default function CameraScreen() {
                 <View style={[styles.imageExample, styles.imageIncorrect]}>
                   <Image source={require('@/assets/images/butterfly.png')} style={[styles.exampleImage, { opacity: 0.5 }]} />
                   <View style={styles.focusFrameSmall} />
-                   <View style={[styles.statusIcon, styles.statusIncorrect]}>
+                  <View style={[styles.statusIcon, styles.statusIncorrect]}>
                     <Feather name="x" size={20} color="white" />
                   </View>
                 </View>
               </View>
             </PagerView>
-            
+
             <Text style={StyleSheet.flatten([styles.mainText, getFontStyle('semiBold', 18, lang)])}>
               {currentPage === 0 && t('camera.help_modal_main_text')}
               {currentPage === 1 && t('camera.help_modal_p2_main')}
@@ -213,13 +213,13 @@ export default function CameraScreen() {
             </Text>
 
             <View style={styles.dotsContainer}>
-                {[...Array(3)].map((_, i) => (
-                  <View key={i} style={[styles.dot, currentPage === i && styles.dotActive]} />
-                ))}
+              {[...Array(3)].map((_, i) => (
+                <View key={i} style={[styles.dot, currentPage === i && styles.dotActive]} />
+              ))}
             </View>
 
-            <TouchableOpacity 
-              style={styles.nextButton} 
+            <TouchableOpacity
+              style={styles.nextButton}
               onPress={() => {
                 if (currentPage < 2) {
                   pagerRef.current?.setPage(currentPage + 1);
@@ -247,9 +247,9 @@ const styles = StyleSheet.create({
   permissionButtonText: { color: 'white', fontSize: 16 },
   camera: { flex: 1 },
   topControls: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', position: 'absolute', top: 60, left: 20, right: 20, zIndex: 1 },
-  focusFrameContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  focusFrameContainer: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center', zIndex: 0 },
   focusFrame: { width: 250, height: 250, borderWidth: 2, borderColor: '#FFFFFF', borderRadius: 10, borderStyle: 'dashed' },
-  bottomControls: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#3A8A55', paddingTop: 15, paddingBottom: 40 },
+  bottomControls: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#3A8A55', paddingTop: 15, paddingBottom: 40, zIndex: 1 },
   instructionText: { fontSize: 16, color: 'rgba(255,255,255,0.8)', textAlign: 'center', marginBottom: 20 },
   bottomButtons: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 30 },
   shutterButton: { width: 70, height: 70, borderRadius: 35, backgroundColor: 'transparent', borderWidth: 4, borderColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' },

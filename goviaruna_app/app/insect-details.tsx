@@ -198,6 +198,9 @@ export default function InsectDetailsScreen() {
     // Handle if img is already an object (e.g. from local require) or a full URL
     if (typeof img === 'object' && img !== null) return img;
 
+    // Handle local require (number)
+    if (typeof img === 'number') return img;
+
     return { uri: img };
   });
 
