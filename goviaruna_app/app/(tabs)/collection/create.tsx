@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, TextInput, ScrollView, Text, Alert, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, TextInput, ScrollView, Text, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Fonts, getFontStyle } from '@/constants/Fonts';
@@ -8,13 +8,14 @@ import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { api } from '@/services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
+import { CustomAlert } from '@/components/CustomAlert';
 
 // Sinhala locale config for the calendar
 LocaleConfig.locales['si'] = {
-  monthNames: ['ජනවාරි','පෙබරවාරි','මාර්තු','අප්‍රේල්','මැයි','ජූනි','ජූලි','අගෝස්තු','සැප්තැම්බර්','ඔක්තෝබර්','නොවැම්බර්','දෙසැම්බර්'],
-  monthNamesShort: ['ජන','පෙබ','මාර්','අප්‍රේල්','මැයි','ජූනි','ජූලි','අගෝ','සැප්','ඔක්','නොවැ','දෙසැ'],
-  dayNames: ['ඉරිදා','සඳුදා','අඟහරුවාදා','බදාදා','බ්‍රහස්පතින්දා','සිකුරාදා','සෙනසුරාදා'],
-  dayNamesShort: ['සඳු','අඟ','බදා','බ්‍රහ','සිකු','සෙ','ඉරි'],
+  monthNames: ['ජනවාරි', 'පෙබරවාරි', 'මාර්තු', 'අප්‍රේල්', 'මැයි', 'ජූනි', 'ජූලි', 'අගෝස්තු', 'සැප්තැම්බර්', 'ඔක්තෝබර්', 'නොවැම්බර්', 'දෙසැම්බර්'],
+  monthNamesShort: ['ජන', 'පෙබ', 'මාර්', 'අප්‍රේල්', 'මැයි', 'ජූනි', 'ජූලි', 'අගෝ', 'සැප්', 'ඔක්', 'නොවැ', 'දෙසැ'],
+  dayNames: ['ඉරිදා', 'සඳුදා', 'අඟහරුවාදා', 'බදාදා', 'බ්‍රහස්පතින්දා', 'සිකුරාදා', 'සෙනසුරාදා'],
+  dayNamesShort: ['සඳු', 'අඟ', 'බදා', 'බ්‍රහ', 'සිකු', 'සෙ', 'ඉරි'],
   today: 'අද'
 };
 LocaleConfig.defaultLocale = 'si';
@@ -32,6 +33,16 @@ export default function CreateCollectionScreen() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(isEditing);
+
+  // Alert state
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState<{
+    title: string;
+    message: string;
+    buttons?: any[];
+    icon?: any;
+    iconColor?: string;
+  }>({ title: '', message: '' });
 
   useEffect(() => {
     if (lang === 'en') {
@@ -52,12 +63,12 @@ export default function CreateCollectionScreen() {
       const userIdJson = await AsyncStorage.getItem('user');
       if (!userIdJson) {
         // Basic error handling, though in real app we'd have context
-        return; 
+        return;
       }
       const user = JSON.parse(userIdJson);
       const collections = await api.collections.getUserCollections(user.id);
       const collection = collections.find((c: any) => c.id === collectionId);
-      
+
       if (collection) {
         setCollectionName(collection.name);
         if (collection.date) {
@@ -70,7 +81,13 @@ export default function CreateCollectionScreen() {
       }
     } catch (error) {
       console.error('Error loading collection:', error);
-      Alert.alert(t('common.error'), t('common.error'));
+      setAlertConfig({
+        title: t('common.error'),
+        message: t('common.error'),
+        icon: 'alert-circle',
+        iconColor: '#EF4444',
+      });
+      setAlertVisible(true);
     } finally {
       setInitialLoading(false);
     }
@@ -78,7 +95,13 @@ export default function CreateCollectionScreen() {
 
   const handleCreate = async () => {
     if (!collectionName) {
-      Alert.alert(t('common.error'), t('collection.input_placeholder'));
+      setAlertConfig({
+        title: t('common.error'),
+        message: t('collection.input_placeholder'),
+        icon: 'alert-circle',
+        iconColor: '#EF4444',
+      });
+      setAlertVisible(true);
       return;
     }
 
@@ -90,7 +113,13 @@ export default function CreateCollectionScreen() {
         const user = JSON.parse(userJson);
         userId = user.id;
       } else {
-        Alert.alert(t('common.error'), t('auth.login'));
+        setAlertConfig({
+          title: t('common.error'),
+          message: t('auth.login'),
+          icon: 'alert-circle',
+          iconColor: '#EF4444',
+        });
+        setAlertVisible(true);
         setLoading(false);
         return;
       }
@@ -104,23 +133,39 @@ export default function CreateCollectionScreen() {
 
       if (isEditing) {
         await api.collections.update(collectionId, payload);
-        Alert.alert(t('common.success'), t('common.success'), [
-          { text: t('common.ok'), onPress: () => router.back() }
-        ]);
+        setAlertConfig({
+          title: t('common.success'),
+          message: t('common.success'),
+          icon: 'check-circle',
+          iconColor: '#3A8A55',
+          buttons: [{ text: t('common.ok'), onPress: () => router.back() }],
+        });
+        setAlertVisible(true);
       } else {
         await api.collections.create(payload);
-        Alert.alert(t('common.success'), t('common.success'), [
-          { text: t('common.ok'), onPress: () => router.back() }
-        ]);
+        setAlertConfig({
+          title: t('common.success'),
+          message: t('common.success'),
+          icon: 'check-circle',
+          iconColor: '#3A8A55',
+          buttons: [{ text: t('common.ok'), onPress: () => router.back() }],
+        });
+        setAlertVisible(true);
       }
     } catch (error: any) {
       console.error('Save collection error:', error);
-      Alert.alert(t('common.error'), isEditing ? t('common.error') : t('common.error'));
+      setAlertConfig({
+        title: t('common.error'),
+        message: t('common.error'),
+        icon: 'alert-circle',
+        iconColor: '#EF4444',
+      });
+      setAlertVisible(true);
     } finally {
       setLoading(false);
     }
   };
-  
+
   const handleMonthChange = (add: boolean) => {
     const newMonth = new Date(currentMonth.setMonth(currentMonth.getMonth() + (add ? 1 : -1)));
     setCurrentMonth(newMonth);
@@ -134,7 +179,7 @@ export default function CreateCollectionScreen() {
           <Feather name="arrow-left" size={24} color="#222222" />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, getFontStyle('bold', 22, lang)]}>{isEditing ? t('collection.edit') : t('collection.create_title')}</Text>
-        <View style={{ width: 24 }} /> 
+        <View style={{ width: 24 }} />
       </View>
 
       {initialLoading ? (
@@ -150,16 +195,16 @@ export default function CreateCollectionScreen() {
             value={collectionName}
             onChangeText={setCollectionName}
           />
-          
+
           <Calendar
             key={currentMonth.toISOString()} // Force re-render on month change
             current={currentMonth.toISOString().split('T')[0]}
             onDayPress={day => setSelectedDate(day.dateString)}
             markedDates={{
-              [selectedDate]: {selected: true, disableTouchEvent: true, selectedColor: '#3A8A55', selectedTextColor: '#FFFFFF'}
+              [selectedDate]: { selected: true, disableTouchEvent: true, selectedColor: '#3A8A55', selectedTextColor: '#FFFFFF' }
             }}
             theme={calendarTheme}
-            renderArrow={(direction) => 
+            renderArrow={(direction) =>
               <TouchableOpacity onPress={() => handleMonthChange(direction === 'right')}>
                 <Feather name={direction === 'left' ? 'chevron-left' : 'chevron-right'} size={24} color="#3A8A55" />
               </TouchableOpacity>
@@ -174,28 +219,38 @@ export default function CreateCollectionScreen() {
       )}
 
       <View style={styles.footer}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.button, styles.cancelButton]}
           onPress={() => router.back()}
           activeOpacity={0.8}
         >
           <Text style={[styles.buttonText, styles.cancelButtonText, getFontStyle('semiBold', 16, lang)]}>{t('collection.cancel')}</Text>
         </TouchableOpacity>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.button, styles.createButton, loading && { opacity: 0.7 }]}
           onPress={handleCreate}
           activeOpacity={0.8}
           disabled={loading || initialLoading}
         >
           {loading ? (
-             <ActivityIndicator color="#FFFFFF" size="small" />
+            <ActivityIndicator color="#FFFFFF" size="small" />
           ) : (
-             <Text style={[styles.buttonText, getFontStyle('semiBold', 16, lang)]}>
-               {isEditing ? t('collection.update') : t('collection.create')}
-             </Text>
+            <Text style={[styles.buttonText, getFontStyle('semiBold', 16, lang)]}>
+              {isEditing ? t('collection.update') : t('collection.create')}
+            </Text>
           )}
         </TouchableOpacity>
       </View>
+
+      <CustomAlert
+        visible={alertVisible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        buttons={alertConfig.buttons}
+        icon={alertConfig.icon}
+        iconColor={alertConfig.iconColor}
+        onClose={() => setAlertVisible(false)}
+      />
     </View>
   );
 }

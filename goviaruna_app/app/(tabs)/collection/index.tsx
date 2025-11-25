@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { View, StyleSheet, Text, Image, TouchableOpacity, FlatList, RefreshControl, Alert } from 'react-native';
+import { View, StyleSheet, Text, Image, TouchableOpacity, FlatList, RefreshControl } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Fonts, getFontStyle } from '@/constants/Fonts';
 import { Feather } from '@expo/vector-icons';
@@ -7,6 +7,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { api } from '@/services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
+import { CustomAlert } from '@/components/CustomAlert';
 
 export default function CollectionScreen() {
   const router = useRouter();
@@ -16,6 +17,16 @@ export default function CollectionScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Alert state
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState<{
+    title: string;
+    message: string;
+    buttons?: any[];
+    icon?: any;
+    iconColor?: string;
+  }>({ title: '', message: '' });
+
   const fetchCollections = async () => {
     try {
       const userJson = await AsyncStorage.getItem('user');
@@ -24,9 +35,9 @@ export default function CollectionScreen() {
         const data = await api.collections.getUserCollections(user.id);
         // Sort by date descending (newest first)
         const sortedData = data.sort((a: any, b: any) => {
-           const dateA = new Date(a.date || a.createdAt).getTime();
-           const dateB = new Date(b.date || b.createdAt).getTime();
-           return dateB - dateA;
+          const dateA = new Date(a.date || a.createdAt).getTime();
+          const dateB = new Date(b.date || b.createdAt).getTime();
+          return dateB - dateA;
         });
         setCollections(sortedData);
       }
@@ -55,36 +66,50 @@ export default function CollectionScreen() {
   };
 
   const handleDelete = (id: string) => {
-    Alert.alert(
-      t('collection.delete_confirm_title'),
-      t('collection.delete_confirm_message'),
-      [
+    setAlertConfig({
+      title: t('collection.delete_confirm_title'),
+      message: t('collection.delete_confirm_message'),
+      icon: 'trash-2',
+      iconColor: '#EF4444',
+      buttons: [
         { text: t('common.cancel'), style: 'cancel' },
-        { 
-          text: t('common.delete'), 
+        {
+          text: t('collection.delete'),
           style: 'destructive',
           onPress: async () => {
             try {
               await api.collections.delete(id);
-              // Optimistic update or refresh
               setCollections(prev => prev.filter(c => c.id !== id));
-              Alert.alert(t('common.success'), t('collection.delete_success'));
+              setAlertConfig({
+                title: t('common.success'),
+                message: t('collection.delete_success'),
+                icon: 'check-circle',
+                iconColor: '#3A8A55',
+              });
+              setAlertVisible(true);
             } catch (error) {
               console.error('Delete error:', error);
-              Alert.alert(t('common.error'), t('collection.delete_fail'));
+              setAlertConfig({
+                title: t('common.error'),
+                message: t('common.error'),
+                icon: 'alert-circle',
+                iconColor: '#EF4444',
+              });
+              setAlertVisible(true);
             }
           }
         }
-      ]
-    );
+      ],
+    });
+    setAlertVisible(true);
   };
 
   const renderCollectionItem = ({ item }: { item: any }) => {
     const date = item.date ? new Date(item.date) : new Date(item.createdAt);
-    const dateString = date.toLocaleDateString(i18n.language === 'si' ? 'si-LK' : 'en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    const dateString = date.toLocaleDateString(i18n.language === 'si' ? 'si-LK' : 'en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     });
 
     return (
@@ -99,10 +124,10 @@ export default function CollectionScreen() {
             <Text style={[styles.cardItemsCount, getFontStyle('medium', 12, lang)]}>{item.items?.length || 0} කෘමීන්</Text>
           </View>
         </View>
-        
+
         <View style={styles.cardActions}>
-          <TouchableOpacity 
-            style={styles.actionButton} 
+          <TouchableOpacity
+            style={styles.actionButton}
             onPress={(e) => {
               e.stopPropagation();
               handleEdit(item.id);
@@ -110,8 +135,8 @@ export default function CollectionScreen() {
           >
             <Feather name="edit-2" size={18} color="#666" />
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.actionButton, { marginLeft: 15 }]} 
+          <TouchableOpacity
+            style={[styles.actionButton, { marginLeft: 15 }]}
             onPress={(e) => {
               e.stopPropagation();
               handleDelete(item.id);
@@ -130,23 +155,23 @@ export default function CollectionScreen() {
       <View style={styles.header}>
         <Text style={[styles.headerTitle, getFontStyle('bold', 22, lang)]}>{t('collection.title')}</Text>
         {collections.length > 0 && (
-           <TouchableOpacity onPress={() => router.push('/collection/create')}>
-             <Feather name="plus" size={24} color="#3A8A55" />
-           </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/collection/create')}>
+            <Feather name="plus" size={24} color="#3A8A55" />
+          </TouchableOpacity>
         )}
       </View>
-      
+
       {collections.length === 0 && !loading ? (
         <View style={styles.emptyContainer}>
-          <Image 
+          <Image
             source={require('@/assets/images/empty_collection.png')}
             style={styles.emptyImage}
           />
           <Text style={[styles.emptyTitle, getFontStyle('semiBold', 22, lang)]}>{t('collection.empty_title')}</Text>
           <Text style={[styles.emptySubtitle, getFontStyle('regular', 16, lang)]}>{t('collection.empty_subtitle')}</Text>
-          
-          <TouchableOpacity 
-            style={styles.addButton} 
+
+          <TouchableOpacity
+            style={styles.addButton}
             activeOpacity={0.8}
             onPress={() => router.push('/collection/create')}
           >
@@ -165,6 +190,16 @@ export default function CollectionScreen() {
           }
         />
       )}
+
+      <CustomAlert
+        visible={alertVisible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        buttons={alertConfig.buttons}
+        icon={alertConfig.icon}
+        iconColor={alertConfig.iconColor}
+        onClose={() => setAlertVisible(false)}
+      />
     </View>
   );
 }
