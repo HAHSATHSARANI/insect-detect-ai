@@ -47,6 +47,26 @@ SUPPORTED_INSECT_KEYS = [
 ]
 
 
+@router.get("/random", response_model=List[Insect])
+def get_random_insects():
+    try:
+        # Try to get 3 random documents
+        pipeline = [{"$sample": {"size": 3}}]
+        results = list(insects_collection.aggregate(pipeline))
+        
+        # If aggregation returns nothing (e.g., empty collection) or fewer than 3, 
+        # we can also try a standard find to be safe, but sample usually works.
+        # If results is empty, try standard find just in case sample failed silently
+        if not results:
+             results = list(insects_collection.find().limit(3))
+             
+        return [insect_helper(doc) for doc in results]
+    except Exception as e:
+        print(f"Error fetching random insects: {e}")
+        # Fallback to simple find
+        return [insect_helper(doc) for doc in insects_collection.find().limit(3)]
+
+
 @router.get("", response_model=List[Insect])
 def get_insects():
     return [insect_helper(i) for i in insects_collection.find()]

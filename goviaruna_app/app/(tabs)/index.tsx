@@ -10,17 +10,15 @@ import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api, API_URL } from '@/services/api';
 
-const INSECT_DATA = [
-  { id: '1', image: require('@/assets/images/insect_1.png'), title: 'ලේඩි බග් මකුණා', subtitle: 'Pilea Peperomioides', tag: 'Beneficial' },
-  { id: '2', image: require('@/assets/images/insect_2.png'), title: 'තණකොළ පෙත්තා', subtitle: 'Pilea Peperomioides', tag: 'Harmful' },
-  { id: '3', image: require('@/assets/images/insect_1.png'), title: 'ලේඩි බග් මකුණා', subtitle: 'Pilea Peperomioides', tag: 'Beneficial' },
-];
+// Removed static INSECT_DATA
+
 
 export default function HomeScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
   const lang = i18n.language as 'si' | 'en';
   const [user, setUser] = useState<any>(null);
+  const [featuredInsects, setFeaturedInsects] = useState<any[]>([]);
 
   const CONTACT_ITEMS = [
     { icon: 'voicemail', title: 'Voice mail', subtitle: 'Send Voice Mail', key: '1' },
@@ -48,9 +46,38 @@ export default function HomeScreen() {
     }
   };
 
+  const loadRandomInsects = async () => {
+      try {
+          const insects = await api.insects.getRandom();
+          const mappedInsects = insects.map((insect: any) => {
+              let imageSource = require('@/assets/images/insect_1.png');
+              if (insect.images && insect.images.length > 0) {
+                  // Use first image from DB
+                  const imageId = insect.images[0];
+                  if (typeof imageId === 'string') {
+                      imageSource = { uri: `${API_URL}/api/insects/image/${imageId}` };
+                  }
+              }
+              
+              return {
+                  id: insect.id,
+                  title: insect.name,
+                  subtitle: insect.scientificName,
+                  tag: insect.category === 'Non-Harmful' ? 'Beneficial' : insect.category,
+                  image: imageSource,
+                  fullData: insect
+              };
+          });
+          setFeaturedInsects(mappedInsects);
+      } catch (error) {
+          console.error('Error loading random insects:', error);
+      }
+  };
+
   useFocusEffect(
     useCallback(() => {
       loadUser();
+      loadRandomInsects();
     }, [])
   );
 
@@ -127,7 +154,7 @@ export default function HomeScreen() {
           <Text style={[styles.sectionTitle, getFontStyle('bold', 20, lang)]}>{t('home.commonInsectsTitle')}</Text>
           <Text style={[styles.sectionSubtitle, getFontStyle('regular', 14, lang)]}>{t('home.commonInsectsSubtitle')}</Text>
           <FlatList
-            data={INSECT_DATA}
+            data={featuredInsects}
             horizontal
             showsHorizontalScrollIndicator={false}
             renderItem={({ item }) => (
@@ -136,10 +163,21 @@ export default function HomeScreen() {
                 title={item.title}
                 subtitle={item.subtitle}
                 tag={item.tag as 'Harmful' | 'Beneficial'}
+                onPress={() => {
+                    router.push({
+                        pathname: '/insect-details',
+                        params: { 
+                            savedData: JSON.stringify({ insectData: item.fullData }) 
+                        }
+                    });
+                }}
               />
             )}
             keyExtractor={item => item.id}
             contentContainerStyle={{ marginTop: 15 }}
+            ListEmptyComponent={
+                <Text style={{ marginLeft: 20, marginTop: 20, color: '#888' }}>Loading...</Text>
+            }
           />
         </View>
         

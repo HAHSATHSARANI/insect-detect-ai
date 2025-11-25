@@ -28,7 +28,7 @@ class Admin(AdminBase):
 # Updated Insect Model to match requirement 3
 class Insect(BaseModel):
     id: Optional[str] = None
-    key: str # Unique key from insects.json (e.g., "Brown_Planthopper")
+    key: Optional[str] = None # Made optional to prevent crashes if DB docs are not yet updated
     name: str
     scientificName: str
     scientificNameFull: Optional[str] = None

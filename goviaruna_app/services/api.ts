@@ -147,6 +147,13 @@ export const api = {
       } catch (error) {
         throw error;
       }
+    },
+    getRandom: async () => {
+        try {
+            const response = await fetch(`${API_URL}/api/insects/random`);
+            if (!response.ok) throw new Error('Failed to fetch random insects');
+            return await response.json();
+        } catch (error) { throw error; }
     }
   },
   collections: {
