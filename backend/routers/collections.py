@@ -125,5 +125,37 @@ def remove_item_from_collection(collection_id: str, item_index: int):
         }
     )
     
+    
     return {"message": "Item removed successfully"}
+
+
+@router.get("/analytics/top-species")
+def get_top_species_analytics():
+    pipeline = [
+        {"$unwind": "$items"},
+        # Filter out items that might not have a name or are unknown if desired
+        # {"$match": {"items.insectName": {"$ne": "Unknown"}}}, 
+        {"$group": {
+            "_id": "$items.insectName",
+            "count": {"$sum": 1},
+            "category": {"$first": "$items.category"}
+        }},
+        {"$sort": {"count": -1}},
+        {"$limit": 5}
+    ]
+    
+    results = list(collections_collection.aggregate(pipeline))
+    
+    # Format for frontend
+    response = []
+    for r in results:
+        # Handle case where _id might be null
+        name = r["_id"] if r["_id"] else "Unknown"
+        response.append({
+            "name": name,
+            "detections": r["count"],
+            "category": r.get("category", "Unknown")
+        })
+        
+    return response
 

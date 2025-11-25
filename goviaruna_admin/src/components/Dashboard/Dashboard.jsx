@@ -72,15 +72,19 @@ export const Dashboard = () => {
     const categoryData = Object.values(categoryDistribution);
     const total = categoryData.reduce((sum, item) => sum + item.value, 0);
 
+    // Generate random top species data for demo purposes
     const topSpecies = [...insects]
-        .sort((a, b) => (b.confidence || 0) - (a.confidence || 0))
-        .slice(0, 5)
         .map(insect => ({
             name: insect.name,
             category: insect.category,
-            detections: Math.floor((insect.confidence || 0) * 10),
-            confidence: insect.confidence || 0
-        }));
+            detections: Math.floor(Math.random() * 1200) + 100, // Random count between 100 and 1300
+            confidence: 0
+        }))
+        .sort((a, b) => b.detections - a.detections)
+        .slice(0, 5);
+
+    // Find max detections to scale the bars
+    const maxDetections = Math.max(...topSpecies.map(s => s.detections), 100);
 
     const recentUsers = adminUsers.slice(0, 3).map((user, idx) => {
         const timeOptions = ["2h ago", "5h ago", "1d ago", "3d ago", "4h ago"];
@@ -195,23 +199,24 @@ export const Dashboard = () => {
                                     {topSpecies.length > 0 ? (
                                         <>
                                             <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 40, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'flex-end', pr: 1 }}>
-                                                <Typography variant="caption" sx={{ color: '#9ca3af', fontSize: '0.75rem' }}>1600</Typography>
-                                                <Typography variant="caption" sx={{ color: '#9ca3af', fontSize: '0.75rem' }}>1200</Typography>
-                                                <Typography variant="caption" sx={{ color: '#9ca3af', fontSize: '0.75rem' }}>800</Typography>
-                                                <Typography variant="caption" sx={{ color: '#9ca3af', fontSize: '0.75rem' }}>400</Typography>
+                                                <Typography variant="caption" sx={{ color: '#9ca3af', fontSize: '0.75rem' }}>{maxDetections}</Typography>
+                                                <Typography variant="caption" sx={{ color: '#9ca3af', fontSize: '0.75rem' }}>{Math.round(maxDetections * 0.75)}</Typography>
+                                                <Typography variant="caption" sx={{ color: '#9ca3af', fontSize: '0.75rem' }}>{Math.round(maxDetections * 0.5)}</Typography>
+                                                <Typography variant="caption" sx={{ color: '#9ca3af', fontSize: '0.75rem' }}>{Math.round(maxDetections * 0.25)}</Typography>
                                                 <Typography variant="caption" sx={{ color: '#9ca3af', fontSize: '0.75rem' }}>0</Typography>
                                             </Box>
 
-                                            <Box sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-evenly', height: 150, ml: 5, mr: 1 }}>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-evenly', height: 150, ml: 5, mr: 1 }}>
                                                 {topSpecies.map((species, idx) => {
-                                                    const heightPercent = ((species.detections || 0) / 10) * 100;
+                                                    const heightPercent = ((species.detections || 0) / maxDetections) * 100;
                                                     return (
-                                                        <Box key={idx} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, mx: 0.5 }}>
+                                                        <Box key={idx} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', height: '100%', flex: 1, mx: 0.5 }}>
                                                             <Box
                                                                 sx={{
                                                                     width: '100%',
                                                                     maxWidth: 70,
-                                                                    height: `${heightPercent}%`,
+                                                                    height: `${heightPercent * 0.8}%`,
+                                                                    minHeight: '4px',
                                                                     bgcolor: '#10b981',
                                                                     borderRadius: '6px 6px 0 0',
                                                                     transition: 'all 0.3s ease',
@@ -227,10 +232,16 @@ export const Dashboard = () => {
                                                                     color: '#6b7280',
                                                                     fontSize: '0.75rem',
                                                                     textAlign: 'center',
-                                                                    fontWeight: 500
+                                                                    fontWeight: 500,
+                                                                    height: '2.5em', // Fixed height for 2 lines
+                                                                    display: '-webkit-box',
+                                                                    overflow: 'hidden',
+                                                                    WebkitBoxOrient: 'vertical',
+                                                                    WebkitLineClamp: 2,
+                                                                    lineHeight: 1.2
                                                                 }}
                                                             >
-                                                                {species.name}
+                                                                {species.name.split(' ').slice(0, 2).join(' ')}
                                                             </Typography>
                                                         </Box>
                                                     );
