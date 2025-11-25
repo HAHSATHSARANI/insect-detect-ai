@@ -21,6 +21,7 @@ export default function InsectDetailsScreen() {
   
   const [activeTab, setActiveTab] = useState(0);
   const [loading, setLoading] = useState(!savedDataStr && !!imageUri);
+  const [error, setError] = useState<string | null>(null);
   
   const INITIAL_INSECT_DETAILS = {
     name: t('insect_details.analyzing'),
@@ -91,8 +92,10 @@ export default function InsectDetailsScreen() {
         ] 
       }));
     } catch (error) {
-      console.error('Analysis failed:', error);
-      Alert.alert(t('insect_details.analysis_fail'), t('insect_details.retry'));
+      // The console.error below was causing the intrusive bottom pop-up.
+      // Since we now have a custom modal, this is no longer needed.
+      // console.error('Analysis failed:', error);
+      setError(t('insect_details.retry', 'Please try again'));
     } finally {
       setLoading(false);
     }
@@ -170,6 +173,48 @@ export default function InsectDetailsScreen() {
     <View style={styles.container}>
       <StatusBar style="light" />
       
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={!!error}
+        onRequestClose={() => setError(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.errorContainer}>
+            <Feather name="alert-triangle" size={48} color="#D9534F" />
+            <Text style={[styles.errorTitle, getFontStyle('bold', 20, lang)]}>
+              {t('insect_details.analysis_fail', 'Analysis Failed')}
+            </Text>
+            <Text style={[styles.errorMessage, getFontStyle('regular', 16, lang)]}>
+              {error}
+            </Text>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={() => {
+                setError(null);
+                setLoading(true);
+                analyzeImage();
+              }}
+            >
+              <Text style={[styles.retryButtonText, getFontStyle('semiBold', 16, 'en')]}>
+                {t('common.try_again', 'Try Again')}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => {
+                setError(null);
+                if(router.canGoBack()) router.back();
+              }}
+            >
+              <Text style={[styles.cancelButtonText, getFontStyle('regular', 16, lang)]}>
+                {t('common.cancel', 'Cancel')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       {loading && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color="#3A8A55" />
@@ -609,9 +654,56 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  },
+  errorContainer: {
+    width: width * 0.85,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 25,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  errorTitle: {
+    marginTop: 15,
+    marginBottom: 10,
+    textAlign: 'center',
+    color: '#333',
+  },
+  errorMessage: {
+    marginBottom: 25,
+    textAlign: 'center',
+    color: '#666',
+    lineHeight: 22,
+  },
+  retryButton: {
+    backgroundColor: '#3A8A55',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 30,
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  retryButtonText: {
+    color: 'white',
+    fontSize: 16,
+  },
+  cancelButton: {
+    paddingVertical: 10,
+  },
+  cancelButtonText: {
+    color: '#888',
+    fontSize: 15,
   },
   modalContent: {
     width: '90%',

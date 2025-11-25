@@ -111,7 +111,8 @@
     "ok": "OK",
     "error": "Error",
     "success": "Success",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "try_again": "Try Again"
   },
   "profile": {
     "title": "Profile",
