@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 import { Sidebar } from './Sidebar';
 
 export const MainLayout = ({ user, currentPage, onPageChange, onLogout, children }) => {
-    const sidebarWidth = 230; // matches Sidebar width
+    const sidebarWidth = 280; // matches Sidebar width
 
     return (
         <Box sx={{ display: 'flex', minHeight: '100vh' }}>

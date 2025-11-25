@@ -1,5 +1,5 @@
 // src/components/SpeciesDatabase/InsectCards.jsx
-import { Box, Card, CardContent, CardMedia, Typography, Chip, IconButton, Grid } from '@mui/material';
+import { Box, Card, CardContent, CardMedia, Typography, Chip, IconButton } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon, ArrowForward as ArrowForwardIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { useState } from 'react';
 import { InsectDetailsModal } from './InsectDetailsModal';
@@ -35,71 +35,78 @@ export const InsectTable = ({ insects, onEdit, onDelete }) => {
 
     return (
         <>
-            <Grid container spacing={3}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                 {insects.map((insect) => (
-                    <Grid item xs={12} sm={6} md={4} lg={3} key={insect.id}>
-                        <Card
-                            sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                height: '100%',
-                                borderRadius: 2,
-                                cursor: 'pointer',
-                                transition: 'transform 0.2s, box-shadow 0.2s',
-                                '&:hover': {
-                                    transform: 'translateY(-4px)',
-                                    boxShadow: 4
-                                }
-                            }}
-                            onClick={() => handleOpenDetails(insect)}
-                        >
-                            <Box sx={{ position: 'relative' }}>
-                                <CardMedia
-                                    component="img"
-                                    image={getImageUrl(insect, imageIndexes[insect.id] || 0)}
-                                    alt={insect.name}
-                                    sx={{ height: 200, objectFit: 'cover' }}
-                                />
-                                {insect.images?.length > 1 && (
-                                    <>
-                                        <IconButton
-                                            onClick={(e) => { e.stopPropagation(); handleImageNavigate(insect.id, 'prev'); }}
-                                            size="small"
-                                            sx={{
-                                                position: 'absolute',
-                                                left: 8,
-                                                top: '50%',
-                                                transform: 'translateY(-50%)',
-                                                bgcolor: 'rgba(255,255,255,0.8)',
-                                                '&:hover': { bgcolor: 'rgba(255,255,255,0.95)' }
-                                            }}
-                                        >
-                                            <ArrowBackIcon fontSize="small" />
-                                        </IconButton>
-                                        <IconButton
-                                            onClick={(e) => { e.stopPropagation(); handleImageNavigate(insect.id, 'next'); }}
-                                            size="small"
-                                            sx={{
-                                                position: 'absolute',
-                                                right: 8,
-                                                top: '50%',
-                                                transform: 'translateY(-50%)',
-                                                bgcolor: 'rgba(255,255,255,0.8)',
-                                                '&:hover': { bgcolor: 'rgba(255,255,255,0.95)' }
-                                            }}
-                                        >
-                                            <ArrowForwardIcon fontSize="small" />
-                                        </IconButton>
-                                    </>
-                                )}
-                            </Box>
-                            <CardContent sx={{ flexGrow: 1, p: 2 }}>
+                    <Card
+                        key={insect.id}
+                        sx={{
+                            width: 250,
+                            height: 350,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            borderRadius: 2,
+                            cursor: 'pointer',
+                            transition: 'transform 0.2s, box-shadow 0.2s',
+                            '&:hover': {
+                                transform: 'translateY(-4px)',
+                                boxShadow: 4
+                            }
+                        }}
+                        onClick={() => handleOpenDetails(insect)}
+                    >
+                        <Box sx={{ position: 'relative', width: '100%', height: 200 }}>
+                            <CardMedia
+                                component="img"
+                                image={getImageUrl(insect, imageIndexes[insect.id] || 0)}
+                                alt={insect.name}
+                                sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
+                            {insect.images?.length > 1 && (
+                                <>
+                                    <IconButton
+                                        onClick={(e) => { e.stopPropagation(); handleImageNavigate(insect.id, 'prev'); }}
+                                        size="small"
+                                        sx={{
+                                            position: 'absolute',
+                                            left: 8,
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            bgcolor: 'rgba(255,255,255,0.4)',
+                                            '&:hover': { bgcolor: 'rgba(255,255,255,0.6)' }
+                                        }}
+                                    >
+                                        <ArrowBackIcon fontSize="small" />
+                                    </IconButton>
+                                    <IconButton
+                                        onClick={(e) => { e.stopPropagation(); handleImageNavigate(insect.id, 'next'); }}
+                                        size="small"
+                                        sx={{
+                                            position: 'absolute',
+                                            right: 8,
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            bgcolor: 'rgba(255,255,255,0.4)',
+                                            '&:hover': { bgcolor: 'rgba(255,255,255,0.6)' }
+                                        }}
+                                    >
+                                        <ArrowForwardIcon fontSize="small" />
+                                    </IconButton>
+                                </>
+                            )}
+                        </Box>
+                        <CardContent sx={{ flexGrow: 1, p: 2, display: 'flex', flexDirection: 'column' }}>
+                            <Box sx={{ flexGrow: 1 }}>
                                 <Typography variant="h6" fontWeight={600} sx={{ mb: 0.5 }}>
                                     {insect.name}
                                 </Typography>
                                 <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'text.secondary', mb: 1 }}>
                                     {insect.scientificName}
                                 </Typography>
+                            </Box>
+                            <Box
+                                sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 'auto' }}
+                                onClick={(e) => e.stopPropagation()}
+                            >
                                 <Chip
                                     label={insect.category}
                                     size="small"
@@ -109,35 +116,27 @@ export const InsectTable = ({ insects, onEdit, onDelete }) => {
                                         fontWeight: 600
                                     }}
                                 />
-                                <Box
-                                    sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                                    onClick={(e) => e.stopPropagation()}
-                                >
-                                    <Typography variant="body2" color="text.secondary">
-                                        Confidence: {insect.confidence?.toFixed(1)}%
-                                    </Typography>
-                                    <Box>
-                                        <IconButton
-                                            onClick={(e) => { e.stopPropagation(); onEdit(insect); }}
-                                            size="small"
-                                            color="primary"
-                                        >
-                                            <EditIcon fontSize="small" />
-                                        </IconButton>
-                                        <IconButton
-                                            onClick={(e) => { e.stopPropagation(); onDelete(insect.id); }}
-                                            size="small"
-                                            color="error"
-                                        >
-                                            <DeleteIcon fontSize="small" />
-                                        </IconButton>
-                                    </Box>
+                                <Box>
+                                    <IconButton
+                                        onClick={(e) => { e.stopPropagation(); onEdit(insect); }}
+                                        size="small"
+                                        color="primary"
+                                    >
+                                        <EditIcon fontSize="small" />
+                                    </IconButton>
+                                    <IconButton
+                                        onClick={(e) => { e.stopPropagation(); onDelete(insect.id); }}
+                                        size="small"
+                                        color="error"
+                                    >
+                                        <DeleteIcon fontSize="small" />
+                                    </IconButton>
                                 </Box>
-                            </CardContent>
-                        </Card>
-                    </Grid>
+                            </Box>
+                        </CardContent>
+                    </Card>
                 ))}
-            </Grid>
+            </Box>
 
             {/* Details Modal */}
             <InsectDetailsModal

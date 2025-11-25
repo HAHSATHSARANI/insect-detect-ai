@@ -87,92 +87,88 @@ export const InsectModal = ({ open, onClose, onSave, isEditing, formData, setFor
     };
 
     return (
-        <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
+        <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
             <DialogTitle sx={{ fontWeight: 700 }}>
                 {isEditing ? 'Edit Species' : 'Add New Species'}
             </DialogTitle>
-            <DialogContent>
-                <Tabs value={activeTab} onChange={handleTabChange} sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                    <Tab label="Basic Info" />
-                    <Tab label="Life Cycle & Damage" />
-                    <Tab label="Control Methods" />
+            <DialogContent sx={{
+                '&::-webkit-scrollbar': {
+                    display: 'none'
+                },
+                '-ms-overflow-style': 'none',
+                'scrollbarWidth': 'none'
+            }}>
+                <Tabs
+                    value={activeTab}
+                    onChange={handleTabChange}
+                    sx={{
+                        borderBottom: 'none',
+                        '& .MuiTabs-indicator': {
+                            backgroundColor: '#10b981',
+                        },
+                        '& .MuiTab-root': {
+                            outline: 'none',
+                        }
+                    }}
+                >
+                    <Tab label="Basic Info" sx={{ outline: 'none' }} />
+                    <Tab label="Life Cycle & Damage" sx={{ outline: 'none' }} />
+                    <Tab label="Control Methods" sx={{ outline: 'none' }} />
                 </Tabs>
 
                 <TabPanel value={activeTab} index={0}>
-                    <Grid container spacing={2}>
-                        <Grid item xs={12} md={6}>
-                            <TextField
-                                label="Common Name"
-                                fullWidth
-                                required
-                                margin="normal"
-                                value={formData.name || ''}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            />
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                             <TextField
-                                label="Scientific Name (Short)"
-                                fullWidth
-                                required
-                                margin="normal"
-                                value={formData.scientificName || ''}
-                                onChange={(e) => setFormData({ ...formData, scientificName: e.target.value })}
-                            />
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                            <TextField
-                                label="Full Scientific Name"
-                                fullWidth
-                                margin="normal"
-                                value={formData.scientificNameFull || ''}
-                                onChange={(e) => setFormData({ ...formData, scientificNameFull: e.target.value })}
-                            />
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                            <TextField
-                                label="Family"
-                                fullWidth
-                                margin="normal"
-                                value={formData.family || ''}
-                                onChange={(e) => setFormData({ ...formData, family: e.target.value })}
-                            />
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                            <TextField
-                                select
-                                label="Category"
-                                fullWidth
-                                margin="normal"
-                                value={formData.category || 'Harmful'}
-                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                            >
-                                <MenuItem value="Harmful">Harmful</MenuItem>
-                                <MenuItem value="Beneficial">Beneficial</MenuItem>
-                            </TextField>
-                        </Grid>
-                         <Grid item xs={12} md={6}>
-                            <TextField
-                                label="Confidence (%)"
-                                type="number"
-                                fullWidth
-                                margin="normal"
-                                value={formData.confidence || 95}
-                                onChange={(e) => setFormData({ ...formData, confidence: parseFloat(e.target.value) })}
-                            />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField
-                                label="Description"
-                                fullWidth
-                                multiline
-                                rows={3}
-                                margin="normal"
-                                value={formData.description || ''}
-                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                            />
-                        </Grid>
-                    </Grid>
+                    <Box>
+                        <TextField
+                            label="Common Name"
+                            fullWidth
+                            required
+                            margin="normal"
+                            value={formData.name || ''}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        />
+                        <TextField
+                            label="Scientific Name (Short)"
+                            fullWidth
+                            required
+                            margin="normal"
+                            value={formData.scientificName || ''}
+                            onChange={(e) => setFormData({ ...formData, scientificName: e.target.value })}
+                        />
+                        <TextField
+                            label="Full Scientific Name"
+                            fullWidth
+                            margin="normal"
+                            value={formData.scientificNameFull || ''}
+                            onChange={(e) => setFormData({ ...formData, scientificNameFull: e.target.value })}
+                        />
+                        <TextField
+                            label="Family"
+                            fullWidth
+                            margin="normal"
+                            value={formData.family || ''}
+                            onChange={(e) => setFormData({ ...formData, family: e.target.value })}
+                        />
+                        <TextField
+                            select
+                            label="Category"
+                            fullWidth
+                            margin="normal"
+                            value={formData.category || 'Harmful'}
+                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                        >
+                            <MenuItem value="Harmful">Harmful</MenuItem>
+                            <MenuItem value="Beneficial">Beneficial</MenuItem>
+                        </TextField>
+                        <TextField
+                            label="Description"
+                            fullWidth
+                            multiline
+                            rows={3}
+                            margin="normal"
+                            value={formData.description || ''}
+                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        />
+                    </Box>
 
                     {/* Image Upload Section */}
                     <Typography variant="subtitle1" sx={{ mt: 3, mb: 1, fontWeight: 600 }}>
@@ -328,7 +324,7 @@ export const InsectModal = ({ open, onClose, onSave, isEditing, formData, setFor
                         value={formData.controlMethodsTitle || 'පාලන ක්‍රම'}
                         onChange={(e) => setFormData({ ...formData, controlMethodsTitle: e.target.value })}
                     />
-                     <TextField
+                    <TextField
                         label="General Control Content"
                         fullWidth
                         multiline
@@ -339,7 +335,7 @@ export const InsectModal = ({ open, onClose, onSave, isEditing, formData, setFor
                     />
 
                     <Grid container spacing={2} sx={{ mt: 1 }}>
-                         <Grid item xs={12}>
+                        <Grid item xs={12}>
                             <TextField
                                 label="Resistant Rice Varieties"
                                 fullWidth
@@ -352,7 +348,7 @@ export const InsectModal = ({ open, onClose, onSave, isEditing, formData, setFor
                             />
                         </Grid>
                         <Grid item xs={12}>
-                             <TextField
+                            <TextField
                                 label="Pesticide Instructions"
                                 fullWidth
                                 multiline
@@ -363,8 +359,8 @@ export const InsectModal = ({ open, onClose, onSave, isEditing, formData, setFor
                                 helperText="General instructions for pesticide application"
                             />
                         </Grid>
-                         <Grid item xs={12}>
-                             <TextField
+                        <Grid item xs={12}>
+                            <TextField
                                 label="Eco-Friendly Solutions"
                                 fullWidth
                                 multiline

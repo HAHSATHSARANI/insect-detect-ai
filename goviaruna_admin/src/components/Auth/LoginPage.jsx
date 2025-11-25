@@ -8,8 +8,10 @@ import {
     TextField,
     Typography,
     Button,
+    Avatar,
+    Link,
 } from "@mui/material";
-import LoginIcon from "@mui/icons-material/Login";
+import { Login as LoginIcon } from "@mui/icons-material";
 
 export const LoginPage = ({
     loginData,
@@ -30,43 +32,87 @@ export const LoginPage = ({
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                background: "#f3f4f6",
+                bgcolor: "#f3f4f6",
                 zIndex: 1200,
             }}
         >
             <Card
                 sx={{
-                    width: 380,
-                    borderRadius: 3,
-                    boxShadow: "0 4px 14px rgba(0,0,0,0.1)",
+                    width: 420,
+                    borderRadius: 4,
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                    bgcolor: 'white',
                 }}
             >
-                <CardContent sx={{ p: 4 }}>
+                <CardContent sx={{ p: 5, textAlign: 'center' }}>
+                    {/* Icon */}
+                    <Avatar
+                        sx={{
+                            width: 64,
+                            height: 64,
+                            bgcolor: '#10b981',
+                            margin: '0 auto',
+                            mb: 3,
+                        }}
+                    >
+                        <LoginIcon sx={{ fontSize: 32, color: 'white' }} />
+                    </Avatar>
+
                     {/* Title */}
                     <Typography
                         variant="h5"
-                        align="center"
-                        fontWeight={600}
-                        sx={{ mb: 3 }}
+                        sx={{
+                            fontWeight: 700,
+                            mb: 1,
+                            color: '#111827',
+                            fontSize: '1.75rem'
+                        }}
                     >
-                        Welcome Back
+                        Sign In
+                    </Typography>
+
+                    {/* Subtitle */}
+                    <Typography
+                        variant="body2"
+                        sx={{
+                            mb: 4,
+                            color: '#6b7280',
+                            fontSize: '0.875rem'
+                        }}
+                    >
+                        Log in to your InsectAI dashboard
                     </Typography>
 
                     {/* Email */}
                     <TextField
-                        label="Email"
+                        placeholder="Email"
                         fullWidth
                         variant="outlined"
                         value={loginData.email}
                         onChange={(e) =>
                             setLoginData({ ...loginData, email: e.target.value })
                         }
-                        sx={{ mb: 2 }}
+                        sx={{
+                            mb: 2,
+                            '& .MuiOutlinedInput-root': {
+                                borderRadius: 2,
+                                bgcolor: '#fafafa',
+                                '& fieldset': {
+                                    borderColor: '#e5e7eb',
+                                },
+                                '&:hover fieldset': {
+                                    borderColor: '#10b981',
+                                },
+                                '&.Mui-focused fieldset': {
+                                    borderColor: '#10b981',
+                                },
+                            },
+                        }}
                     />
 
                     {/* Password */}
                     <TextField
-                        label="Password"
+                        placeholder="Password"
                         type="password"
                         fullWidth
                         variant="outlined"
@@ -77,15 +123,33 @@ export const LoginPage = ({
                                 password: e.target.value,
                             })
                         }
-                        sx={{ mb: 2 }}
+                        sx={{
+                            mb: 3,
+                            '& .MuiOutlinedInput-root': {
+                                borderRadius: 2,
+                                bgcolor: '#fafafa',
+                                '& fieldset': {
+                                    borderColor: '#e5e7eb',
+                                },
+                                '&:hover fieldset': {
+                                    borderColor: '#10b981',
+                                },
+                                '&.Mui-focused fieldset': {
+                                    borderColor: '#10b981',
+                                },
+                            },
+                        }}
                     />
 
                     {/* Error Message */}
                     {loginError && (
                         <Typography
                             variant="body2"
-                            color="error"
-                            sx={{ mb: 2, textAlign: "center" }}
+                            sx={{
+                                mb: 2,
+                                color: '#dc2626',
+                                fontSize: '0.875rem'
+                            }}
                         >
                             {loginError}
                         </Typography>
@@ -95,39 +159,69 @@ export const LoginPage = ({
                     <Button
                         fullWidth
                         variant="contained"
-                        color="primary"
-                        startIcon={<LoginIcon />}
                         onClick={handleLogin}
                         sx={{
-                            py: 1.2,
+                            py: 1.5,
                             fontWeight: 600,
                             borderRadius: 2,
-                            mb: 2,
+                            mb: 3,
+                            bgcolor: '#10b981',
+                            textTransform: 'none',
+                            fontSize: '1rem',
+                            boxShadow: 'none',
+                            '&:hover': {
+                                bgcolor: '#059669',
+                                boxShadow: 'none',
+                            },
                         }}
                     >
                         Sign In
                     </Button>
 
                     {/* Signup Link */}
-                    <Button
-                        fullWidth
-                        variant="text"
-                        onClick={onSignupClick}
-                        sx={{ textTransform: "none", fontWeight: 600 }}
-                    >
-                        Create an account
-                    </Button>
+                    <Box sx={{ mb: 2 }}>
+                        <Typography
+                            variant="body2"
+                            component="span"
+                            sx={{ color: '#6b7280', fontSize: '0.875rem' }}
+                        >
+                            Don't have an account?{' '}
+                        </Typography>
+                        <Link
+                            component="button"
+                            onClick={onSignupClick}
+                            sx={{
+                                color: '#10b981',
+                                fontWeight: 600,
+                                textDecoration: 'none',
+                                fontSize: '0.875rem',
+                                cursor: 'pointer',
+                                '&:hover': {
+                                    textDecoration: 'underline',
+                                },
+                            }}
+                        >
+                            Sign up
+                        </Link>
+                    </Box>
 
-                    {/* Back Button */}
-                    <Button
-                        fullWidth
-                        variant="text"
-                        color="secondary"
+                    {/* Back to Home Link */}
+                    <Link
+                        component="button"
                         onClick={onBackClick}
-                        sx={{ textTransform: "none", mt: 1 }}
+                        sx={{
+                            color: '#10b981',
+                            fontWeight: 600,
+                            textDecoration: 'none',
+                            fontSize: '0.875rem',
+                            cursor: 'pointer',
+                            '&:hover': {
+                                textDecoration: 'underline',
+                            },
+                        }}
                     >
-                        Back
-                    </Button>
+                        Back to Home
+                    </Link>
                 </CardContent>
             </Card>
         </Box>

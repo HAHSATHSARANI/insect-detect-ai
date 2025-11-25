@@ -12,7 +12,7 @@ services:
   goviaruna_admin:
     build: ./goviaruna_admin
     ports:
-      - "5173:5173"
+      - "5174:5173"
     environment:
       - VITE_API_URL=http://localhost:8000/api
     depends_on:

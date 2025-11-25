@@ -21,7 +21,7 @@ export const Sidebar = ({ user, currentPage, onPageChange, onLogout }) => {
     return (
         <Box
             sx={{
-                width: 230,
+                width: 280,
                 bgcolor: 'white',
                 height: '100vh',
                 borderRight: '1px solid',
@@ -57,7 +57,7 @@ export const Sidebar = ({ user, currentPage, onPageChange, onLogout }) => {
                                 selected={currentPage === item.label}
                                 onClick={() => onPageChange(item.label)}
                                 sx={{
-                                    borderRadius: 0.5,
+                                    borderRadius: 2,
                                     '&.Mui-selected': {
                                         bgcolor: 'primary.light',
                                         color: 'white',
@@ -78,7 +78,7 @@ export const Sidebar = ({ user, currentPage, onPageChange, onLogout }) => {
             {/* Logout at Bottom */}
             <Box sx={{ p: 2 }}>
                 <ListItem disablePadding>
-                    <ListItemButton onClick={onLogout} sx={{ borderRadius: 1 }}>
+                    <ListItemButton onClick={onLogout} sx={{ borderRadius: 2 }}>
                         <ListItemIcon sx={{ minWidth: 40 }}>
                             <LogoutIcon color="error" />
                         </ListItemIcon>

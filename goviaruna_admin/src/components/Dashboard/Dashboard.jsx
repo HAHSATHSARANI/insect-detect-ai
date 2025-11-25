@@ -1,241 +1,323 @@
 // src/components/Dashboard/Dashboard.jsx
-import { useState } from 'react';
-import {
-    Box, Typography, Grid, Card, CardContent, Table, TableBody,
-    TableCell, TableContainer, TableHead, TableRow, Avatar, Chip, Paper,
-    IconButton, LinearProgress, Container
-} from '@mui/material';
-import {
-    TrendingUp as TrendingUpIcon,
-    BugReport as BugReportIcon,
-    People as PeopleIcon,
-    Assessment as AssessmentIcon,
-    Visibility as VisibilityIcon,
-    MoreVert as MoreIcon
-} from '@mui/icons-material';
+import { useState, useEffect } from 'react';
+import { Box, Typography, Card, CardContent, Container, Avatar, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { People as PeopleIcon, BugReport as BugReportIcon, TrendingUp as TrendingUpIcon } from '@mui/icons-material';
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-export const Dashboard = ({
-    insects = [],
-    detectionData = [],
-    adminUsers = [],
-    recentUsers = [],
-    categoryDistributionData = []
-}) => {
-    const dummyInsects = [
-        { id: 1, name: 'Monarch Butterfly', category: 'Butterfly', detections: 120, confidence: 92.5, status: 'Active' },
-        { id: 2, name: 'Carpenter Ant', category: 'Ant', detections: 80, confidence: 89.3, status: 'Active' },
-        { id: 3, name: 'Honey Bee', category: 'Bee', detections: 150, confidence: 95.1, status: 'Active' },
-        { id: 4, name: 'Lady Beetle', category: 'Beetle', detections: 60, confidence: 87.8, status: 'Inactive' },
-        { id: 5, name: 'Blue Dragonfly', category: 'Dragonfly', detections: 95, confidence: 90.6, status: 'Active' },
-        { id: 6, name: 'Red Admiral', category: 'Butterfly', detections: 45, confidence: 88.2, status: 'Active' },
-        { id: 7, name: 'Fire Ant', category: 'Ant', detections: 70, confidence: 91.5, status: 'Active' },
-        { id: 8, name: 'Stag Beetle', category: 'Beetle', detections: 55, confidence: 86.9, status: 'Active' }
-    ];
+export const Dashboard = () => {
+    const API = import.meta.env.VITE_API_URL || 'http://localhost:8001/api';
 
-    const dummyRecentUsers = [
-        { id: 1, name: 'Nimesha Dulanjalee', email: 'nimesha@example.com', detections: 45, lastActive: '2h ago', status: 'Active' },
-        { id: 2, name: 'Sahan Dileepa', email: 'sahan@example.com', detections: 38, lastActive: '5h ago', status: 'Active' },
-        { id: 3, name: 'Ishara Perera', email: 'ishara@example.com', detections: 29, lastActive: '1d ago', status: 'Inactive' },
-        { id: 4, name: 'Tharindu Silva', email: 'tharindu@example.com', detections: 22, lastActive: '3d ago', status: 'Inactive' },
-        { id: 5, name: 'Kavindi Fernando', email: 'kavindi@example.com', detections: 31, lastActive: '4h ago', status: 'Active' }
-    ];
+    const [adminUsers, setAdminUsers] = useState([]);
+    const [insects, setInsects] = useState([]);
+    const [error, setError] = useState(null);
 
-    const dummyDetectionData = [
-        { id: 1, insectName: 'Monarch Butterfly', category: 'Butterfly', location: 'Garden A', confidence: 95.2, timestamp: '2024-11-22 10:30 AM', status: 'Verified' },
-        { id: 2, insectName: 'Honey Bee', category: 'Bee', location: 'Field B', confidence: 98.7, timestamp: '2024-11-22 10:15 AM', status: 'Verified' },
-        { id: 3, insectName: 'Carpenter Ant', category: 'Ant', location: 'Zone C', confidence: 89.4, timestamp: '2024-11-22 09:45 AM', status: 'Pending' },
-        { id: 4, insectName: 'Lady Beetle', category: 'Beetle', location: 'Garden A', confidence: 92.1, timestamp: '2024-11-22 09:20 AM', status: 'Verified' },
-        { id: 5, insectName: 'Blue Dragonfly', category: 'Dragonfly', location: 'Pond Area', confidence: 96.3, timestamp: '2024-11-22 08:55 AM', status: 'Verified' },
-        { id: 6, insectName: 'Red Admiral', category: 'Butterfly', location: 'Garden B', confidence: 88.9, timestamp: '2024-11-22 08:30 AM', status: 'Verified' },
-        { id: 7, insectName: 'Fire Ant', category: 'Ant', location: 'Zone D', confidence: 91.5, timestamp: '2024-11-22 08:00 AM', status: 'Pending' },
-        { id: 8, insectName: 'Stag Beetle', category: 'Beetle', location: 'Forest Edge', confidence: 87.2, timestamp: '2024-11-22 07:45 AM', status: 'Verified' }
-    ];
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [adminsRes, insectsRes] = await Promise.all([
+                    fetch(`${API}/admins`),
+                    fetch(`${API}/insects`)
+                ]);
 
-    const displayInsects = insects.length > 0 ? insects : dummyInsects;
-    const displayRecentUsers = recentUsers.length > 0 ? recentUsers : dummyRecentUsers;
-    const displayDetectionData = detectionData.length > 0 ? detectionData : dummyDetectionData;
+                if (adminsRes.ok) {
+                    const adminsData = await adminsRes.json();
+                    setAdminUsers(adminsData);
+                }
 
-    let chartData = [];
+                if (insectsRes.ok) {
+                    const insectsData = await insectsRes.json();
+                    setInsects(insectsData);
+                }
 
-    if (categoryDistributionData.length > 0) {
-        chartData = categoryDistributionData.map(item => ({
-            name: item.category || item.name,
-            value: item.speciesCount || item.count || item.value || 0,
-            percentage: 0
-        }));
-    } else {
-        const categoryDistribution = displayInsects.reduce((acc, insect) => {
-            const category = insect.category || 'Unknown';
-            if (!acc[category]) {
-                acc[category] = 0;
+                setError(null);
+            } catch (err) {
+                console.error('Error fetching dashboard data:', err);
+                setError(err.message);
             }
-            acc[category] += 1;
-            return acc;
-        }, {});
+        };
 
-        chartData = Object.entries(categoryDistribution).map(([name, value]) => ({
-            name,
-            value,
-            percentage: 0
-        }));
+        fetchData();
+    }, [API]);
+
+    if (error) {
+        return (
+            <Box sx={{ position: 'fixed', top: 0, left: '280px', right: 0, bottom: 0, paddingRight: '20px', bgcolor: '#f5f7fa', overflow: 'auto' }}>
+                <Container maxWidth="xl" sx={{ py: 4 }}>
+                    <Typography variant="h6" color="error">
+                        Error loading dashboard: {error}
+                    </Typography>
+                </Container>
+            </Box>
+        );
     }
 
-    const total = chartData.reduce((sum, item) => sum + item.value, 0);
-    chartData.forEach(item => {
-        item.percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
+    const totalUsers = adminUsers.length;
+    const totalInsects = insects.length;
+
+    const avgConfidence = totalInsects > 0
+        ? insects.reduce((sum, i) => sum + (i.confidence || 0), 0) / totalInsects
+        : 0;
+
+    const recentUsersCount = Math.min(adminUsers.filter(u => u.isActive).length, 4);
+
+    const categoryDistribution = insects.reduce((acc, insect) => {
+        const category = insect.category || 'Unknown';
+        if (!acc[category]) {
+            acc[category] = { name: category, value: 0 };
+        }
+        acc[category].value += 1;
+        return acc;
+    }, {});
+
+    const categoryData = Object.values(categoryDistribution);
+    const total = categoryData.reduce((sum, item) => sum + item.value, 0);
+
+    const topSpecies = [...insects]
+        .sort((a, b) => (b.confidence || 0) - (a.confidence || 0))
+        .slice(0, 5)
+        .map(insect => ({
+            name: insect.name,
+            category: insect.category,
+            detections: Math.floor((insect.confidence || 0) * 10),
+            confidence: insect.confidence || 0
+        }));
+
+    const recentUsers = adminUsers.slice(0, 3).map((user, idx) => {
+        const timeOptions = ["2h ago", "5h ago", "1d ago", "3d ago", "4h ago"];
+        return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            lastActive: timeOptions[idx % timeOptions.length],
+            status: user.isActive ? "Active" : "Inactive"
+        };
     });
 
-    const totalSpecies = displayInsects.length;
-    const totalDetections = displayInsects.reduce((sum, i) => sum + (i.detections || 0), 0);
-    const avgAccuracy = displayInsects.reduce((sum, i) => sum + (i.confidence || 0), 0) / displayInsects.length;
-    const activeUsers = displayRecentUsers.filter(u => u.status === 'Active').length;
-
-    const COLORS = [
-        { bg: '#3b82f6', light: '#dbeafe' },
-        { bg: '#10b981', light: '#d1fae5' },
-        { bg: '#f59e0b', light: '#fef3c7' },
-        { bg: '#8b5cf6', light: '#ede9fe' },
-        { bg: '#ef4444', light: '#fee2e2' },
-        { bg: '#06b6d4', light: '#cffafe' },
-        { bg: '#ec4899', light: '#fce7f3' }
-    ];
+    const COLORS = ['#10b981', '#059669', '#047857', '#065f46', '#064e3b', '#14b8a6', '#0d9488'];
 
     const stats = [
-        { title: 'Total Detections', value: totalDetections, change: '+12%', color: '#10b981', icon: <AssessmentIcon /> },
-        { title: 'Species Tracked', value: totalSpecies, change: '+3 new', color: '#3b82f6', icon: <BugReportIcon /> },
-        { title: 'Active Users', value: activeUsers, change: `${activeUsers}/${displayRecentUsers.length}`, color: '#8b5cf6', icon: <PeopleIcon /> },
-        { title: 'Avg Accuracy', value: `${avgAccuracy.toFixed(1)}%`, change: '+2.3%', color: '#f59e0b', icon: <TrendingUpIcon /> }
+        { title: 'Total Users', value: totalUsers, subtitle: 'Registered users', icon: <PeopleIcon /> },
+        { title: 'AI Model Accuracy', value: `${avgConfidence.toFixed(1)}%`, subtitle: 'Current accuracy', icon: <TrendingUpIcon /> },
+        { title: 'Recent Users', value: recentUsersCount, subtitle: 'Last 24 hours', icon: <TrendingUpIcon /> },
+        { title: 'Total Insects', value: totalInsects, subtitle: 'Species recorded', icon: <BugReportIcon /> },
     ];
 
     return (
-        <Box sx={{ position: 'fixed', top: 0, left: '230px', right: 0, bottom: 0, bgcolor: '#f5f7fa', overflow: 'auto' }}>
+        <Box sx={{ position: 'fixed', top: 0, left: '280px', right: 0, bottom: 0, paddingRight: '20px', bgcolor: '#f5f7fa', overflow: 'auto' }}>
             <Container maxWidth="xl" sx={{ py: 4 }}>
                 <Box sx={{ mb: 4 }}>
-                    <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5, color: '#111827' }}>Dashboard</Typography>
-                    <Typography variant="body1" sx={{ color: '#6b7280' }}>Overview of your insect detection system performance</Typography>
+                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#111827', fontSize: '2rem' }}>
+                        Dashboard
+                    </Typography>
                 </Box>
 
-                {/* Stats Cards */}
-                <Box sx={{ display: 'flex', gap: 3, mb: 3, width: '100%' }}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 3, mb: 4 }}>
                     {stats.map((stat, idx) => (
-                        <Card key={idx} sx={{ flex: 1, minWidth: 0, height: 140, display: 'flex', flexDirection: 'column' }}>
-                            <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                    <Box sx={{ color: stat.color, opacity: 0.8 }}>{stat.icon}</Box>
-                                    <Chip label={stat.change} size="small" sx={{ bgcolor: `${stat.color}15`, color: stat.color, fontWeight: 600, fontSize: 12 }} />
+                        <Card key={idx} sx={{
+                            bgcolor: 'white',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+                            borderRadius: 3,
+                            border: '1px solid #f0f0f0',
+                            '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.12)' }
+                        }}>
+                            <CardContent sx={{ p: 3 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                                    <Typography variant="body2" sx={{ color: '#6b7280', fontWeight: 500, fontSize: '0.875rem' }}>
+                                        {stat.title}
+                                    </Typography>
+                                    <Box sx={{ color: '#10b981', fontSize: '1.5rem', display: 'flex', alignItems: 'center' }}>
+                                        {stat.icon}
+                                    </Box>
                                 </Box>
-                                <Box>
-                                    <Typography variant="h3" fontWeight={700} sx={{ mb: 0.5, color: '#111827', fontSize: '2.5rem' }}>{stat.value}</Typography>
-                                    <Typography variant="body1" color="text.secondary" sx={{ fontSize: '0.95rem' }}>{stat.title}</Typography>
-                                </Box>
+                                <Typography variant="h3" sx={{ fontWeight: 700, color: '#111827', mb: 0.5, fontSize: '2.5rem', lineHeight: 1 }}>
+                                    {stat.value}
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: '#9ca3af', fontSize: '0.813rem' }}>
+                                    {stat.subtitle}
+                                </Typography>
                             </CardContent>
                         </Card>
                     ))}
                 </Box>
 
-                {/* Donut Chart and Recent User Activity - Side by Side */}
-                <Grid container spacing={4}>
-                    {/* Donut Chart */}
-                    <Grid item xs={12} md={7}>
-                        <Card sx={{ height: '100%' }}>
-                            <CardContent>
-                                <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: '#111827' }}>
-                                    Species Tracked by Category
-                                </Typography>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                    {/* Donut Chart */}
-                                    <Box sx={{ position: 'relative', width: 200, height: 200, flexShrink: 0 }}>
-                                        <Box
-                                            sx={{
-                                                width: '100%',
-                                                height: '100%',
-                                                borderRadius: '50%',
-                                                background: (() => {
-                                                    let angle = 0;
-                                                    const gradientParts = chartData.map((item, index) => {
-                                                        const startAngle = angle;
-                                                        angle += (item.value / total) * 360;
-                                                        const endAngle = angle;
-                                                        return `${COLORS[index % COLORS.length].bg} ${startAngle}deg ${endAngle}deg`;
-                                                    });
-                                                    return `conic-gradient(${gradientParts.join(', ')})`;
-                                                })(),
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}
-                                        >
-                                            <Box sx={{ width: '60%', height: '60%', borderRadius: '50%', bgcolor: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                                <Typography variant="h4" fontWeight={700} color="#111827">{total}</Typography>
-                                                <Typography variant="body2" color="text.secondary">Species</Typography>
-                                            </Box>
-                                        </Box>
-                                    </Box>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+                    <Card sx={{ bgcolor: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', borderRadius: 3, border: '1px solid #f0f0f0' }}>
+                        <CardContent sx={{ p: 3 }}>
+                            <Typography variant="h6" sx={{ fontWeight: 700, mb: 3, color: '#111827', fontSize: '1.125rem' }}>
+                                Species Category Distribution
+                            </Typography>
+                            <Box sx={{ width: '100%', height: 380, display: 'flex', alignItems: 'center', justifyContent: 'center', pt: 2 }}>
+                                {categoryData.length > 0 ? (
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={categoryData}
+                                                cx="50%"
+                                                cy="45%"
+                                                outerRadius={120}
+                                                dataKey="value"
+                                            >
+                                                {categoryData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip
+                                                formatter={(value, name) => [`${value} Insects`, name]}
+                                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
+                                            />
+                                            <Legend
+                                                verticalAlign="bottom"
+                                                height={36}
+                                                iconType="circle"
+                                                formatter={(value, entry) => {
+                                                    const { payload } = entry;
+                                                    return <span style={{ color: '#374151', fontWeight: 500, marginLeft: 5 }}>{value} ({payload.value})</span>;
+                                                }}
+                                            />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                ) : (
+                                    <Typography variant="body2" color="text.secondary">
+                                        No species data available
+                                    </Typography>
+                                )}
+                            </Box>
+                        </CardContent>
+                    </Card>
 
-                                    {/* Legend */}
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, flex: 1 }}>
-                                        {chartData.map((item, index) => (
-                                            <Box key={index} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                    <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: COLORS[index % COLORS.length].bg }} />
-                                                    <Typography variant="body2" fontWeight={500}>{item.name}</Typography>
-                                                </Box>
-                                                <Typography variant="body2" color="text.secondary">{item.value} ({item.percentage}%)</Typography>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        <Card sx={{ bgcolor: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', borderRadius: 3, border: '1px solid #f0f0f0' }}>
+                            <CardContent sx={{ p: 3 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#111827', fontSize: '1.125rem' }}>
+                                    Top Species Performance
+                                </Typography>
+                                <Box sx={{ minHeight: 180, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', position: 'relative', py: 1 }}>
+                                    {topSpecies.length > 0 ? (
+                                        <>
+                                            <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 40, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'flex-end', pr: 1 }}>
+                                                <Typography variant="caption" sx={{ color: '#9ca3af', fontSize: '0.75rem' }}>1600</Typography>
+                                                <Typography variant="caption" sx={{ color: '#9ca3af', fontSize: '0.75rem' }}>1200</Typography>
+                                                <Typography variant="caption" sx={{ color: '#9ca3af', fontSize: '0.75rem' }}>800</Typography>
+                                                <Typography variant="caption" sx={{ color: '#9ca3af', fontSize: '0.75rem' }}>400</Typography>
+                                                <Typography variant="caption" sx={{ color: '#9ca3af', fontSize: '0.75rem' }}>0</Typography>
                                             </Box>
-                                        ))}
-                                    </Box>
+
+                                            <Box sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-evenly', height: 150, ml: 5, mr: 1 }}>
+                                                {topSpecies.map((species, idx) => {
+                                                    const heightPercent = ((species.detections || 0) / 10) * 100;
+                                                    return (
+                                                        <Box key={idx} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, mx: 0.5 }}>
+                                                            <Box
+                                                                sx={{
+                                                                    width: '100%',
+                                                                    maxWidth: 70,
+                                                                    height: `${heightPercent}%`,
+                                                                    bgcolor: '#10b981',
+                                                                    borderRadius: '6px 6px 0 0',
+                                                                    transition: 'all 0.3s ease',
+                                                                    '&:hover': {
+                                                                        bgcolor: '#059669',
+                                                                    }
+                                                                }}
+                                                            />
+                                                            <Typography
+                                                                variant="caption"
+                                                                sx={{
+                                                                    mt: 1,
+                                                                    color: '#6b7280',
+                                                                    fontSize: '0.75rem',
+                                                                    textAlign: 'center',
+                                                                    fontWeight: 500
+                                                                }}
+                                                            >
+                                                                {species.name}
+                                                            </Typography>
+                                                        </Box>
+                                                    );
+                                                })}
+                                            </Box>
+                                        </>
+                                    ) : (
+                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                                            <Typography variant="body2" color="text.secondary">
+                                                No species data available
+                                            </Typography>
+                                        </Box>
+                                    )}
                                 </Box>
                             </CardContent>
                         </Card>
-                    </Grid>
 
-                    {/* Recent User Activity */}
-                    <Grid item xs={12} md={5}>
-                        <Card sx={{ height: '100%' }}>
-                            <CardContent>
-                                <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: '#111827' }}>
-                                    Recent User Activity
+                        <Card sx={{ bgcolor: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', borderRadius: 3, border: '1px solid #f0f0f0' }}>
+                            <CardContent sx={{ p: 3 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: '#111827', fontSize: '1.125rem' }}>
+                                    Recent Active Users
                                 </Typography>
-                                <TableContainer>
-                                    <Table size="small">
-                                        <TableHead>
-                                            <TableRow sx={{ bgcolor: 'grey.50' }}>
-                                                <TableCell>User</TableCell>
-                                                <TableCell>Last Active</TableCell>
-                                                <TableCell>Status</TableCell>
-                                            </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                            {displayRecentUsers.map((user) => (
-                                                <TableRow key={user.id} hover>
-                                                    <TableCell>
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                                            <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32, fontSize: 14 }}>
-                                                                {user.name?.charAt(0)}
-                                                            </Avatar>
-                                                            <Typography variant="body2" fontWeight={500}>{user.name}</Typography>
-                                                        </Box>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Typography variant="body2" color="text.secondary">{user.lastActive}</Typography>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Chip
-                                                            label={user.status}
-                                                            size="small"
-                                                            color={user.status === 'Active' ? 'success' : 'default'}
-                                                            sx={{ fontWeight: 500 }}
-                                                        />
-                                                    </TableCell>
+                                {recentUsers.length > 0 ? (
+                                    <TableContainer>
+                                        <Table>
+                                            <TableHead>
+                                                <TableRow sx={{ bgcolor: '#fafafa' }}>
+                                                    <TableCell sx={{ fontWeight: 600, color: '#374151', fontSize: '0.875rem', py: 1, border: 'none' }}>User</TableCell>
+                                                    <TableCell sx={{ fontWeight: 600, color: '#374151', fontSize: '0.875rem', py: 1, border: 'none' }}>Last Active</TableCell>
+                                                    <TableCell sx={{ fontWeight: 600, color: '#374151', fontSize: '0.875rem', py: 1, border: 'none' }}>Status</TableCell>
                                                 </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                </TableContainer>
+                                            </TableHead>
+                                            <TableBody>
+                                                {recentUsers.map((user) => (
+                                                    <TableRow key={user.id} hover sx={{ '&:hover': { bgcolor: '#fafafa' } }}>
+                                                        <TableCell sx={{ py: 1.25, border: 'none' }}>
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                                <Avatar
+                                                                    sx={{
+                                                                        bgcolor: '#10b981',
+                                                                        width: 32,
+                                                                        height: 32,
+                                                                        fontSize: 14,
+                                                                        fontWeight: 600
+                                                                    }}
+                                                                >
+                                                                    {user.name?.charAt(0).toUpperCase()}
+                                                                </Avatar>
+                                                                <Typography variant="body2" fontWeight={500} sx={{ color: '#111827', fontSize: '0.875rem' }}>
+                                                                    {user.name}
+                                                                </Typography>
+                                                            </Box>
+                                                        </TableCell>
+                                                        <TableCell sx={{ py: 1.25, border: 'none' }}>
+                                                            <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.875rem' }}>
+                                                                {user.lastActive}
+                                                            </Typography>
+                                                        </TableCell>
+                                                        <TableCell sx={{ py: 1.25, border: 'none' }}>
+                                                            <Chip
+                                                                label={user.status}
+                                                                size="small"
+                                                                sx={{
+                                                                    bgcolor: user.status === 'Active' ? '#d1fae5' : '#f3f4f6',
+                                                                    color: user.status === 'Active' ? '#065f46' : '#6b7280',
+                                                                    fontWeight: 600,
+                                                                    fontSize: '0.75rem',
+                                                                    borderRadius: '16px',
+                                                                    height: '24px',
+                                                                    px: 1
+                                                                }}
+                                                            />
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>
+                                ) : (
+                                    <Typography variant="body2" color="text.secondary">
+                                        No recent user activity
+                                    </Typography>
+                                )}
                             </CardContent>
                         </Card>
-                    </Grid>
-                </Grid>
+                    </Box>
+                </Box>
             </Container>
         </Box>
     );

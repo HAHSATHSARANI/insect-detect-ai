@@ -105,18 +105,13 @@ export const InsectDetailsModal = ({ open, onClose, insect }) => {
                             size="small"
                             sx={{ fontWeight: 600 }}
                         />
-                         {insect.family && (
-                             <Chip
+                        {insect.family && (
+                            <Chip
                                 label={`Family: ${insect.family}`}
                                 variant="outlined"
                                 size="small"
                             />
                         )}
-                        <Chip
-                            label={`${insect.confidence || 0}% Confidence`}
-                            variant="outlined"
-                            size="small"
-                        />
                     </Box>
                 </Box>
                 <IconButton onClick={onClose} size="medium" sx={{ mt: -0.5 }}>
@@ -201,7 +196,7 @@ export const InsectDetailsModal = ({ open, onClose, insect }) => {
 
                     {/* Damage & Symptoms */}
                     <Grid item xs={12} md={6}>
-                         <Card sx={{ height: '100%', borderRadius: 2, boxShadow: 1, borderTop: '4px solid #ef4444' }}>
+                        <Card sx={{ height: '100%', borderRadius: 2, boxShadow: 1, borderTop: '4px solid #ef4444' }}>
                             <CardContent>
                                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                                     <WarningIcon sx={{ color: 'error.main', mr: 1 }} />
@@ -222,7 +217,7 @@ export const InsectDetailsModal = ({ open, onClose, insect }) => {
                                     <ControlIcon sx={{ color: 'success.main', mr: 1 }} />
                                     <Typography variant="h6" fontWeight="700">{insect.controlMethodsTitle || "Control Methods"}</Typography>
                                 </Box>
-                                
+
                                 <Typography variant="body1" paragraph>
                                     {insect.controlMethodsContent}
                                 </Typography>
@@ -240,7 +235,7 @@ export const InsectDetailsModal = ({ open, onClose, insect }) => {
                                             </Paper>
                                         </Grid>
                                     )}
-                                    
+
                                     {/* Eco Friendly */}
                                     {insect.ecoFriendlySolutions && (
                                         <Grid item xs={12} md={4}>
@@ -255,7 +250,7 @@ export const InsectDetailsModal = ({ open, onClose, insect }) => {
                                     )}
 
                                     {/* Pesticide Instructions */}
-                                     {insect.pesticideInstructions && (
+                                    {insect.pesticideInstructions && (
                                         <Grid item xs={12} md={4}>
                                             <Paper sx={{ p: 2, bgcolor: '#fff7ed', height: '100%' }}>
                                                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
