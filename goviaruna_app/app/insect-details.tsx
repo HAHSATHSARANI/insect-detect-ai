@@ -108,11 +108,12 @@ export default function InsectDetailsScreen() {
       setDetails((prev: any) => ({
         ...prev,
         ...result,
-        images: [
-          // Try to use provided images if available, otherwise fallbacks
-          require('@/assets/images/insect_3.jpg'),
-          require('@/assets/images/insect_3.jpg')
-        ]
+        images: (result.images && result.images.length > 0)
+          ? result.images
+          : [
+            require('@/assets/images/insect_3.jpg'),
+            require('@/assets/images/insect_3.jpg')
+          ]
       }));
     } catch (error) {
       // The console.error below was causing the intrusive bottom pop-up.

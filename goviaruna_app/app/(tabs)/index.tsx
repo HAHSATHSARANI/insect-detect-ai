@@ -22,9 +22,7 @@ export default function HomeScreen() {
 
   const CONTACT_ITEMS = [
     { icon: 'mail', title: 'Mail', subtitle: 'info@agrimin.gov.lk', key: '1', type: 'email' },
-    { icon: 'phone-call', title: 'Whatsapp No 1', subtitle: '+94 812 388 331', key: '2', type: 'phone' },
-    { icon: 'phone-call', title: 'Whatsapp No 2', subtitle: '+94 812 388 332', key: '3', type: 'phone' },
-    { icon: 'phone-call', title: 'Whatsapp No 3', subtitle: '+94 812 388 334', key: '4', type: 'phone' },
+    { icon: 'phone-call', title: 'Whatsapp No', subtitle: '+94 812 388 331', key: '2', type: 'phone' }
   ];
 
   const loadUser = async () => {
