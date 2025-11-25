@@ -98,6 +98,8 @@
     "retry": "Please try again",
     "not_identified_title": "Cannot Identify",
     "not_identified_message": "We could not identify an insect in the photo. Please try again with a clearer image.",
+    "data_missing_title": "Data Unavailable",
+    "data_missing_message": "This insect was detected, but detailed information is not yet available in our database.",
     "go_back": "Go Back"
   },
   "camera": {

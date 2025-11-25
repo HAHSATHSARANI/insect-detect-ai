@@ -5,7 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Fonts, getFontStyle } from '@/constants/Fonts';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import PagerView from 'react-native-pager-view';
-import { api } from '@/services/api';
+import { api, API_URL } from '@/services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 
@@ -46,10 +46,11 @@ export default function InsectDetailsScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [collections, setCollections] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
+  const [dataMissing, setDataMissing] = useState(false);
 
   useEffect(() => {
     // Update initial details when language changes
-    setDetails(prev => ({
+    setDetails((prev: any) => ({
       ...prev,
       tabs: [t('insect_details.info'), t('insect_details.damage'), t('insect_details.control')],
       lifeCycleTitle: t('insect_details.lifecycle'),
@@ -90,8 +91,19 @@ export default function InsectDetailsScreen() {
         setLoading(false);
         return;
       }
+      
+      // Check if identified but data missing in DB
+      if (result.category === 'DataMissing') {
+          setDetails((prev: any) => ({
+              ...prev,
+              ...result, // Contains processedImage
+          }));
+          setDataMissing(true);
+          setLoading(false);
+          return;
+      }
 
-      setDetails(prev => ({
+      setDetails((prev: any) => ({
         ...prev,
         ...result,
         images: [
@@ -174,9 +186,19 @@ export default function InsectDetailsScreen() {
   };
 
   const mainImage = getMainImage();
+  
+  // Convert DB image IDs to full URLs
+  const dbImages = (details.images || []).map((img: string | any) => {
+      if (typeof img === 'string' && !img.startsWith('http') && !img.startsWith('data:') && !img.startsWith('file:')) {
+          // It's likely an ID from the database
+          return { uri: `${API_URL}/api/insects/image/${img}` };
+      }
+      return img;
+  });
+
   const displayImages = mainImage 
-    ? [mainImage, ...(details.images || [])]
-    : (details.images || []);
+    ? [mainImage, ...dbImages]
+    : dbImages;
 
   return (
     <View style={styles.container}>
@@ -245,6 +267,37 @@ export default function InsectDetailsScreen() {
               style={styles.retryButton}
               onPress={() => {
                 setNotIdentified(false);
+                if (router.canGoBack()) router.back();
+              }}
+            >
+              <Text style={[styles.retryButtonText, getFontStyle('semiBold', 16, 'si')]}>
+                {t('insect_details.go_back', 'Go Back')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Data Missing Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={dataMissing}
+        onRequestClose={() => setDataMissing(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.errorContainer}>
+            <Feather name="database" size={48} color="#F59E0B" />
+            <Text style={[styles.errorTitle, getFontStyle('bold', 20, lang)]}>
+              {t('insect_details.data_missing_title', 'Data Unavailable')}
+            </Text>
+            <Text style={[styles.errorMessage, getFontStyle('regular', 16, lang)]}>
+              {t('insect_details.data_missing_message', 'This insect was detected, but detailed information is not yet available in our database.')}
+            </Text>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={() => {
+                setDataMissing(false);
                 if (router.canGoBack()) router.back();
               }}
             >

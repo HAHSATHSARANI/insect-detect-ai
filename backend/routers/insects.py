@@ -23,7 +23,6 @@ router = APIRouter(
 # YOLO Model Setup
 # --------------------------
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "detect_model", "yolov8n_50epocs_v2.pt")
-INSECT_DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "detect_model", "insects.json")
 
 try:
     model = YOLO(MODEL_PATH)
@@ -32,15 +31,20 @@ except Exception as e:
     print(f"⚠ Failed to load YOLO model: {e}")
     model = None
 
-# Load insect data map
-try:
-    with open(INSECT_DATA_PATH, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-        insect_data_map = {item['key']: item for item in data['insects']}
-    print(f"✓ Insect data loaded from {INSECT_DATA_PATH}")
-except Exception as e:
-    print(f"⚠ Failed to load insect data: {e}")
-    insect_data_map = {}
+# Supported insects list (the 11 classes from insects.json)
+SUPPORTED_INSECT_KEYS = [
+    "Armyworm",
+    "Brown_Planthopper",
+    "Crickets",
+    "Dragonfly",
+    "Mealybug",
+    "Rice_Bug",
+    "Rice_Gall_Midge",
+    "Rice_Water_Weevil",
+    "Thrips",
+    "Wasps",
+    "Whorl_Maggot"
+]
 
 
 @router.get("", response_model=List[Insect])
@@ -113,13 +117,13 @@ async def classify_insect(file: UploadFile = File(...)):
     # Run inference
     results = model.predict(source=image)
     
-    # Get the image with bounding boxes plotted on it (like in the reference app.py)
+    # Get the image with bounding boxes plotted on it
     result_image_array = results[0].plot() 
     
-    # Convert the result from BGR (OpenCV default) to RGB for consistency
+    # Convert the result from BGR (OpenCV default) to RGB
     result_image_rgb = cv2.cvtColor(result_image_array, cv2.COLOR_BGR2RGB)
     
-    # Convert the processed image to base64 for transmission to mobile app
+    # Convert the processed image to base64
     result_image_pil = Image.fromarray(result_image_rgb)
     buffered = io.BytesIO()
     result_image_pil.save(buffered, format="JPEG", quality=85)
@@ -130,65 +134,49 @@ async def classify_insect(file: UploadFile = File(...)):
     detected_names = [model.names[i] for i in detected_indices]
     
     if not detected_names:
-        # Fallback if nothing detected
+        # Case 1: Nothing detected by YOLO
         return {
             "name": "හඳුනාගත නොහැක",
             "scientificName": "(Unknown)",
             "description": "කරුණාකර පැහැදිලි රූපයක් ලබා දෙන්න.",
             "category": "Unknown",
             "confidence": 0,
-            "processedImage": processed_image_base64  # Still return processed image even for unknown
-        }
-
-    # Take the first detected insect (highest confidence usually first)
-    primary_insect_key = detected_names[0]
-    insect_info = insect_data_map.get(primary_insect_key)
-    
-    if not insect_info:
-         return {
-            "name": primary_insect_key,
-            "scientificName": "(Unknown Data)",
-            "description": "Data not found for this insect key.",
-            "category": "Unknown",
-            "confidence": 0,
             "processedImage": processed_image_base64
         }
 
-    # Construct control methods text from reduce_method list
-    control_methods_text = "\n".join([f"- {method}" for method in insect_info.get('reduce_method', [])])
-
-    # Determine category (Harmful/Beneficial)
-    # JSON uses 'Harmful' / 'Non-Harmful'. Map Non-Harmful -> Beneficial
-    category = "Beneficial" if insect_info.get('status') == 'Non-Harmful' else "Harmful"
-
-    result = {
-        "name": insect_info.get('sinhala_name', insect_info.get('english_name')),
-        "scientificName": f"({insect_info.get('english_name')})",
-        "scientificNameFull": insect_info.get('key'),
-        "family": "", # Not in JSON, leave empty
-        "description": insect_info.get('description'),
-        "category": category,
-        "confidence": float(results[0].boxes.conf[0]) * 100 if len(results[0].boxes.conf) > 0 else 90.0,
-        
-        # Map detailed fields
-        "lifeCycleTitle": "ජීවන චක්‍රය",
-        "lifeCycleContent": "තොරතුරු ඇතුළත් කර නොමැත.",
-        
-        "damageSymptomsTitle": "හානි ලක්ෂණ",
-        "damageSymptomsContent": insect_info.get('description'),
-        
-        "controlMethodsTitle": "පාලන ක්‍රම",
-        "controlMethodsContent": control_methods_text,
-        
-        # Structured fields
-        "resistantVarieties": "",
-        "pesticideInstructions": "",
-        "ecoFriendlySolutions": "",
-        "chemicalControlTable": [],
-        "additionalNotes": "",
-        
-        # NEW: Include the processed image with bounding boxes
-        "processedImage": processed_image_base64
-    }
+    # Take the first detected insect
+    detected_key = detected_names[0]
     
-    return result
+    # Check if detected key is in our supported list (Safety check)
+    # Even if YOLO detects "Dog", we only care about our 11 insects
+    # Note: The trained model should only output these classes anyway
+    
+    # QUERY DATABASE USING THE YOLO KEY
+    # We assume the DB documents have a 'key' field matching these YOLO class names
+    db_insect = insects_collection.find_one({"key": detected_key})
+    
+    if db_insect:
+        # FOUND IN DATABASE -> Return full details
+        result = insect_helper(db_insect)
+        
+        # Add dynamic fields calculated from detection
+        result["confidence"] = float(results[0].boxes.conf[0]) * 100 if len(results[0].boxes.conf) > 0 else 95.0
+        result["processedImage"] = processed_image_base64
+        
+        # Ensure category mapping if needed
+        if result.get("category") == "Non-Harmful":
+            result["category"] = "Beneficial"
+            
+        return result
+    
+    else:
+        # DETECTED BY YOLO BUT DATA MISSING IN DB
+        # Return specific error structure that frontend can recognize
+        return {
+            "name": detected_key, # Send the key so we know what was detected
+            "scientificName": "(Data Missing)",
+            "description": "This insect was detected but its details are not in the database.",
+            "category": "DataMissing", # Special flag for frontend
+            "confidence": float(results[0].boxes.conf[0]) * 100 if len(results[0].boxes.conf) > 0 else 0,
+            "processedImage": processed_image_base64
+        }
