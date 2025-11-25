@@ -1,5 +1,5 @@
 // src/components/SpeciesDatabase/InsectCards.jsx
-import { Box, Card, CardContent, CardMedia, Typography, Chip, IconButton } from '@mui/material';
+import { Box, Card, CardContent, CardMedia, Typography, Chip, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon, ArrowForward as ArrowForwardIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { useState } from 'react';
 import { InsectDetailsModal } from './InsectDetailsModal';
@@ -10,10 +10,30 @@ export const InsectTable = ({ insects, onEdit, onDelete }) => {
     const [selectedInsect, setSelectedInsect] = useState(null);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
     const [imageIndexes, setImageIndexes] = useState({});
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [insectToDelete, setInsectToDelete] = useState(null);
 
     const handleOpenDetails = (insect) => {
         setSelectedInsect(insect);
         setShowDetailsModal(true);
+    };
+
+    const handleDeleteClick = (insect) => {
+        setInsectToDelete(insect);
+        setDeleteConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (insectToDelete) {
+            onDelete(insectToDelete.id);
+        }
+        setDeleteConfirmOpen(false);
+        setInsectToDelete(null);
+    };
+
+    const handleCancelDelete = () => {
+        setDeleteConfirmOpen(false);
+        setInsectToDelete(null);
     };
 
     const handleImageNavigate = (insectId, direction) => {
@@ -41,7 +61,7 @@ export const InsectTable = ({ insects, onEdit, onDelete }) => {
                         key={insect.id}
                         sx={{
                             width: 250,
-                            height: 350,
+                            height: 450,
                             display: 'flex',
                             flexDirection: 'column',
                             borderRadius: 2,
@@ -125,7 +145,7 @@ export const InsectTable = ({ insects, onEdit, onDelete }) => {
                                         <EditIcon fontSize="small" />
                                     </IconButton>
                                     <IconButton
-                                        onClick={(e) => { e.stopPropagation(); onDelete(insect.id); }}
+                                        onClick={(e) => { e.stopPropagation(); handleDeleteClick(insect); }}
                                         size="small"
                                         color="error"
                                     >
@@ -144,6 +164,37 @@ export const InsectTable = ({ insects, onEdit, onDelete }) => {
                 onClose={() => { setShowDetailsModal(false); setSelectedInsect(null); }}
                 insect={selectedInsect}
             />
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog
+                open={deleteConfirmOpen}
+                onClose={handleCancelDelete}
+                PaperProps={{
+                    sx: { borderRadius: 2 }
+                }}
+            >
+                <DialogTitle sx={{ fontWeight: 600 }}>
+                    Confirm Delete
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Are you sure you want to delete <strong>{insectToDelete?.name}</strong>? This action cannot be undone.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2 }}>
+                    <Button onClick={handleCancelDelete} sx={{ color: 'text.secondary' }}>
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={handleConfirmDelete}
+                        variant="contained"
+                        color="error"
+                        sx={{ fontWeight: 600 }}
+                    >
+                        Delete
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </>
     );
 };
