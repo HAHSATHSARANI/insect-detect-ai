@@ -41,6 +41,7 @@ export const InsectTable = ({ insects, onEdit, onDelete }) => {
                         key={insect.id}
                         sx={{
                             width: 250,
+                            height: 350,
                             display: 'flex',
                             flexDirection: 'column',
                             borderRadius: 2,
@@ -93,15 +94,17 @@ export const InsectTable = ({ insects, onEdit, onDelete }) => {
                                 </>
                             )}
                         </Box>
-                        <CardContent sx={{ flexGrow: 1, p: 2 }}>
-                            <Typography variant="h6" fontWeight={600} sx={{ mb: 0.5 }}>
-                                {insect.name}
-                            </Typography>
-                            <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'text.secondary', mb: 1 }}>
-                                {insect.scientificName}
-                            </Typography>
+                        <CardContent sx={{ flexGrow: 1, p: 2, display: 'flex', flexDirection: 'column' }}>
+                            <Box sx={{ flexGrow: 1 }}>
+                                <Typography variant="h6" fontWeight={600} sx={{ mb: 0.5 }}>
+                                    {insect.name}
+                                </Typography>
+                                <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'text.secondary', mb: 1 }}>
+                                    {insect.scientificName}
+                                </Typography>
+                            </Box>
                             <Box
-                                sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                                sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 'auto' }}
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 <Chip

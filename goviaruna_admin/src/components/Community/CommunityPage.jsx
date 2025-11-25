@@ -28,7 +28,8 @@ import {
     Delete as DeleteIcon,
     CheckBoxOutlineBlank as CheckBoxOutlineBlankIcon,
     CheckBox as CheckBoxIcon,
-    Forum as ForumIcon
+    Forum as ForumIcon,
+    Close as CloseIcon
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 
@@ -269,17 +270,26 @@ export default function CommunityPage() {
             overflow: 'hidden',
         }}>
             <Container maxWidth="xl" sx={{ height: '100%', py: 4, display: 'flex', flexDirection: 'column' }}>
-                {/* Page Header */}
-                <Box sx={{ mb: 4 }}>
-                    <Typography variant="h4" fontWeight="700">
-                        Community Chat
-                    </Typography>
+                {/* Page Header - Only show when no conversation is selected */}
+                {!selectedConversation && (
+                    <Box sx={{ mb: 4 }}>
+                        <Typography variant="h4" fontWeight="700">
+                            Community Chat
+                        </Typography>
+                    </Box>
+                )}
 
-                </Box>
-
-                <Paper sx={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                    {!selectedConversation ? (
-                        /* Conversations List */
+                <Paper sx={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'row', gap: 0 }}>
+                    {/* Conversations List - Always visible */}
+                    <Box sx={{
+                        width: selectedConversation ? '350px' : '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        transition: 'width 0.3s ease',
+                        bgcolor: 'white',
+                        borderRight: selectedConversation ? '1px solid #e0e0e0' : 'none',
+                        boxShadow: selectedConversation ? '2px 0 4px rgba(0,0,0,0.05)' : 'none'
+                    }}>
                         <List sx={{
                             p: 0,
                             overflow: 'auto',
@@ -307,7 +317,12 @@ export default function CommunityPage() {
                                                     setSelectedConversation(conversation);
                                                     setSelectedUser(conversation.user);
                                                 }}
-                                                sx={{ py: 2, px: 3 }}
+                                                selected={selectedConversation?.id === conversation.id}
+                                                sx={{
+                                                    py: 2,
+                                                    px: 3,
+                                                    bgcolor: selectedConversation?.id === conversation.id ? '#f0f0f0' : 'transparent'
+                                                }}
                                             >
                                                 <Badge
                                                     badgeContent={conversation.unreadCount}
@@ -339,7 +354,7 @@ export default function CommunityPage() {
                                                                 overflow: 'hidden',
                                                                 textOverflow: 'ellipsis',
                                                                 whiteSpace: 'nowrap',
-                                                                maxWidth: '400px',
+                                                                maxWidth: '250px',
                                                                 mt: 0.5,
                                                                 fontStyle: 'italic'
                                                             }}
@@ -355,9 +370,11 @@ export default function CommunityPage() {
                                 ))
                             )}
                         </List>
-                    ) : (
-                        /* Chat View */
-                        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                    </Box>
+
+                    {/* Chat View - Only visible when conversation is selected */}
+                    {selectedConversation && (
+                        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                             {/* Chat Header */}
                             <Box sx={{
                                 p: 2,
@@ -369,14 +386,6 @@ export default function CommunityPage() {
                                 boxShadow: 2
                             }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                    <IconButton onClick={() => {
-                                        setSelectedConversation(null);
-                                        setSelectedUser(null);
-                                        setSelectionMode(false);
-                                        setSelectedMessages([]);
-                                    }} sx={{ color: 'white', mr: 2 }}>
-                                        <ArrowBackIcon />
-                                    </IconButton>
                                     <Avatar sx={{ mr: 2, bgcolor: 'white', color: '#008069' }}>
                                         {(selectedUser?.name || 'U').charAt(0).toUpperCase()}
                                     </Avatar>
@@ -422,6 +431,18 @@ export default function CommunityPage() {
                                         title={selectionMode ? "Cancel Selection" : "Select Messages"}
                                     >
                                         {selectionMode ? <CheckBoxIcon /> : <CheckBoxOutlineBlankIcon />}
+                                    </IconButton>
+                                    <IconButton
+                                        onClick={() => {
+                                            setSelectedConversation(null);
+                                            setSelectedUser(null);
+                                            setSelectionMode(false);
+                                            setSelectedMessages([]);
+                                        }}
+                                        sx={{ color: 'white' }}
+                                        title="Close Chat"
+                                    >
+                                        <CloseIcon />
                                     </IconButton>
                                 </Box>
                             </Box>
@@ -586,6 +607,6 @@ export default function CommunityPage() {
                     </Button>
                 </DialogActions>
             </Dialog>
-        </Box>
+        </Box >
     );
 }
