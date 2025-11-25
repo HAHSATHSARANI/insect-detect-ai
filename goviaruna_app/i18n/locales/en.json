@@ -95,7 +95,10 @@
     "saved_success": "Added to collection successfully",
     "saved_fail": "Failed to save",
     "analysis_fail": "Analysis failed",
-    "retry": "Please try again"
+    "retry": "Please try again",
+    "not_identified_title": "Cannot Identify",
+    "not_identified_message": "We could not identify an insect in the photo. Please try again with a clearer image.",
+    "go_back": "Go Back"
   },
   "camera": {
     "permission_title": "We need your permission to show the camera",

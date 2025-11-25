@@ -95,11 +95,14 @@
     "saved_success": "එකතුවට එකතු කරන ලදී",
     "saved_fail": "සුරැකීම අසාර්ථක විය",
     "analysis_fail": "විශ්ලේෂණය අසාර්ථකයි",
-    "retry": "කරුණාකර නැවත උත්සාහ කරන්න"
+    "retry": "කරුණාකර නැවත උත්සාහ කරන්න",
+    "not_identified_title": "හඳුනාගත නොහැක",
+    "not_identified_message": "මෙම ඡායාරූපයේ කෘමියෙකු හඳුනා ගැනීමට නොහැකි විය. කරුණාකර වඩාත් පැහැදිලි ඡායාරූපයක් සමඟ නැවත උත්සාහ කරන්න.",
+    "go_back": "ආපසු යන්න"
   },
   "camera": {
-    "permission_title": "We need your permission to show the camera",
-    "grant_permission": "Grant Permission",
+    "permission_title": "කැමරාව පෙන්වීමට අපට ඔබගේ අවසරය අවශ්‍යයි",
+    "grant_permission": "අවසරය ලබාගන්න",
     "instruction": "රාමුව තුල එක් කෘමියෙකු අල්ලා ගන්න",
     "help": "සහාය ඉල්ලන්න"
   },

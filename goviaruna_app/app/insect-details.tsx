@@ -22,6 +22,7 @@ export default function InsectDetailsScreen() {
   const [activeTab, setActiveTab] = useState(0);
   const [loading, setLoading] = useState(!savedDataStr && !!imageUri);
   const [error, setError] = useState<string | null>(null);
+  const [notIdentified, setNotIdentified] = useState(false);
   
   const INITIAL_INSECT_DETAILS = {
     name: t('insect_details.analyzing'),
@@ -82,6 +83,14 @@ export default function InsectDetailsScreen() {
   const analyzeImage = async () => {
     try {
       const result = await api.insects.classify(imageUri);
+
+      // Check if the insect was identified or not
+      if (result.category === 'Unknown' || result.name === "හඳුනාගත නොහැක") {
+        setNotIdentified(true);
+        setLoading(false);
+        return;
+      }
+
       setDetails(prev => ({
         ...prev,
         ...result,
@@ -173,6 +182,7 @@ export default function InsectDetailsScreen() {
     <View style={styles.container}>
       <StatusBar style="light" />
       
+      {/* Network Error Modal */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -209,6 +219,37 @@ export default function InsectDetailsScreen() {
             >
               <Text style={[styles.cancelButtonText, getFontStyle('regular', 16, lang)]}>
                 {t('common.cancel', 'Cancel')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Not Identified Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={notIdentified}
+        onRequestClose={() => setNotIdentified(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.errorContainer}>
+            <Feather name="search" size={48} color="#3A8A55" />
+            <Text style={[styles.errorTitle, getFontStyle('bold', 20, lang)]}>
+              {t('insect_details.not_identified_title', 'Cannot Identify')}
+            </Text>
+            <Text style={[styles.errorMessage, getFontStyle('regular', 16, lang)]}>
+              {t('insect_details.not_identified_message', 'We could not identify an insect in the photo. Please try again with a clearer image.')}
+            </Text>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={() => {
+                setNotIdentified(false);
+                if (router.canGoBack()) router.back();
+              }}
+            >
+              <Text style={[styles.retryButtonText, getFontStyle('semiBold', 16, 'si')]}>
+                {t('insect_details.go_back', 'Go Back')}
               </Text>
             </TouchableOpacity>
           </View>
