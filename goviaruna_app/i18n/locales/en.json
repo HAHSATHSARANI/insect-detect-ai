@@ -104,7 +104,16 @@
     "permission_title": "We need your permission to show the camera",
     "grant_permission": "Grant Permission",
     "instruction": "Capture one insect within the frame",
-    "help": "Request Help"
+    "help": "Request Help",
+    "help_modal_title": "Photo Guide",
+    "help_modal_main_text": "Keep your camera centered.",
+    "help_modal_sub_text": "To improve identification accuracy, center the insect within the frame.",
+    "help_modal_next": "Next",
+    "help_modal_finish": "Finish",
+    "help_modal_p2_main": "Avoid being too far.",
+    "help_modal_p2_sub": "For better results, get closer to the insect to fill the frame.",
+    "help_modal_p3_main": "Ensure the image is clear.",
+    "help_modal_p3_sub": "Tap the screen to focus and hold the camera steady for a sharp photo."
   },
   "common": {
     "continue": "Continue",
