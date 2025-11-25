@@ -149,9 +149,21 @@ export default function InsectDetailsScreen() {
       }
   };
   
-  // If we have a captured image, put it first in the list
-  const displayImages = imageUri 
-    ? [{ uri: imageUri }, ...(details.images || [])]
+  // If we have a processed image with bounding boxes, use it; otherwise use original captured image
+  const getMainImage = () => {
+    if (details.processedImage) {
+      // Use the processed image with bounding boxes from the API response
+      return { uri: `data:image/jpeg;base64,${details.processedImage}` };
+    } else if (imageUri) {
+      // Fall back to original captured image
+      return { uri: imageUri };
+    }
+    return null;
+  };
+
+  const mainImage = getMainImage();
+  const displayImages = mainImage 
+    ? [mainImage, ...(details.images || [])]
     : (details.images || []);
 
   return (

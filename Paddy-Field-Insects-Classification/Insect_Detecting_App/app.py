@@ -11,7 +11,7 @@ import json
 # Using st.cache_resource to load the model only once
 @st.cache_resource
 def load_model():
-    model = YOLO('Models/best.pt')
+    model = YOLO('Models/yolov8n_50epocs_v2.pt')
     return model
 
 # Using st.cache_data to load insect data only once

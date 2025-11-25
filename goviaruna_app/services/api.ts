@@ -2,13 +2,24 @@ import { Platform } from 'react-native';
 
 // Helper to determine the base URL based on the environment
 // For Android Emulator, use 10.0.2.2 to access host localhost
-// For iOS Simulator, use 127.0.0.1
-// For Physical Device, replace with your machine's local IP address (e.g., 192.168.1.x)
+// For other platforms (like iOS Simulator or web), use localhost
+// For physical devices, you must replace this with your machine's local IP address
 const getBaseUrl = () => {
-  if (Platform.OS === 'android') {
-    return 'http://10.10.43.103:8000';
+  // Check if running in a browser environment (less common for Expo Go)
+  if (typeof window !== 'undefined' && window.location) {
+    // Standard web environment
+    return `http://${window.location.hostname}:8000`;
   }
-  return 'http://10.10.43.103:8000';
+
+  // Check for React Native environment
+  if (Platform.OS === 'android') {
+    // For Android emulators, 10.0.2.2 points to the host machine's localhost
+    return 'http://10.0.2.2:8000';
+  } else {
+    // For iOS simulators, localhost works directly
+    // NOTE: For physical devices, this must be updated to your computer's IP address
+    return 'http://localhost:8000';
+  }
 };
 
 export const API_URL = getBaseUrl();

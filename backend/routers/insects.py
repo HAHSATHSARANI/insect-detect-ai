@@ -8,6 +8,7 @@ import json
 import cv2
 import numpy as np
 from PIL import Image
+import base64
 from ultralytics import YOLO
 from database import insects_collection, fs
 from schemas import Insect
@@ -21,7 +22,7 @@ router = APIRouter(
 # --------------------------
 # YOLO Model Setup
 # --------------------------
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "detect_model", "best.pt")
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "detect_model", "yolov8n_50epocs_v2.pt")
 INSECT_DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "detect_model", "insects.json")
 
 try:
@@ -112,25 +113,34 @@ async def classify_insect(file: UploadFile = File(...)):
     # Run inference
     results = model.predict(source=image)
     
+    # Get the image with bounding boxes plotted on it (like in the reference app.py)
+    result_image_array = results[0].plot() 
+    
+    # Convert the result from BGR (OpenCV default) to RGB for consistency
+    result_image_rgb = cv2.cvtColor(result_image_array, cv2.COLOR_BGR2RGB)
+    
+    # Convert the processed image to base64 for transmission to mobile app
+    result_image_pil = Image.fromarray(result_image_rgb)
+    buffered = io.BytesIO()
+    result_image_pil.save(buffered, format="JPEG", quality=85)
+    processed_image_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
+    
     # Get detected classes
     detected_indices = results[0].boxes.cls.unique().cpu().numpy().astype(int)
     detected_names = [model.names[i] for i in detected_indices]
     
     if not detected_names:
-        # Fallback if nothing detected or return specific response
-        # For now, returning a 'not found' like structure or the first insect in DB as fallback if strictly needed
-        # But correctly we should inform the user.
-        # Let's return a generic "Unknown" response to handle gracefully in frontend
+        # Fallback if nothing detected
         return {
             "name": "හඳුනාගත නොහැක",
             "scientificName": "(Unknown)",
             "description": "කරුණාකර පැහැදිලි රූපයක් ලබා දෙන්න.",
             "category": "Unknown",
-            "confidence": 0
+            "confidence": 0,
+            "processedImage": processed_image_base64  # Still return processed image even for unknown
         }
 
-    # Take the first detected insect (highest confidence usually first if sorted, or just pick first)
-    # In a real scenario, we might handle multiple detections. Here we pick the primary one.
+    # Take the first detected insect (highest confidence usually first)
     primary_insect_key = detected_names[0]
     insect_info = insect_data_map.get(primary_insect_key)
     
@@ -140,13 +150,10 @@ async def classify_insect(file: UploadFile = File(...)):
             "scientificName": "(Unknown Data)",
             "description": "Data not found for this insect key.",
             "category": "Unknown",
-            "confidence": 0
+            "confidence": 0,
+            "processedImage": processed_image_base64
         }
 
-    # Map JSON data to our Schema format
-    # Note: The JSON file has different keys (english_name, sinhala_name, status, reduce_method)
-    # We need to adapt them to our frontend expected structure (name, description, category, etc.)
-    
     # Construct control methods text from reduce_method list
     control_methods_text = "\n".join([f"- {method}" for method in insect_info.get('reduce_method', [])])
 
@@ -157,7 +164,7 @@ async def classify_insect(file: UploadFile = File(...)):
     result = {
         "name": insect_info.get('sinhala_name', insect_info.get('english_name')),
         "scientificName": f"({insect_info.get('english_name')})",
-        "scientificNameFull": insect_info.get('key'), # Using key as placeholder or if we had full name
+        "scientificNameFull": insect_info.get('key'),
         "family": "", # Not in JSON, leave empty
         "description": insect_info.get('description'),
         "category": category,
@@ -165,20 +172,23 @@ async def classify_insect(file: UploadFile = File(...)):
         
         # Map detailed fields
         "lifeCycleTitle": "ජීවන චක්‍රය",
-        "lifeCycleContent": "තොරතුරු ඇතුළත් කර නොමැත.", # Default as JSON doesn't have this specific field
+        "lifeCycleContent": "තොරතුරු ඇතුළත් කර නොමැත.",
         
         "damageSymptomsTitle": "හානි ලක්ෂණ",
-        "damageSymptomsContent": insect_info.get('description'), # Re-using description as it often contains damage info
+        "damageSymptomsContent": insect_info.get('description'),
         
         "controlMethodsTitle": "පාලන ක්‍රම",
         "controlMethodsContent": control_methods_text,
         
-        # Structured fields (can be parsed from text if needed, or left empty for general view)
+        # Structured fields
         "resistantVarieties": "",
         "pesticideInstructions": "",
         "ecoFriendlySolutions": "",
         "chemicalControlTable": [],
-        "additionalNotes": ""
+        "additionalNotes": "",
+        
+        # NEW: Include the processed image with bounding boxes
+        "processedImage": processed_image_base64
     }
     
     return result
