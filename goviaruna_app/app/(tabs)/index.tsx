@@ -49,6 +49,8 @@ export default function HomeScreen() {
   const loadRandomInsects = async () => {
       try {
           const insects = await api.insects.getRandom();
+          console.log('DEBUG: Random insects fetched:', JSON.stringify(insects, null, 2)); // DEBUG PRINT
+          
           const mappedInsects = insects.map((insect: any) => {
               let imageSource = require('@/assets/images/insect_1.png');
               if (insect.images && insect.images.length > 0) {

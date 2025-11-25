@@ -49,18 +49,31 @@ SUPPORTED_INSECT_KEYS = [
 
 @router.get("/random", response_model=List[Insect])
 def get_random_insects():
+    print("--- GET /random endpoint called ---")
     try:
         # Try to get 3 random documents
         pipeline = [{"$sample": {"size": 3}}]
         results = list(insects_collection.aggregate(pipeline))
+        print(f"DEBUG: Found {len(results)} documents via aggregate")
         
         # If aggregation returns nothing (e.g., empty collection) or fewer than 3, 
         # we can also try a standard find to be safe, but sample usually works.
         # If results is empty, try standard find just in case sample failed silently
         if not results:
+             print("DEBUG: Aggregate returned empty, trying standard find()")
              results = list(insects_collection.find().limit(3))
-             
-        return [insect_helper(doc) for doc in results]
+             print(f"DEBUG: Found {len(results)} documents via find()")
+
+        if results:
+            print("DEBUG: Raw document keys from DB:", results[0].keys())
+            # Check specifically for detailed fields
+            print("DEBUG: lifeCycleContent present?", "lifeCycleContent" in results[0])
+            
+        response = [insect_helper(doc) for doc in results]
+        if response:
+            print("DEBUG: Converted response model keys:", response[0].keys())
+            
+        return response
     except Exception as e:
         print(f"Error fetching random insects: {e}")
         # Fallback to simple find

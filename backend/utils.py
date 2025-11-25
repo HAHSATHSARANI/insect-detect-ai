@@ -34,13 +34,37 @@ def user_helper(doc) -> dict:
 def insect_helper(doc) -> dict:
     return {
         "id": str(doc["_id"]),
+        "key": doc.get("key"),
         "name": doc["name"],
         "scientificName": doc["scientificName"],
+        "scientificNameFull": doc.get("scientificNameFull"),
+        "family": doc.get("family"),
         "description": doc["description"],
         "image": doc.get("image", ""),
         "images": doc.get("images", []),
         "category": doc["category"],
-        "confidence": doc.get("confidence", 95)
+        "confidence": doc.get("confidence", 95),
+        
+        # Detailed fields
+        "lifeCycleTitle": doc.get("lifeCycleTitle", "ජීවන චක්‍රය"),
+        "lifeCycleContent": doc.get("lifeCycleContent"),
+        
+        "damageSymptomsTitle": doc.get("damageSymptomsTitle", "හානි ලක්ෂණ"),
+        "damageSymptomsContent": doc.get("damageSymptomsContent"),
+        
+        "controlMethodsTitle": doc.get("controlMethodsTitle", "පාලන ක්‍රම"),
+        "controlMethodsContent": doc.get("controlMethodsContent"),
+        
+        # Control details
+        "resistantVarieties": doc.get("resistantVarieties"),
+        "pesticideInstructions": doc.get("pesticideInstructions"),
+        "ecoFriendlySolutions": doc.get("ecoFriendlySolutions"),
+        
+        # Chemical control
+        "chemicalControlTable": doc.get("chemicalControlTable"),
+        
+        # Additional notes
+        "additionalNotes": doc.get("additionalNotes")
     }
 
 

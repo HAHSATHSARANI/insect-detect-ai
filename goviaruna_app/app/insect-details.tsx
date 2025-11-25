@@ -193,7 +193,10 @@ export default function InsectDetailsScreen() {
           // It's likely an ID from the database
           return { uri: `${API_URL}/api/insects/image/${img}` };
       }
-      return img;
+      // Handle if img is already an object (e.g. from local require) or a full URL
+      if (typeof img === 'object' && img !== null) return img;
+      
+      return { uri: img };
   });
 
   const displayImages = mainImage 
@@ -360,16 +363,24 @@ export default function InsectDetailsScreen() {
               </Text>
             </View>
           </View>
-          <Text style={[styles.scientificName, getFontStyle('regular', 16, 'en')]}>{details.scientificName}</Text>
-          
-          <Text style={[styles.detailText, getFontStyle('regular', 15, lang)]}>
-            <Text style={[styles.detailLabel, getFontStyle('semiBold', 15, lang)]}>{t('insect_details.scientific_name')} :</Text> 
-            <Text style={getFontStyle('regular', 15, 'en')}> {details.scientificNameFull}</Text>
-          </Text>
-          <Text style={[styles.detailText, getFontStyle('regular', 15, lang)]}>
-            <Text style={[styles.detailLabel, getFontStyle('semiBold', 15, lang)]}>{t('insect_details.family')} :</Text> 
-            <Text style={getFontStyle('regular', 15, 'en')}> {details.family}</Text>
-          </Text>
+          {/* Header Details */}
+          <View style={styles.headerDetailsContainer}>
+              <Text style={[styles.scientificName, getFontStyle('regular', 16, 'en')]}>
+                ({details.scientificName})
+              </Text>
+
+              <View style={styles.detailRow}>
+                <Text style={[styles.detailLabel, getFontStyle('semiBold', 15, lang)]}>{t('insect_details.scientific_name')} : </Text>
+                <Text style={[styles.detailValue, getFontStyle('regular', 15, 'en')]}>{details.scientificNameFull || details.scientificName}</Text>
+              </View>
+
+              {details.family && (
+                <View style={styles.detailRow}>
+                    <Text style={[styles.detailLabel, getFontStyle('semiBold', 15, lang)]}>{t('insect_details.family')} : </Text>
+                    <Text style={[styles.detailValue, getFontStyle('regular', 15, 'en')]}>{details.family}</Text>
+                </View>
+              )}
+          </View>
           
           <Text style={[styles.description, getFontStyle('regular', 15, lang)]}>{details.description}</Text>
 
@@ -386,133 +397,160 @@ export default function InsectDetailsScreen() {
             ))}
           </View>
 
-          {/* Related Images */}
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, getFontStyle('bold', 20, lang)]}>{details.relatedImagesTitle}</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {(details.images || []).map((img: any, index: number) => (
-                <Image key={index} source={img} style={styles.relatedImage} />
-              ))}
-            </ScrollView>
-          </View>
+          {/* Content based on active tab */}
+          
+          {/* INFO TAB */}
+          {activeTab === 0 && (
+              <>
+                {/* Related Images */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionTitle, getFontStyle('bold', 20, lang)]}>{details.relatedImagesTitle}</Text>
+                    {dbImages && dbImages.length > 0 ? (
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                        {dbImages.map((img: any, index: number) => (
+                            <Image key={index} source={img} style={styles.relatedImage} />
+                        ))}
+                        </ScrollView>
+                    ) : (
+                        <Text style={[styles.emptyText, getFontStyle('regular', 14, lang)]}>No images available</Text>
+                    )}
+                </View>
 
-          {/* Accordion Sections - REPLACED WITH DETAILED CARDS */}
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, getFontStyle('bold', 20, lang)]}>{details.lifeCycleTitle}</Text>
-            <View style={styles.card}>
-              <View style={styles.cardHeader}>
-                 <View style={[styles.iconCircle, { backgroundColor: '#059669' }]}>
-                   <MaterialCommunityIcons name="leaf-circle" size={24} color="white" />
-                 </View>
-                 <Text style={[styles.cardTitle, getFontStyle('bold', 18, lang)]}>{details.lifeCycleTitle}</Text>
-                 <Feather name="volume-2" size={20} color="#059669" />
-              </View>
-              <Text style={[styles.cardContent, getFontStyle('regular', 15, lang)]}>{details.lifeCycleContent}</Text>
-            </View>
-          </View>
-
-           {/* Damage / Symptoms */}
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, getFontStyle('bold', 20, lang)]}>{details.damageSymptomsTitle}</Text>
-            <View style={styles.card}>
-              <View style={styles.cardHeader}>
-                 <View style={[styles.iconCircle, { backgroundColor: '#059669' }]}>
-                   <MaterialCommunityIcons name="alert-decagram" size={24} color="white" />
-                 </View>
-                 <Text style={[styles.cardTitle, getFontStyle('bold', 18, lang)]}>{t('insect_details.damage')}</Text>
-                 <Feather name="volume-2" size={20} color="#059669" />
-              </View>
-              <Text style={[styles.cardContent, getFontStyle('regular', 15, lang)]}>{details.damageSymptomsContent}</Text>
-            </View>
-          </View>
-
-          {/* Control Methods - Expanded */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeaderRow}>
-                <Text style={[styles.sectionTitle, getFontStyle('bold', 20, lang)]}>{details.controlMethodsTitle}</Text>
-                <View style={styles.sectionHeaderUnderline} />
-            </View>
-            
-            <Text style={[styles.introText, getFontStyle('regular', 15, lang)]}>{details.controlMethodsContent}</Text>
-
-            {/* Resistant Varieties */}
-            {details.resistantVarieties && (
-              <View style={styles.infoCard}>
-                <View style={[styles.iconCircle, { backgroundColor: '#059669' }]}>
-                  <MaterialCommunityIcons name="sprout" size={24} color="white" />
-                </View>
-                <View style={styles.infoCardContent}>
-                   <Text style={[styles.infoCardTitle, getFontStyle('bold', 16, lang)]}>{t('insect_details.resistant_varieties')}</Text>
-                   <Text style={[styles.infoCardText, getFontStyle('regular', 14, lang)]}>{details.resistantVarieties}</Text>
-                </View>
-              </View>
-            )}
-
-             {/* Pesticide Instructions */}
-            {details.pesticideInstructions && (
-              <View style={styles.infoCard}>
-                <View style={[styles.iconCircle, { backgroundColor: '#059669' }]}>
-                  <MaterialCommunityIcons name="bottle-tonic-skull" size={24} color="white" />
-                </View>
-                <View style={styles.infoCardContent}>
-                   <Text style={[styles.infoCardTitle, getFontStyle('bold', 16, lang)]}>{t('insect_details.pesticides')}</Text>
-                   <Text style={[styles.infoCardText, getFontStyle('regular', 14, lang)]}>{details.pesticideInstructions}</Text>
-                </View>
-              </View>
-            )}
-            
-             {/* Eco Friendly */}
-            {details.ecoFriendlySolutions && (
-              <View style={styles.infoCard}>
-                <View style={[styles.iconCircle, { backgroundColor: '#059669' }]}>
-                  <MaterialCommunityIcons name="ladybug" size={24} color="white" />
-                </View>
-                <View style={styles.infoCardContent}>
-                   <Text style={[styles.infoCardTitle, getFontStyle('bold', 16, lang)]}>{t('insect_details.eco_friendly')}</Text>
-                   <Text style={[styles.infoCardText, getFontStyle('regular', 14, lang)]}>{details.ecoFriendlySolutions}</Text>
-                </View>
-              </View>
-            )}
-          </View>
-
-          {/* Chemical Control Table */}
-          {details.chemicalControlTable && (
-             <View style={styles.section}>
-                <View style={styles.sectionHeaderRow}>
-                    <Text style={[styles.sectionTitle, getFontStyle('bold', 20, lang)]}>{t('insect_details.chemical_control')}</Text>
-                    <Feather name="volume-2" size={20} color="#059669" style={{marginLeft: 10}} />
-                </View>
-                
-                <View style={styles.tableContainer}>
-                    <View style={styles.tableHeader}>
-                        <Text style={[styles.tableHeaderText, getFontStyle('bold', 12, lang), { flex: 2 }]}>කෘමිනාශකයේ පොදු නාමය</Text>
-                        <Text style={[styles.tableHeaderText, getFontStyle('bold', 12, lang), { flex: 1 }]}>සාන්ද්‍රණය</Text>
-                        <Text style={[styles.tableHeaderText, getFontStyle('bold', 12, lang), { flex: 1.5 }]}>හෙක්ටයාරයකට යෙදිය යුතු ප්‍රමාණය</Text>
+                {/* Life Cycle */}
+                {details.lifeCycleContent && (
+                    <View style={styles.section}>
+                        <Text style={[styles.sectionTitle, getFontStyle('bold', 20, lang)]}>{details.lifeCycleTitle || t('insect_details.lifecycle')}</Text>
+                        <View style={styles.card}>
+                        <View style={styles.cardHeader}>
+                            <View style={[styles.iconCircle, { backgroundColor: '#059669' }]}>
+                            <MaterialCommunityIcons name="leaf-circle" size={24} color="white" />
+                            </View>
+                            <Text style={[styles.cardTitle, getFontStyle('bold', 18, lang)]}>{details.lifeCycleTitle || t('insect_details.lifecycle')}</Text>
+                            <Feather name="volume-2" size={20} color="#059669" />
+                        </View>
+                        <Text style={[styles.cardContent, getFontStyle('regular', 15, lang)]}>{details.lifeCycleContent}</Text>
+                        </View>
                     </View>
-                    {details.chemicalControlTable.map((row: any, index: number) => (
-                         <View key={index} style={[styles.tableRow, index % 2 === 0 ? styles.tableRowEven : {}]}>
-                            <Text style={[styles.tableCell, getFontStyle('regular', 12, lang), { flex: 2, fontWeight: 'bold' }]}>{row.name}</Text>
-                            <Text style={[styles.tableCell, getFontStyle('regular', 12, lang), { flex: 1 }]}>{row.concentration || '-'}</Text>
-                            <Text style={[styles.tableCell, getFontStyle('regular', 12, lang), { flex: 1.5 }]}>{row.amount || '-'}</Text>
-                         </View>
-                    ))}
-                </View>
-             </View>
+                )}
+                
+                {/* Additional Notes */}
+                {details.additionalNotes && (
+                    <View style={[styles.infoCard, { marginTop: 20, backgroundColor: '#F0FDF4' }]}>
+                        <View style={[styles.iconCircle, { backgroundColor: '#059669' }]}>
+                        <MaterialCommunityIcons name="information-variant" size={24} color="white" />
+                        </View>
+                        <View style={styles.infoCardContent}>
+                        <Text style={[styles.infoCardTitle, getFontStyle('bold', 16, lang)]}>{t('insect_details.additional_notes')}</Text>
+                        <Feather name="volume-2" size={18} color="#059669" style={{position: 'absolute', right: 0, top: 0}} />
+                        <Text style={[styles.infoCardText, getFontStyle('regular', 14, lang)]}>{details.additionalNotes}</Text>
+                        </View>
+                    </View>
+                )}
+              </>
           )}
 
-           {/* Additional Notes */}
-           {details.additionalNotes && (
-              <View style={[styles.infoCard, { marginTop: 20, backgroundColor: '#F0FDF4' }]}>
-                <View style={[styles.iconCircle, { backgroundColor: '#059669' }]}>
-                  <MaterialCommunityIcons name="information-variant" size={24} color="white" />
+          {/* DAMAGE TAB */}
+          {activeTab === 1 && (
+              <>
+                {/* Damage / Symptoms */}
+                {details.damageSymptomsContent && (
+                    <View style={styles.section}>
+                        <Text style={[styles.sectionTitle, getFontStyle('bold', 20, lang)]}>{details.damageSymptomsTitle || t('insect_details.damage_symptoms')}</Text>
+                        <View style={styles.card}>
+                        <View style={styles.cardHeader}>
+                            <View style={[styles.iconCircle, { backgroundColor: '#059669' }]}>
+                            <MaterialCommunityIcons name="alert-decagram" size={24} color="white" />
+                            </View>
+                            <Text style={[styles.cardTitle, getFontStyle('bold', 18, lang)]}>{t('insect_details.damage')}</Text>
+                            <Feather name="volume-2" size={20} color="#059669" />
+                        </View>
+                        <Text style={[styles.cardContent, getFontStyle('regular', 15, lang)]}>{details.damageSymptomsContent}</Text>
+                        </View>
+                    </View>
+                )}
+              </>
+          )}
+
+          {/* CONTROL TAB */}
+          {activeTab === 2 && (
+              <>
+                {/* Control Methods - Expanded */}
+                <View style={styles.section}>
+                    <View style={styles.sectionHeaderRow}>
+                        <Text style={[styles.sectionTitle, getFontStyle('bold', 20, lang)]}>{details.controlMethodsTitle || t('insect_details.control_methods')}</Text>
+                        <View style={styles.sectionHeaderUnderline} />
+                    </View>
+                    
+                    {details.controlMethodsContent && (
+                        <Text style={[styles.introText, getFontStyle('regular', 15, lang)]}>{details.controlMethodsContent}</Text>
+                    )}
+
+                    {/* Resistant Varieties */}
+                    {details.resistantVarieties && (
+                    <View style={styles.infoCard}>
+                        <View style={[styles.iconCircle, { backgroundColor: '#059669' }]}>
+                        <MaterialCommunityIcons name="sprout" size={24} color="white" />
+                        </View>
+                        <View style={styles.infoCardContent}>
+                        <Text style={[styles.infoCardTitle, getFontStyle('bold', 16, lang)]}>{t('insect_details.resistant_varieties')}</Text>
+                        <Text style={[styles.infoCardText, getFontStyle('regular', 14, lang)]}>{details.resistantVarieties}</Text>
+                        </View>
+                    </View>
+                    )}
+
+                    {/* Pesticide Instructions */}
+                    {details.pesticideInstructions && (
+                    <View style={styles.infoCard}>
+                        <View style={[styles.iconCircle, { backgroundColor: '#059669' }]}>
+                        <MaterialCommunityIcons name="bottle-tonic-skull" size={24} color="white" />
+                        </View>
+                        <View style={styles.infoCardContent}>
+                        <Text style={[styles.infoCardTitle, getFontStyle('bold', 16, lang)]}>{t('insect_details.pesticides')}</Text>
+                        <Text style={[styles.infoCardText, getFontStyle('regular', 14, lang)]}>{details.pesticideInstructions}</Text>
+                        </View>
+                    </View>
+                    )}
+                    
+                    {/* Eco Friendly */}
+                    {details.ecoFriendlySolutions && (
+                    <View style={styles.infoCard}>
+                        <View style={[styles.iconCircle, { backgroundColor: '#059669' }]}>
+                        <MaterialCommunityIcons name="ladybug" size={24} color="white" />
+                        </View>
+                        <View style={styles.infoCardContent}>
+                        <Text style={[styles.infoCardTitle, getFontStyle('bold', 16, lang)]}>{t('insect_details.eco_friendly')}</Text>
+                        <Text style={[styles.infoCardText, getFontStyle('regular', 14, lang)]}>{details.ecoFriendlySolutions}</Text>
+                        </View>
+                    </View>
+                    )}
                 </View>
-                <View style={styles.infoCardContent}>
-                   <Text style={[styles.infoCardTitle, getFontStyle('bold', 16, lang)]}>{t('insect_details.additional_notes')}</Text>
-                   <Feather name="volume-2" size={18} color="#059669" style={{position: 'absolute', right: 0, top: 0}} />
-                   <Text style={[styles.infoCardText, getFontStyle('regular', 14, lang)]}>{details.additionalNotes}</Text>
-                </View>
-              </View>
-            )}
+
+                {/* Chemical Control Table */}
+                {details.chemicalControlTable && details.chemicalControlTable.length > 0 && (
+                    <View style={styles.section}>
+                        <View style={styles.sectionHeaderRow}>
+                            <Text style={[styles.sectionTitle, getFontStyle('bold', 20, lang)]}>{t('insect_details.chemical_control')}</Text>
+                            <Feather name="volume-2" size={20} color="#059669" style={{marginLeft: 10}} />
+                        </View>
+                        
+                        <View style={styles.tableContainer}>
+                            <View style={styles.tableHeader}>
+                                <Text style={[styles.tableHeaderText, getFontStyle('bold', 12, lang), { flex: 2 }]}>කෘමිනාශකයේ පොදු නාමය</Text>
+                                <Text style={[styles.tableHeaderText, getFontStyle('bold', 12, lang), { flex: 1 }]}>සාන්ද්‍රණය</Text>
+                                <Text style={[styles.tableHeaderText, getFontStyle('bold', 12, lang), { flex: 1.5 }]}>හෙක්ටයාරයකට යෙදිය යුතු ප්‍රමාණය</Text>
+                            </View>
+                            {details.chemicalControlTable.map((row: any, index: number) => (
+                                <View key={index} style={[styles.tableRow, index % 2 === 0 ? styles.tableRowEven : {}]}>
+                                    <Text style={[styles.tableCell, getFontStyle('regular', 12, lang), { flex: 2, fontWeight: 'bold' }]}>{row.name}</Text>
+                                    <Text style={[styles.tableCell, getFontStyle('regular', 12, lang), { flex: 1 }]}>{row.concentration || '-'}</Text>
+                                    <Text style={[styles.tableCell, getFontStyle('regular', 12, lang), { flex: 1.5 }]}>{row.amount || '-'}</Text>
+                                </View>
+                            ))}
+                        </View>
+                    </View>
+                )}
+              </>
+          )}
 
         </View>
       </ScrollView>
@@ -593,10 +631,18 @@ const styles = StyleSheet.create({
   title: { ...Fonts.styles.bold, fontSize: 26, color: '#222' },
   tagContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FEE2E2', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
   tagText: { color: '#EF4444', ...Fonts.styles.semiBold, marginLeft: 5 },
-  scientificName: { ...Fonts.styles.regular, fontSize: 16, color: '#888', marginBottom: 15 },
-  detailText: { ...Fonts.styles.regular, fontSize: 15, color: '#555', marginBottom: 5 },
-  detailLabel: { ...Fonts.styles.semiBold },
-  description: { ...Fonts.styles.regular, fontSize: 15, color: '#555', lineHeight: 24, marginVertical: 15 },
+  headerDetailsContainer: {
+    marginBottom: 15,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    marginBottom: 4,
+    alignItems: 'center',
+  },
+  detailValue: {
+    color: '#555',
+  },
+  description: { ...Fonts.styles.regular, fontSize: 15, color: '#555', lineHeight: 24, marginBottom: 20 },
   tabContainer: { flexDirection: 'row', marginBottom: 20 },
   tab: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 20 },
   activeTab: { borderBottomWidth: 3, borderBottomColor: '#3A8A55' },
